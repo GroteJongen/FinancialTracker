@@ -10,10 +10,17 @@ from sqlalchemy.orm import Session
 
 from app.application.accounts import list_accounts
 from app.application.purchase_contracts import (
-    AuditResponse, ListingResponse, PurchaseCorrection, PurchaseCreate, PurchaseResponse,
+    AuditResponse,
+    ListingResponse,
+    PurchaseCorrection,
+    PurchaseCreate,
+    PurchaseResponse,
 )
 from app.application.purchases import (
-    correct_purchase, create_purchase, get_audit, get_purchases,
+    correct_purchase,
+    create_purchase,
+    get_audit,
+    get_purchases,
 )
 from app.infrastructure.models import Instrument, Listing
 
@@ -63,8 +70,12 @@ def listings(session: Session = Depends(get_session)):
     rows = session.execute(select(Listing, Instrument).join(Instrument))
     return [
         ListingResponse(
-            id=listing.id, name=instrument.name, symbol=listing.symbol,
-            isin=instrument.isin, mic=listing.mic, currency=listing.currency,
+            id=listing.id,
+            name=instrument.name,
+            symbol=listing.symbol,
+            isin=instrument.isin,
+            mic=listing.mic,
+            currency=listing.currency,
         )
         for listing, instrument in rows
     ]
@@ -77,7 +88,10 @@ def purchases(account_id: UUID, request: Request, session: Session = Depends(get
 
 @router.post("/accounts/{account_id}/purchases", response_model=PurchaseResponse, status_code=201)
 def add_purchase(
-    account_id: UUID, data: PurchaseCreate, request: Request, response: Response,
+    account_id: UUID,
+    data: PurchaseCreate,
+    request: Request,
+    response: Response,
     session: Session = Depends(get_session),
 ):
     result, created = create_purchase(
@@ -90,7 +104,10 @@ def add_purchase(
 
 @router.put("/accounts/{account_id}/purchases/{purchase_id}", response_model=PurchaseResponse)
 def edit_purchase(
-    account_id: UUID, purchase_id: UUID, data: PurchaseCorrection, request: Request,
+    account_id: UUID,
+    purchase_id: UUID,
+    data: PurchaseCorrection,
+    request: Request,
     session: Session = Depends(get_session),
 ):
     return correct_purchase(
@@ -102,8 +119,9 @@ def edit_purchase(
     "/accounts/{account_id}/purchases/{purchase_id}/audit", response_model=list[AuditResponse]
 )
 def purchase_audit(
-    account_id: UUID, purchase_id: UUID, request: Request, session: Session = Depends(get_session),
+    account_id: UUID,
+    purchase_id: UUID,
+    request: Request,
+    session: Session = Depends(get_session),
 ):
-    return get_audit(
-        session, request.app.state.settings.local_owner_id, account_id, purchase_id
-    )
+    return get_audit(session, request.app.state.settings.local_owner_id, account_id, purchase_id)

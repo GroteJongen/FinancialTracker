@@ -1,5 +1,7 @@
 """Instrument catalogue, purchase operations and append-only application audit."""
 
+from uuid import UUID
+
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
@@ -9,8 +11,8 @@ down_revision = "0001"
 branch_labels = None
 depends_on = None
 
-INSTRUMENT_ID = "00000000-0000-4000-8000-000000000003"
-LISTING_ID = "00000000-0000-4000-8000-000000000004"
+INSTRUMENT_ID = UUID("00000000-0000-4000-8000-000000000003")
+LISTING_ID = UUID("00000000-0000-4000-8000-000000000004")
 
 
 def upgrade() -> None:
@@ -80,14 +82,18 @@ def upgrade() -> None:
         sa.UniqueConstraint("operation_id", "revision", name="uq_audit_operation_revision"),
         sa.CheckConstraint("kind IN ('CREATE', 'CORRECT')", name="ck_audit_kind"),
     )
-    op.execute(sa.text(
-        "INSERT INTO instruments (id, isin, name, kind, distribution) VALUES "
-        "(:id, 'IE00B6R52259', 'iShares MSCI ACWI UCITS ETF USD (Acc)', 'ETF', 'ACC')"
-    ).bindparams(id=INSTRUMENT_ID))
-    op.execute(sa.text(
-        "INSERT INTO listings (id, instrument_id, symbol, mic, currency) "
-        "VALUES (:id, :instrument_id, 'IUSQ', 'XETR', 'EUR')"
-    ).bindparams(id=LISTING_ID, instrument_id=INSTRUMENT_ID))
+    op.execute(
+        sa.text(
+            "INSERT INTO instruments (id, isin, name, kind, distribution) VALUES "
+            "(:id, 'IE00B6R52259', 'iShares MSCI ACWI UCITS ETF USD (Acc)', 'ETF', 'ACC')"
+        ).bindparams(id=INSTRUMENT_ID)
+    )
+    op.execute(
+        sa.text(
+            "INSERT INTO listings (id, instrument_id, symbol, mic, currency) "
+            "VALUES (:id, :instrument_id, 'IUSQ', 'XETR', 'EUR')"
+        ).bindparams(id=LISTING_ID, instrument_id=INSTRUMENT_ID)
+    )
 
 
 def downgrade() -> None:

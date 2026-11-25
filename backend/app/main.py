@@ -3,10 +3,9 @@ from pathlib import Path
 
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from sqlalchemy import Engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker

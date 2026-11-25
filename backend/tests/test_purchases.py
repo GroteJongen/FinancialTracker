@@ -15,7 +15,13 @@ from app.application import purchases as service
 from app.domain.purchases import business_today
 from app.infrastructure.catalog import IUSQ_INSTRUMENT_ID, IUSQ_LISTING_ID
 from app.infrastructure.models import (
-    Account, AuditEvent, Instrument, Listing, Operation, Owner, PurchaseDetails,
+    Account,
+    AuditEvent,
+    Instrument,
+    Listing,
+    Operation,
+    Owner,
+    PurchaseDetails,
 )
 from app.main import create_app
 
@@ -27,9 +33,11 @@ def ledger(test_database):
     with Session(engine) as session, session.begin():
         session.add(Owner(id=owner_id, name="Właściciel zakupów — test"))
         session.flush()
-        session.add(Account(
-            id=account_id, owner_id=owner_id, name="IKE testowe", kind="IKE", currency="EUR"
-        ))
+        session.add(
+            Account(
+                id=account_id, owner_id=owner_id, name="IKE testowe", kind="IKE", currency="EUR"
+            )
+        )
     settings = settings.model_copy(update={"local_owner_id": owner_id})
     with TestClient(create_app(settings, engine)) as client:
         yield client, engine, settings, account_id
@@ -44,17 +52,26 @@ def ledger(test_database):
 
 def payload(**changes):
     values = {
-        "listing_id": str(IUSQ_LISTING_ID), "request_id": str(uuid4()),
-        "trade_date": "2026-01-10", "quantity": "0.125", "unit_price": "100.12345678",
-        "commission": "0.10", "currency": "EUR",
+        "listing_id": str(IUSQ_LISTING_ID),
+        "request_id": str(uuid4()),
+        "trade_date": "2026-01-10",
+        "quantity": "0.125",
+        "unit_price": "100.12345678",
+        "commission": "0.10",
+        "currency": "EUR",
     }
     return values | changes
 
 
 def correction(data, **changes):
-    return {key: value for key, value in data.items() if key != "request_id"} | {
-        "expected_revision": 1, "reason": "Poprawiono liczbę jednostek",
-    } | changes
+    return (
+        {key: value for key, value in data.items() if key != "request_id"}
+        | {
+            "expected_revision": 1,
+            "reason": "Poprawiono liczbę jednostek",
+        }
+        | changes
+    )
 
 
 def url(account_id):
@@ -93,19 +110,37 @@ def test_many_purchases_and_order(ledger):
     for day in ("2026-01-01", "2026-01-20", "2026-01-05"):
         assert client.post(url(account_id), json=payload(trade_date=day)).status_code == 201
     assert [item["trade_date"] for item in client.get(url(account_id)).json()] == [
-        "2026-01-20", "2026-01-05", "2026-01-01",
+        "2026-01-20",
+        "2026-01-05",
+        "2026-01-01",
     ]
 
 
-@pytest.mark.parametrize(("field", "value"), [
-    ("quantity", "0"), ("quantity", "-1"), ("quantity", "NaN"), ("quantity", "Infinity"),
-    ("quantity", "1e2"), ("quantity", "0.123456789"), ("quantity", "10000000000"),
-    ("quantity", 0.125), ("quantity", True), ("quantity", None), ("quantity", "0,125"),
-    ("unit_price", "0"), ("unit_price", "-2"), ("unit_price", "9.123456789"),
-    ("commission", "-0.01"), ("commission", "0.000000001"),
-    ("currency", "USD"), ("trade_date", "2026-02-30"), ("trade_date", "2026-1-1"),
-    ("trade_date", 123),
-])
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("quantity", "0"),
+        ("quantity", "-1"),
+        ("quantity", "NaN"),
+        ("quantity", "Infinity"),
+        ("quantity", "1e2"),
+        ("quantity", "0.123456789"),
+        ("quantity", "10000000000"),
+        ("quantity", 0.125),
+        ("quantity", True),
+        ("quantity", None),
+        ("quantity", "0,125"),
+        ("unit_price", "0"),
+        ("unit_price", "-2"),
+        ("unit_price", "9.123456789"),
+        ("commission", "-0.01"),
+        ("commission", "0.000000001"),
+        ("currency", "USD"),
+        ("trade_date", "2026-02-30"),
+        ("trade_date", "2026-1-1"),
+        ("trade_date", 123),
+    ],
+)
 def test_invalid_data_is_rejected_without_writes(ledger, field, value):
     client, _, _, account_id = ledger
     result = client.post(url(account_id), json=payload(**{field: value}))
@@ -125,9 +160,14 @@ def test_future_unknown_listing_and_extra_owner_are_rejected(ledger):
 
 def test_smallest_and_largest_exact_amounts(ledger):
     client, _, _, account_id = ledger
-    result = client.post(url(account_id), json=payload(
-        quantity="0.00000001", unit_price="9999999999.99999999", commission="0",
-    ))
+    result = client.post(
+        url(account_id),
+        json=payload(
+            quantity="0.00000001",
+            unit_price="9999999999.99999999",
+            commission="0",
+        ),
+    )
     assert result.status_code == 201
     assert result.json()["quantity"] == "0.00000001"
     assert result.json()["unit_price"] == "9999999999.99999999"
@@ -167,12 +207,11 @@ def test_foreign_account_and_purchase_access_is_denied(ledger):
     foreign_path = url(foreign_id)
     assert client.get(foreign_path).status_code == 404
     assert client.post(foreign_path, json=payload()).status_code == 404
-    assert client.put(
-        foreign_path + "/" + purchase["id"], json=correction(data)
-    ).status_code == 404
+    assert client.put(foreign_path + "/" + purchase["id"], json=correction(data)).status_code == 404
     assert client.get(foreign_path + "/" + purchase["id"] + "/audit").status_code == 404
-    assert client.get(url(account_id) + "?owner_id=" + str(uuid4())).json()[0]["id"] == (
-        purchase["id"]
+    assert (
+        client.get(url(account_id) + "?owner_id=" + str(uuid4())).json()[0]["id"]
+        == (purchase["id"])
     )
     assert client.get(url(account_id) + "/" + str(uuid4()) + "/audit").status_code == 404
 
@@ -271,16 +310,25 @@ def test_upgrade_preserves_existing_accounts_and_can_be_reversed(test_database):
             command.upgrade(config, "0001")
             owner_id, account_id = uuid4(), uuid4()
             connection.execute(insert(Owner).values(id=owner_id, name="Istniejący właściciel"))
-            connection.execute(insert(Account).values(
-                id=account_id, owner_id=owner_id, name="Istniejące IKE", kind="IKE", currency="EUR"
-            ))
+            connection.execute(
+                insert(Account).values(
+                    id=account_id,
+                    owner_id=owner_id,
+                    name="Istniejące IKE",
+                    kind="IKE",
+                    currency="EUR",
+                )
+            )
             command.upgrade(config, "head")
             assert connection.scalar(select(Account.name).where(Account.id == account_id)) == (
                 "Istniejące IKE"
             )
-            assert connection.scalar(
-                select(Instrument.isin).where(Instrument.id == IUSQ_INSTRUMENT_ID)
-            ) == "IE00B6R52259"
+            assert (
+                connection.scalar(
+                    select(Instrument.isin).where(Instrument.id == IUSQ_INSTRUMENT_ID)
+                )
+                == "IE00B6R52259"
+            )
             command.downgrade(config, "0001")
             assert connection.scalar(select(Account.name).where(Account.id == account_id)) == (
                 "Istniejące IKE"

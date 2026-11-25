@@ -154,7 +154,10 @@ def create_purchase(
 
 
 def correct_purchase(
-    session: Session, owner_id: UUID, account_id: UUID, purchase_id: UUID,
+    session: Session,
+    owner_id: UUID,
+    account_id: UUID,
+    purchase_id: UUID,
     data: PurchaseCorrection,
 ) -> PurchaseResponse:
     with session.begin():
@@ -197,8 +200,10 @@ def get_purchases(session: Session, owner_id: UUID, account_id: UUID):
 def get_audit(session: Session, owner_id: UUID, account_id: UUID, purchase_id: UUID):
     owned_account(session, account_id, owner_id)
     find_purchase(session, account_id, purchase_id)
-    return list(session.scalars(
-        select(AuditEvent)
-        .where(AuditEvent.operation_id == purchase_id, AuditEvent.owner_id == owner_id)
-        .order_by(AuditEvent.revision)
-    ))
+    return list(
+        session.scalars(
+            select(AuditEvent)
+            .where(AuditEvent.operation_id == purchase_id, AuditEvent.owner_id == owner_id)
+            .order_by(AuditEvent.revision)
+        )
+    )
