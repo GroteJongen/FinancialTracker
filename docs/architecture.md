@@ -12,7 +12,23 @@
 - e2e/: testy Playwright.
 - docs/: źródło zakresu i decyzji; compose.yaml: środowisko lokalne.
 
-FT-001 wdraża frontend, API, warstwę aplikacyjną dla odczytu rachunków, modele Owner/Account i migrację. Pozostałe moduły twórz wraz z rzeczywistą implementacją.
+FT-001 wdraża frontend, API, odczyt rachunków i modele Owner/Account. FT-002 dodaje Instrument, Listing, Operation, PurchaseDetails i AuditEvent, migrację 0002 oraz formularz i historię zakupów. Moduł domain waliduje liczby i daty bez zależności od HTTP lub ORM; kontrakty wejścia i wyjścia są w application/purchase_contracts.py. Pozostałe moduły twórz wraz z implementacją.
+
+## Kontrakt zakupów FT-002
+
+| Metoda i ścieżka | Zachowanie |
+|---|---|
+| GET /api/listings | Katalog IUSQ: ISIN, XETR i EUR |
+| GET /api/accounts/{id}/purchases | Zakupy własnego rachunku, od najnowszej daty |
+| POST /api/accounts/{id}/purchases | Zapis i audyt CREATE, 201; identyczne ponowienie 200 |
+| PUT /api/accounts/{id}/purchases/{purchase_id} | Korekta z powodem i expected_revision, audyt CORRECT |
+| GET /api/accounts/{id}/purchases/{purchase_id}/audit | Chronologiczne wersje z wartościami przed i po |
+
+Kwoty i ilość są tekstem dziesiętnym w JSON, bez zapisu wykładniczego. Wejście API wymaga kropki; przecinek normalizuje interfejs. Baza stosuje NUMERIC(18,8), wejście odrzuca nadmiar cyfr. Daty transakcji są datami kalendarzowymi, a dzień bieżący wynika z Europe/Warsaw.
+
+Klucz request_id jest unikalny dla rachunku i związany ze skrótem pierwotnej treści. Rzeczywisty nowy zakup otrzymuje nowy klucz. Ponowienie po utracie odpowiedzi zachowuje klucz; odmienna treść z istniejącym kluczem zwraca 409. Korekta sprawdza rewizję pod blokadą wiersza operacji, więc równoczesne zapisy nie nadpisują się. Dane zakupu i zdarzenie audytu zatwierdzane są razem. Brak zapisu audytu wycofuje całą operację. Właściciel pochodzi wyłącznie z konfiguracji serwera.
+
+AuditEvent jest dopisywany przez aplikację; API nie oferuje zmiany ani usunięcia zdarzenia. Nie jest to zewnętrzny, odporny na działania administratora dziennik. Odczyt audytu jest chroniony tak samo jak odczyt zakupu. Cena zakupu nie jest ceną aktualnej wyceny.
 
 ## Encje
 

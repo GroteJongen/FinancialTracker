@@ -96,4 +96,4 @@ Na komputerze tworzącym projekt brakuje Dockera i Pythona; dostępny jest Node 
 - [Decyzje](docs/decisions.md)
 - [Instrukcje agenta](AGENTS.md)
 
-FT-002 jest w weryfikacji CI; kolejne zadanie to FT-003: ręczna wycena i wynik. Nie udostępniaj obecnego trybu lokalnego w internecie.
+FT-002 przeszedł testy CI: 38 testów backendu, testy przeglądarkowe oraz zapis i korekta zakupu zachowane po restarcie. Szczegóły w verification.md. Kolejne zadanie to FT-003: ręczna wycena i wynik. Nie udostępniaj obecnego trybu lokalnego w internecie.

@@ -21,13 +21,13 @@ Kryteria:
 
 ## FT-002 — Instrument i historia zakupów
 
-Status: W trakcie — zakupy, korekty i historia zmian przygotowane, weryfikacja CI w toku. Zależności: FT-001 zakończone.
+Status: Ukończone — 38 testów backendu oraz testy przeglądarkowe i trwałości w CI zaliczone. Zależności: FT-001 zakończone. Szczegóły w verification.md.
 
 Dodaj Instrument, Listing, zakup i ślad korekty. Skonfiguruj IUSQ na Xetra, EUR. Formularz i historia po polsku. Obsłuż walidację, jednostki ułamkowe, wiele zakupów i przypisanie do rachunku. Testy API i PostgreSQL obejmują zapis, korektę i odmowę dostępu do obcego rachunku. Żądanie nie wybiera właściciela. Ponowne uruchomienie nie duplikuje instrumentu ani danych demonstracyjnych.
 
 ## FT-003 — Ręczna wycena i wynik
 
-Status: Zablokowane do FT-002.
+Status: Gotowe. Zależności: FT-002 zakończone.
 
 Wprowadź PriceObservation, czyste funkcje obliczeń i podsumowanie. Wszystkie przykłady calculations.md przechodzą. API przekazuje wartości dziesiętne jako tekst. Brak ceny nie jest zerem. Zapisuj datę i źródło, obsłuż granice dat. Wynik po korekcie zakupu jest przeliczany.
 
