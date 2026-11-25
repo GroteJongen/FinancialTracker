@@ -30,4 +30,18 @@ Nie wykonano uruchomienia na komputerze użytkownika z powodu braku Docker Deskt
 
 Pozostały nieblokujące ostrzeżenia narzędzi: starszy sposób konfiguracji separatora ścieżek Alembic, deprecjacja httpx w TestClient Starlette oraz wersje akcji GitHub korzystające z automatycznej migracji runtime Node. Nie wpływały na wynik testów; ich aktualizacja jest oddzielnym zadaniem utrzymaniowym.
 
-FT-001 nie zawiera jeszcze dodawania inwestycji, obliczeń finansowych, uwierzytelniania internetowego ani publicznego wdrożenia. Program działa lokalnie i nie powinien być wystawiany do internetu w obecnym trybie.
+FT-001 nie zawierał jeszcze dodawania inwestycji. Program pozostaje lokalny, bez uwierzytelniania internetowego i publicznego wdrożenia.
+
+## FT-002 — zakupy IUSQ
+
+[Przebieg weryfikacji](https://github.com/GroteJongen/FinancialTracker/actions/runs/45704671684) zakończył się powodzeniem we wszystkich trzech jobach: backend, frontend i Compose.
+
+- 38 testów backendu na PostgreSQL: liczby ułamkowe i granice precyzji, odrzucanie błędnych danych oraz przyszłych dat, wiele zakupów, korekta i historia wartości, odczyt po ponownym uruchomieniu aplikacji, izolacja właściciela, klucz ponowienia, równoczesne korekty i zapisy, wycofanie transakcji przy błędzie audytu.
+- Migracja od pustej bazy i zgodność modeli z bazą. Osobny schemat testowy sprawdza przejście 0001 → 0002, zachowanie istniejących rachunków, cofnięcie i ponowne zastosowanie migracji. Transakcja schematu testowego jest wycofywana po teście.
+- Lint i format Python, typy TypeScript, ESLint i build frontendu.
+- Pełny start kontenerów, utworzenie zakupu i korekty z audytem, ponowienie zapisu bez duplikatu i odczyt tych samych danych po restarcie db/backend/frontend.
+- Playwright: formularz z przecinkiem, 8 miejsc dziesiętnych, korekta z powodem i historią zmian, odświeżenie strony, kolejne zakupy, odrzucenie nadmiaru precyzji i braku powodu, utrata odpowiedzi po udanym POST oraz ponowienie bez duplikatu, widok mobilny. Zachowano również sprawdzenia z FT-001.
+
+W CI użyto tymczasowego kroku formatowania i odczytano dokładne zmiany źródeł. Poprawki zapisano w repozytorium; tymczasowy krok usunięto. Standardowe CI tylko sprawdza kod i ma wyłącznie odczyt repozytorium. Po jego usunięciu wykonywany jest również końcowy przebieg.
+
+Ograniczenia lokalnego środowiska i profilu testowego Compose pozostają takie jak w FT-001. W tej zmianie nie wdrożono aktualnych cen, wyceny portfela, wyniku inwestycji ani sprzedaży. Cena zapisana przy zakupie jest ceną transakcyjną.

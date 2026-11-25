@@ -17,6 +17,11 @@ Stan: uzgodniony kierunek z rozmowy; szczegóły implementacji potwierdzamy podc
 | ADR-011 | Interfejs korzysta z proxy /api | Jeden origin, brak CORS i kluczy w przeglądarce |
 | ADR-012 | Demonstracja jawną komendą | Pierwszy start nie udaje prawdziwego portfela |
 | ADR-013 | Lockfile wygenerowane przez CI na gałęzi FT-001 | Bootstrap został usunięty; standardowe CI ma wyłącznie odczyt repozytorium |
+| ADR-014 | Zakupy: NUMERIC(18,8), JSON jako tekst | Do 10 cyfr całkowitych i 8 ułamkowych; walidacja odrzuca nadmiar zamiast zaokrąglać |
+| ADR-015 | Operation i PurchaseDetails rozdzielone | Wspólna tożsamość operacji, osobne dane zakupu; instrument oddzielony od notowania |
+| ADR-016 | Powód korekty, rewizja i audyt w jednej transakcji | Zachowujemy wartości przed i po; konflikt wersji zwraca 409, nie nadpisuje cudzego zapisu |
+| ADR-017 | Klucz ponowienia unikalny dla rachunku | Ponowienie identycznego zakupu nie tworzy duplikatu; inna treść z tym kluczem zwraca 409 |
+| ADR-018 | Dzień transakcji względem Europe/Warsaw | Backend odrzuca przyszłe daty; kontener instaluje systemowe dane stref czasowych |
 
 ## Źródła identyfikacji i integracji
 

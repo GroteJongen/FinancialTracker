@@ -20,6 +20,17 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    provided = context.config.attributes.get("connection")
+    if provided is not None:
+        context.configure(
+            connection=provided,
+            target_metadata=target_metadata,
+            compare_type=True,
+            version_table_schema=context.config.attributes.get("version_table_schema"),
+        )
+        with context.begin_transaction():
+            context.run_migrations()
+        return
     engine = make_engine(get_settings().database_url)
     try:
         with engine.connect() as connection:

@@ -83,10 +83,12 @@ jobs:
           docker compose exec -T backend python -m app.seed
           docker compose exec -T backend python -m app.seed
           node scripts/smoke.mjs
+          node scripts/smoke-purchases.mjs create
       - name: Check persistence after restart
         run: |
           docker compose restart db backend frontend
           node scripts/smoke.mjs
+          node scripts/smoke-purchases.mjs verify
       - name: Check database outage and recovery
         run: |
           docker compose stop db

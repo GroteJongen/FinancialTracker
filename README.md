@@ -1,6 +1,14 @@
 # FinancialTracker
 
-Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. FT-001 dostarcza fundament aplikacji, kontrolę połączenia i lokalny rachunek demonstracyjny IKE. Zakupy IUSQ i obligacje powstaną w kolejnych zadaniach.
+Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja zawiera lokalne rachunki oraz dodawanie zakupów IUSQ, korekty i historię zmian. Wycenę portfela i obligacje dodamy w kolejnych zadaniach.
+
+## Zakupy IUSQ
+
+Po utworzeniu rachunku demonstracyjnego wybierz go w sekcji „Zakupy IUSQ”. Wpisz datę, liczbę jednostek, cenę i prowizję w EUR. Jednostki ułamkowe oraz kwoty obsługują do 8 miejsc po przecinku. Formularz przyjmuje przecinek lub kropkę; backend zapisuje dokładne wartości dziesiętne, odrzuca wartości ujemne, zerową ilość/cenę oraz przyszłe daty według Europe/Warsaw.
+
+„Popraw” otwiera korektę wymagającą powodu. „Zmiany” pokazuje poprzednie i nowe wartości oraz czas korekty. Zapis zakupu i audytu jest atomowy. Ponowienie zapisu po utracie odpowiedzi nie tworzy drugiego zakupu; równoczesne korekty tej samej wersji powodują konflikt, który wymaga odświeżenia historii. Audyt nie ma endpointu edycji ani usuwania; administrator bazy nadal ma techniczny dostęp do danych.
+
+Migracja 0002 dodaje katalog IUSQ (ISIN IE00B6R52259, Xetra/XETR, EUR), nie dodaje żadnych transakcji i zachowuje wcześniejsze rachunki. Rzeczywiste zakupy dodaje użytkownik. Dane demonstracyjne są opcjonalne. Lista zakupów pokazuje dane transakcyjne, nie aktualną wycenę ani wynik inwestycji.
 
 ## Uruchomienie na Windows
 
@@ -88,4 +96,4 @@ Na komputerze tworzącym projekt brakuje Dockera i Pythona; dostępny jest Node 
 - [Decyzje](docs/decisions.md)
 - [Instrukcje agenta](AGENTS.md)
 
-Po odbiorze FT-001 kolejne zadanie to FT-002: instrument IUSQ i zakupy. Nie udostępniaj obecnego trybu lokalnego w internecie.
+FT-002 przeszedł testy CI: 38 testów backendu, testy przeglądarkowe oraz zapis i korekta zakupu zachowane po restarcie. Szczegóły w verification.md. Kolejne zadanie to FT-003: ręczna wycena i wynik. Nie udostępniaj obecnego trybu lokalnego w internecie.

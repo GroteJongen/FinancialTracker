@@ -1,0 +1,79 @@
+import { expect, test } from '@playwright/test'
+
+test('adds fractional purchases, corrects with audit, and survives reload', async ({ page }) => {
+  await page.goto('/')
+  await page.getByLabel('Liczba jednostek', { exact: true }).fill('0,125')
+  await page.getByLabel('Cena jednostki (EUR)', { exact: true }).fill('100,12345678')
+  await page.getByLabel('Prowizja (EUR)', { exact: true }).fill('0,10')
+  await page.getByLabel('Data zakupu', { exact: true }).fill('2026-01-08')
+  await page.getByRole('button', { name: 'Zapisz zakup', exact: true }).click()
+  await expect(page.getByRole('status', { name: 'Wynik zapisu' })).toHaveText('Zakup został zapisany.')
+  let row = page.getByRole('row').filter({ hasText: '08.01.2026' })
+  await expect(row).toContainText('0,125')
+  await expect(row).toContainText('100,12345678')
+  await row.getByRole('button', { name: 'Popraw', exact: true }).click()
+  await page.getByLabel('Liczba jednostek', { exact: true }).fill('0,25')
+  await page.getByLabel('Powód korekty', { exact: true }).fill('Przepisano ilość z potwierdzenia')
+  await page.getByRole('button', { name: 'Zapisz korektę', exact: true }).click()
+  await expect(page.getByRole('status', { name: 'Wynik zapisu' })).toContainText('Korekta została zapisana')
+  await expect(row).toContainText('0,25')
+  await row.getByRole('button', { name: 'Zmiany', exact: true }).click()
+  const history = page.getByRole('region', { name: 'Historia zmian zakupu' })
+  await expect(history).toContainText('Przepisano ilość z potwierdzenia')
+  await expect(history).toContainText('0,125')
+  await expect(history).toContainText('0,25')
+  await page.reload()
+  row = page.getByRole('row').filter({ hasText: '08.01.2026' })
+  await expect(row).toContainText('0,25')
+  await page.getByLabel('Liczba jednostek', { exact: true }).fill('2')
+  await page.getByLabel('Cena jednostki (EUR)', { exact: true }).fill('110')
+  await page.getByLabel('Data zakupu', { exact: true }).fill('2026-01-09')
+  await page.getByRole('button', { name: 'Zapisz zakup', exact: true }).click()
+  await expect(page.getByRole('row').filter({ hasText: '09.01.2026' })).toContainText('110,00')
+})
+
+test('rejects excess precision and missing correction reason without losing input', async ({ page }) => {
+  await page.goto('/')
+  await page.getByLabel('Liczba jednostek', { exact: true }).fill('0,123456789')
+  await page.getByLabel('Cena jednostki (EUR)', { exact: true }).fill('100')
+  await page.getByRole('button', { name: 'Zapisz zakup', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('8 po przecinku')
+  await expect(page.getByLabel('Liczba jednostek', { exact: true })).toHaveValue('0,123456789')
+  await page.getByLabel('Liczba jednostek', { exact: true }).fill('1')
+  await page.getByLabel('Data zakupu', { exact: true }).fill('2026-01-06')
+  await page.getByRole('button', { name: 'Zapisz zakup', exact: true }).click()
+  const row = page.getByRole('row').filter({ hasText: '06.01.2026' })
+  await row.getByRole('button', { name: 'Popraw', exact: true }).click()
+  await page.getByRole('button', { name: 'Zapisz korektę', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('Podaj powód korekty')
+})
+
+test('lost create response can be retried without a duplicate purchase', async ({ page }) => {
+  let first = true
+  await page.route('**/api/accounts/*/purchases', async (route) => {
+    if (route.request().method() === 'POST' && first) {
+      first = false
+      await route.fetch()
+      await route.abort('failed')
+    } else {
+      await route.continue()
+    }
+  })
+  await page.goto('/')
+  await page.getByLabel('Liczba jednostek', { exact: true }).fill('0,333')
+  await page.getByLabel('Cena jednostki (EUR)', { exact: true }).fill('98')
+  await page.getByLabel('Data zakupu', { exact: true }).fill('2026-01-07')
+  await page.getByRole('button', { name: 'Zapisz zakup', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('Dane formularza zostały zachowane')
+  await page.getByRole('button', { name: 'Zapisz zakup', exact: true }).click()
+  await expect(page.getByRole('status', { name: 'Wynik zapisu' })).toContainText('Zakup został zapisany')
+  await page.reload()
+  await expect(page.getByRole('row').filter({ hasText: '07.01.2026' })).toHaveCount(1)
+})
+
+test('purchase form and table fit a mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await expect(page.getByLabel('Liczba jednostek', { exact: true })).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
+})
