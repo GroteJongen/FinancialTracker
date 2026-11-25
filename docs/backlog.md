@@ -5,7 +5,7 @@ Zadanie zakończone oznacza kod, właściwe sprawdzenia, dokumentację i opis og
 
 ## FT-001 — Uruchamialny fundament
 
-Status: W trakcie — implementacja przygotowana, weryfikacja CI w toku. Zależności: brak.
+Status: Ukończone — zweryfikowane w CI. Lokalny start na Windows wymaga Docker Desktop; szczegóły w verification.md. Zależności: brak.
 
 Zakres: lokalne Git (jeżeli brak), frontend React/TypeScript/Vite, FastAPI, PostgreSQL, SQLAlchemy, Alembic, Docker Compose, .env.example, .gitignore i automatyczne kontrole. Początkowy model Owner oraz Account z właścicielem i typem rachunku. Dane demonstracyjne tworzone idempotentnie jawną komendą. Testowa baza oddzielona od użytkowej.
 
@@ -21,7 +21,7 @@ Kryteria:
 
 ## FT-002 — Instrument i historia zakupów
 
-Status: Zablokowane do FT-001.
+Status: Gotowe. Zależności: FT-001 zakończone.
 
 Dodaj Instrument, Listing, zakup i ślad korekty. Skonfiguruj IUSQ na Xetra, EUR. Formularz i historia po polsku. Obsłuż walidację, jednostki ułamkowe, wiele zakupów i przypisanie do rachunku. Testy API i PostgreSQL obejmują zapis, korektę i odmowę dostępu do obcego rachunku. Żądanie nie wybiera właściciela. Ponowne uruchomienie nie duplikuje instrumentu ani danych demonstracyjnych.
 

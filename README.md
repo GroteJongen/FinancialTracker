@@ -75,7 +75,9 @@ CI sprawdza backend na PostgreSQL, zgodność migracji, izolację rachunków, id
 
 ## Stan weryfikacji
 
-FT-001 jest w trakcie weryfikacji. Wyniki: [raport](docs/verification.md). Na komputerze tworzącym projekt brakuje Dockera i Pythona; dostępny jest Node 16 i ograniczony dostęp sieciowy. Nie oznaczamy niewykonanych lokalnie komend jako zaliczonych. Lockfile zostaną wygenerowane w CI i zapisane w repozytorium; budowanie używa npm ci oraz zahashowanych zależności Pythona.
+FT-001 przeszedł pełną weryfikację w GitHub Actions: 4 testy backendu, 4 testy przeglądarkowe, typy/lint/build frontendu, kontrola migracji, start/restart Compose oraz awaria i powrót bazy. Szczegóły: [raport](docs/verification.md).
+
+Na komputerze tworzącym projekt brakuje Dockera i Pythona; dostępny jest Node 16 i ograniczony dostęp sieciowy. Aplikacja nie została uruchomiona na tym komputerze. Powyższe polecenia startu, migracji, demonstracji i restartu sprawdzono na runnerze Linux w CI. Lockfile są zapisane w repozytorium; budowanie używa npm ci i zahashowanych zależności Pythona. Polecenie profilu testowego Compose jest przygotowane, ale testy backendu w CI używały oddzielnego serwisu PostgreSQL runnera, więc ten wariant lokalny pozostaje do sprawdzenia na Windows.
 
 ## Dokumentacja
 
