@@ -15,7 +15,8 @@ from app.seed import DEMO_ACCOUNT_ID, seed_demo
 def test_migration_matches_models(test_database):
     engine, _, _ = test_database
     with engine.connect() as connection:
-        assert {"owners", "accounts", "alembic_version"} <= set(inspect(connection).get_table_names())
+        tables = set(inspect(connection).get_table_names())
+        assert {"owners", "accounts", "alembic_version"} <= tables
         assert compare_metadata(MigrationContext.configure(connection), Base.metadata) == []
 
 
@@ -73,4 +74,3 @@ def test_seed_is_idempotent_and_accounts_are_isolated(test_database):
         with Session(engine) as session, session.begin():
             session.query(Account).filter(Account.owner_id == stranger).delete()
             session.query(Owner).filter(Owner.id == stranger).delete()
-
