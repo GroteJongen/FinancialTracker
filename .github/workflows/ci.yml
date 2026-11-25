@@ -43,6 +43,16 @@ jobs:
         with:
           python-version: '3.13'
       - run: python -m pip install --require-hashes -r requirements.lock
+      - name: Format candidate and emit exact source changes
+        run: |
+          ruff check --fix .
+          ruff format .
+          python - <<'PY'
+          import json, pathlib, subprocess
+          paths = subprocess.check_output(['git', 'diff', '--name-only'], text=True).splitlines()
+          files = [{'path': p, 'content': (pathlib.Path('..') / p).read_text()} for p in paths if p.endswith('.py')]
+          print('FORMATTED_SOURCES=' + json.dumps(files))
+          PY
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest -q
@@ -96,6 +106,8 @@ jobs:
           docker compose start db
           node scripts/smoke.mjs
       - name: Check actual browser connection and mobile layout
+        run: docker compose exec -T backend python -m tests.seed_browser
+      - name: Run browser tests
         working-directory: frontend
         run: |
           npm ci

@@ -4,7 +4,8 @@ test('shows live backend and seeded account', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('status', { name: 'Stan połączenia' })).toHaveText('Aplikacja i baza danych są połączone')
   await expect(page.getByRole('heading', { name: 'IKE — demonstracja' })).toBeVisible()
-  await expect(page.getByText('Rachunek inwestycyjny')).toBeVisible()
+  await expect(page.getByRole('article').filter({ hasText: 'IKE — demonstracja' })
+    .getByText('Rachunek inwestycyjny')).toBeVisible()
 })
 
 test('mobile layout fits viewport', async ({ page }) => {

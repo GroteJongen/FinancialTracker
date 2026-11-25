@@ -126,3 +126,26 @@ class AuditEvent(Base):
     before: Mapped[dict[str, str] | None] = mapped_column(JSONB(none_as_null=True))
     after: Mapped[dict[str, str]] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class PriceObservation(Base):
+    __tablename__ = "price_observations"
+    __table_args__ = (
+        UniqueConstraint("account_id", "request_id", name="uq_prices_request"),
+        CheckConstraint("price > 0", name="ck_prices_positive"),
+        CheckConstraint("currency = 'EUR'", name="ck_prices_currency"),
+        CheckConstraint("source = 'MANUAL'", name="ck_prices_source"),
+        Index("ix_prices_account_listing_date", "account_id", "listing_id", "observed_on"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    account_id: Mapped[UUID] = mapped_column(ForeignKey("accounts.id"))
+    listing_id: Mapped[UUID] = mapped_column(ForeignKey("listings.id"))
+    request_id: Mapped[UUID]
+    price: Mapped[Decimal] = mapped_column(Numeric(18, 8))
+    currency: Mapped[str] = mapped_column(String(3))
+    observed_on: Mapped[date] = mapped_column(Date)
+    source: Mapped[str] = mapped_column(String(20))
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
