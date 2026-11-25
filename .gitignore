@@ -1,0 +1,33 @@
+# Konfiguracja i dane prywatne
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+data/
+backups/
+imports/
+*.dump
+*.sqlite*
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Frontend i testy
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Edytory i system
+.idea/
+.DS_Store
+Thumbs.db
