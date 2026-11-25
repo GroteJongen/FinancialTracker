@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_serializer, field_validator
 
 from app.domain.purchases import parse_amount, parse_trade_date
 
@@ -56,6 +56,10 @@ class PurchaseResponse(BaseModel):
     revision: int
     created_at: datetime
     updated_at: datetime
+
+    @field_serializer("quantity", "unit_price", "commission")
+    def decimal_text(self, value: Decimal) -> str:
+        return format(value, "f")
 
 
 class AuditResponse(BaseModel):
