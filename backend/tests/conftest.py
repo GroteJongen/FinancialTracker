@@ -5,17 +5,22 @@ from uuid import uuid4
 import pytest
 from alembic import command
 from alembic.config import Config
-from sqlalchemy.engine import make_url
-from sqlalchemy import delete, select
-from sqlalchemy.orm import Session
 from fastapi.testclient import TestClient
-from app.main import create_app
-from app.infrastructure.models import (
-    Account, AuditEvent, Operation, Owner, PriceObservation, PurchaseDetails,
-)
+from sqlalchemy import delete, select
+from sqlalchemy.engine import make_url
+from sqlalchemy.orm import Session
 
 from app.infrastructure.config import Settings
 from app.infrastructure.database import make_engine
+from app.infrastructure.models import (
+    Account,
+    AuditEvent,
+    Operation,
+    Owner,
+    PriceObservation,
+    PurchaseDetails,
+)
+from app.main import create_app
 
 
 @pytest.fixture(scope="session")

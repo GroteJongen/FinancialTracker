@@ -14,7 +14,9 @@ Użytkownik zapisuje aktywa i operacje, sprawdza wartość portfela i źródła 
 6. Widzi liczbę jednostek, koszt łączny, średni koszt jednostki z prowizją, wartość i niezrealizowany wynik w EUR oraz procentach.
 7. Po restarcie dane pozostają zapisane.
 
-Brak ceny oznacza „Brak wyceny”, nie zero. Ręczna cena jest jawnie oznaczona. Dla historycznej daty ceny obliczenia obejmują tylko operacje do tej daty. W pierwszym wydaniu najprostszy dopuszczalny wariant to ograniczenie daty wyceny do dnia nie wcześniejszego niż ostatni zakup i nie późniejszego niż dzisiaj; interfejs musi to wyjaśniać.
+Brak ceny oznacza „Brak wyceny”, nie zero. Ręczna cena jest jawnie oznaczona. W pierwszym wydaniu data wyceny musi mieścić się pomiędzy ostatnim zakupem IUSQ na danym rachunku a dniem bieżącym według Europe/Warsaw. Nie wyliczamy historycznej pozycji z pominięciem późniejszych zakupów. Jeśli późniejszy zakup albo korekta daty zakupu wyprzedzi zapisany kurs, cena pozostaje w historii, ale wartość pozycji i wynik są niedostępne do podania odpowiednio datowanej ceny.
+
+Podsumowanie obejmuje wszystkie aktualnie zapisane zakupy IUSQ na wybranym rachunku. Do wyceny wybieramy cenę z najnowszą datą, a przy tej samej dacie — najpóźniej zapisaną obserwację. Starsza obserwacja dodana później nie zastępuje ceny z nowszą datą. Cena ręczna jest prywatna dla rachunku i notowania.
 
 ## Ekrany
 

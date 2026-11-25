@@ -7,14 +7,23 @@ from app.domain.valuation import Lot, calculate, money
 D = Decimal
 
 
-@pytest.mark.parametrize(("lots", "price", "cost", "value", "gain", "percent"), [
-    ([Lot(D("10"), D("100"), D("2"))], D("110"), "1002.00", "1100.00", "98.00", "9.78"),
-    ([Lot(D("10"), D("100"), D("2")), Lot(D("5"), D("120"), D("1"))],
-     D("110"), "1603.00", "1650.00", "47.00", "2.93"),
-    ([Lot(D("10"), D("100"), D("2"))], D("90"), "1002.00", "900.00", "-102.00", "-10.18"),
-    ([Lot(D("0.125"), D("100"), D("0.10"))], D("104"), "12.60", "13.00", "0.40", "3.17"),
-    ([Lot(D("10"), D("100"), D("2"))], None, "1002.00", None, None, None),
-])
+@pytest.mark.parametrize(
+    ("lots", "price", "cost", "value", "gain", "percent"),
+    [
+        ([Lot(D("10"), D("100"), D("2"))], D("110"), "1002.00", "1100.00", "98.00", "9.78"),
+        (
+            [Lot(D("10"), D("100"), D("2")), Lot(D("5"), D("120"), D("1"))],
+            D("110"),
+            "1603.00",
+            "1650.00",
+            "47.00",
+            "2.93",
+        ),
+        ([Lot(D("10"), D("100"), D("2"))], D("90"), "1002.00", "900.00", "-102.00", "-10.18"),
+        ([Lot(D("0.125"), D("100"), D("0.10"))], D("104"), "12.60", "13.00", "0.40", "3.17"),
+        ([Lot(D("10"), D("100"), D("2"))], None, "1002.00", None, None, None),
+    ],
+)
 def test_specification_examples(lots, price, cost, value, gain, percent):
     result = calculate(lots, price)
     assert money(result.cost) == cost

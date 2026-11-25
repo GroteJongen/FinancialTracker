@@ -46,9 +46,7 @@ def calculate(lots: Iterable[Lot], price: Decimal | None = None) -> Position:
     precision = max(38, 36 + len(str(max(1, len(rows)))))
     with localcontext(prec=precision, rounding=ROUND_HALF_UP):
         quantity = sum((row.quantity for row in rows), Decimal("0"))
-        cost = sum(
-            (row.quantity * row.unit_price + row.commission for row in rows), Decimal("0")
-        )
+        cost = sum((row.quantity * row.unit_price + row.commission for row in rows), Decimal("0"))
         average_cost = cost / quantity if quantity else None
         market_value = quantity * price if price is not None else None
         gain = market_value - cost if market_value is not None else None

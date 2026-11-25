@@ -20,15 +20,22 @@ def upgrade() -> None:
         sa.Column("currency", sa.String(3), nullable=False),
         sa.Column("observed_on", sa.Date(), nullable=False),
         sa.Column("source", sa.String(20), nullable=False),
-        sa.Column("recorded_at", sa.DateTime(timezone=True), nullable=False,
-                  server_default=sa.func.clock_timestamp()),
+        sa.Column(
+            "recorded_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.clock_timestamp(),
+        ),
         sa.UniqueConstraint("account_id", "request_id", name="uq_prices_request"),
         sa.CheckConstraint("price > 0", name="ck_prices_positive"),
         sa.CheckConstraint("currency = 'EUR'", name="ck_prices_currency"),
         sa.CheckConstraint("source = 'MANUAL'", name="ck_prices_source"),
     )
-    op.create_index("ix_prices_account_listing_date", "price_observations",
-                    ["account_id", "listing_id", "observed_on"])
+    op.create_index(
+        "ix_prices_account_listing_date",
+        "price_observations",
+        ["account_id", "listing_id", "observed_on"],
+    )
 
 
 def downgrade() -> None:

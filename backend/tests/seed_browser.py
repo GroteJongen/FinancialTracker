@@ -15,12 +15,21 @@ def main():
     try:
         with engine.begin() as connection:
             for suffix, name in [
-                (10, "TEST — wycena"), (11, "TEST — daty"), (12, "TEST — ponowienie"),
+                (10, "TEST — wycena"),
+                (11, "TEST — daty"),
+                (12, "TEST — ponowienie"),
             ]:
-                connection.execute(insert(Account).values(
-                    id=UUID(f"00000000-0000-4000-8000-{suffix:012d}"),
-                    owner_id=settings.local_owner_id, name=name, kind="IKE", currency="EUR",
-                ).on_conflict_do_nothing(index_elements=["id"]))
+                connection.execute(
+                    insert(Account)
+                    .values(
+                        id=UUID(f"00000000-0000-4000-8000-{suffix:012d}"),
+                        owner_id=settings.local_owner_id,
+                        name=name,
+                        kind="IKE",
+                        currency="EUR",
+                    )
+                    .on_conflict_do_nothing(index_elements=["id"])
+                )
     finally:
         engine.dispose()
 

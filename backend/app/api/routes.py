@@ -9,9 +9,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.application.accounts import list_accounts
-from app.application.valuation_contracts import PriceCreate, PriceResponse, ValuationResponse
-from app.application.valuations import create_price, get_valuation
-from app.infrastructure.catalog import IUSQ_LISTING_ID
 from app.application.purchase_contracts import (
     AuditResponse,
     ListingResponse,
@@ -25,6 +22,9 @@ from app.application.purchases import (
     get_audit,
     get_purchases,
 )
+from app.application.valuation_contracts import PriceCreate, PriceResponse, ValuationResponse
+from app.application.valuations import create_price, get_valuation
+from app.infrastructure.catalog import IUSQ_LISTING_ID
 from app.infrastructure.models import Instrument, Listing
 
 router = APIRouter(prefix="/api")
@@ -132,17 +132,20 @@ def purchase_audit(
 
 @router.get("/accounts/{account_id}/valuation", response_model=ValuationResponse)
 def valuation(
-    account_id: UUID, request: Request, listing_id: UUID = IUSQ_LISTING_ID,
+    account_id: UUID,
+    request: Request,
+    listing_id: UUID = IUSQ_LISTING_ID,
     session: Session = Depends(get_session),
 ):
-    return get_valuation(
-        session, request.app.state.settings.local_owner_id, account_id, listing_id
-    )
+    return get_valuation(session, request.app.state.settings.local_owner_id, account_id, listing_id)
 
 
 @router.post("/accounts/{account_id}/prices", response_model=PriceResponse, status_code=201)
 def add_price(
-    account_id: UUID, data: PriceCreate, request: Request, response: Response,
+    account_id: UUID,
+    data: PriceCreate,
+    request: Request,
+    response: Response,
     session: Session = Depends(get_session),
 ):
     result, created = create_price(

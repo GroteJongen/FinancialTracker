@@ -15,11 +15,11 @@ Dla zakupu i: ilość q_i, cena p_i, prowizja f_i. Dla ceny wyceny P:
 - Wynik G = V − C.
 - Wynik procentowy R = G / C × 100 dla C > 0.
 
-Gdy brak zakupów, ilość i koszt to zero, a średni koszt i procent to wartości niedostępne. Bez ceny V, G i R są niedostępne. Uwzględnij tylko operacje nie późniejsze niż data wyceny lub zastosuj ograniczenie pierwszej wersji opisane w product.md.
+Gdy brak zakupów, ilość i koszt to zero, a średni koszt i procent to wartości niedostępne. Bez ceny V, G i R są niedostępne. FT-003 uwzględnia wszystkie zakupy danego notowania na rachunku i wymaga ceny co najmniej z dnia ostatniego zakupu. Jeżeli zapisana cena stała się wcześniejsza niż ostatni zakup, V, G i R są niedostępne (status outdated), a Q, C i średni koszt nadal wynikają ze wszystkich zakupów. Aktualizacja ceny przywraca wycenę. Daty przyszłe są odrzucane.
 
 ## Precyzja
 
-Używaj Decimal z tekstu. Robocza precyzja obliczeń: 38 cyfr; kolumny NUMERIC dobierz i opisz w implementacji, z uwzględnieniem jednostek ułamkowych. Nie zaokrąglaj pośrednio średniego kosztu przed liczeniem wyniku. Do prezentacji EUR zaokrąglaj do dwóch miejsc przez ROUND_HALF_UP; procent również do dwóch miejsc. Kwota i procent są liczone z wartości niezaokrąglonych. To reguła prezentacji, nie uniwersalna reguła podatkowa ani obligacyjna.
+Używaj Decimal z tekstu. Robocza precyzja obliczeń: co najmniej 38 cyfr, zwiększana dla sumowania dużej liczby zakupów, aby nie tracić cyfr iloczynów NUMERIC(18,8). Każda liczba wejściowa ma do 10 cyfr całkowitych i 8 ułamkowych. Nie zaokrąglaj pośrednio średniego kosztu przed liczeniem wyniku. Do prezentacji EUR zaokrąglaj do dwóch miejsc przez ROUND_HALF_UP; procent również do dwóch miejsc. Kwota i procent są liczone z wartości niezaokrąglonych. Ujemne zero prezentuj jako 0,00. To reguła prezentacji, nie uniwersalna reguła podatkowa ani obligacyjna.
 
 ## Przykłady odbioru
 

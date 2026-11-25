@@ -16,10 +16,8 @@ from app.domain.purchases import business_today
 from app.infrastructure.catalog import IUSQ_INSTRUMENT_ID, IUSQ_LISTING_ID
 from app.infrastructure.models import (
     Account,
-    AuditEvent,
     Instrument,
     Listing,
-    Operation,
     Owner,
 )
 from app.main import create_app
