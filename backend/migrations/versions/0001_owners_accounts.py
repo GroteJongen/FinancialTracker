@@ -41,4 +41,3 @@ def downgrade() -> None:
     op.drop_index("ix_accounts_owner_id", table_name="accounts")
     op.drop_table("accounts")
     op.drop_table("owners")
-

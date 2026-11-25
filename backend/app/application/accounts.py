@@ -12,4 +12,3 @@ def list_accounts(session: Session, owner_id: UUID) -> list[Account]:
             select(Account).where(Account.owner_id == owner_id).order_by(Account.name, Account.id)
         )
     )
-

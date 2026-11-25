@@ -26,16 +26,25 @@ def test_database():
         database_password=url.password,
         database_name=url.database,
     )
-    saved = {key: os.environ.get(key) for key in (
-        "DATABASE_HOST", "DATABASE_PORT", "DATABASE_USER", "DATABASE_PASSWORD", "DATABASE_NAME"
-    )}
-    os.environ.update({
-        "DATABASE_HOST": settings.database_host,
-        "DATABASE_PORT": str(settings.database_port),
-        "DATABASE_USER": settings.database_user,
-        "DATABASE_PASSWORD": settings.database_password.get_secret_value(),
-        "DATABASE_NAME": settings.database_name,
-    })
+    saved = {
+        key: os.environ.get(key)
+        for key in (
+            "DATABASE_HOST",
+            "DATABASE_PORT",
+            "DATABASE_USER",
+            "DATABASE_PASSWORD",
+            "DATABASE_NAME",
+        )
+    }
+    os.environ.update(
+        {
+            "DATABASE_HOST": settings.database_host,
+            "DATABASE_PORT": str(settings.database_port),
+            "DATABASE_USER": settings.database_user,
+            "DATABASE_PASSWORD": settings.database_password.get_secret_value(),
+            "DATABASE_NAME": settings.database_name,
+        }
+    )
     config = Config(str(Path(__file__).resolve().parents[1] / "alembic.ini"))
     command.upgrade(config, "head")
     engine = make_engine(settings.database_url)
@@ -46,4 +55,3 @@ def test_database():
             os.environ.pop(key, None)
         else:
             os.environ[key] = value
-

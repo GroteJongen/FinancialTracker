@@ -36,4 +36,3 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
 
 
 app = create_app()
-

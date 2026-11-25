@@ -10,4 +10,3 @@ def make_engine(url) -> Engine:
         pool_timeout=5,
         connect_args={"connect_timeout": 3, "options": "-c statement_timeout=5000"},
     )
-

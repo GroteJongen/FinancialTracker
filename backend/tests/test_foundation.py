@@ -53,10 +53,15 @@ def test_seed_is_idempotent_and_accounts_are_isolated(test_database):
     with Session(engine) as session, session.begin():
         session.add(Owner(id=stranger, name="Inny użytkownik testowy"))
         session.flush()
-        session.add(Account(
-            id=hidden_account, owner_id=stranger, name="Ukryty rachunek",
-            kind="STANDARD", currency="PLN",
-        ))
+        session.add(
+            Account(
+                id=hidden_account,
+                owner_id=stranger,
+                name="Ukryty rachunek",
+                kind="STANDARD",
+                currency="PLN",
+            )
+        )
     try:
         with TestClient(create_app(settings, engine)) as client:
             response = client.get(f"/api/accounts?owner_id={stranger}")
@@ -65,11 +70,14 @@ def test_seed_is_idempotent_and_accounts_are_isolated(test_database):
             assert [item["id"] for item in accounts] == [str(DEMO_ACCOUNT_ID)]
             assert accounts[0]["kind"] == "IKE"
         with Session(engine) as session:
-            assert session.scalar(
-                select(func.count()).select_from(Account).where(
-                    Account.owner_id == settings.local_owner_id
+            assert (
+                session.scalar(
+                    select(func.count())
+                    .select_from(Account)
+                    .where(Account.owner_id == settings.local_owner_id)
                 )
-            ) == 1
+                == 1
+            )
     finally:
         with Session(engine) as session, session.begin():
             session.query(Account).filter(Account.owner_id == stranger).delete()

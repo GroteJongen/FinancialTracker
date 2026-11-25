@@ -49,4 +49,3 @@ def ready(request: Request):
 @router.get("/accounts", response_model=list[AccountResponse])
 def accounts(request: Request, session: Session = Depends(get_session)):
     return list_accounts(session, request.app.state.settings.local_owner_id)
-
