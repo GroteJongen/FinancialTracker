@@ -5,7 +5,7 @@ Zadanie zakończone oznacza kod, właściwe sprawdzenia, dokumentację i opis og
 
 ## FT-001 — Uruchamialny fundament
 
-Status: Gotowe. Zależności: brak.
+Status: W trakcie — implementacja przygotowana, weryfikacja CI w toku. Zależności: brak.
 
 Zakres: lokalne Git (jeżeli brak), frontend React/TypeScript/Vite, FastAPI, PostgreSQL, SQLAlchemy, Alembic, Docker Compose, .env.example, .gitignore i automatyczne kontrole. Początkowy model Owner oraz Account z właścicielem i typem rachunku. Dane demonstracyjne tworzone idempotentnie jawną komendą. Testowa baza oddzielona od użytkowej.
 
