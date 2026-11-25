@@ -27,13 +27,13 @@ Dodaj Instrument, Listing, zakup i ślad korekty. Skonfiguruj IUSQ na Xetra, EUR
 
 ## FT-003 — Ręczna wycena i wynik
 
-Status: W trakcie — implementacja i testy przygotowane, weryfikacja CI w toku. Zależności: FT-002 zakończone.
+Status: Ukończone — 73 testy backendu, 12 testów przeglądarkowych i trwałość ceny po restarcie potwierdzone w CI. Zależności: FT-002 zakończone. Szczegóły w verification.md.
 
 Wprowadź PriceObservation, czyste funkcje obliczeń i podsumowanie. Wszystkie przykłady calculations.md przechodzą. API przekazuje wartości dziesiętne jako tekst. Brak ceny nie jest zerem. Zapisuj datę i źródło, obsłuż granice dat. Wynik po korekcie zakupu jest przeliczany.
 
 ## FT-004 — Odbiór pierwszej wersji
 
-Status: Zablokowane do FT-003.
+Status: Gotowe. Zależności: FT-003 zakończone.
 
 Playwright: zakup 10 × 100 + 2 EUR, cena 110 EUR, wynik 98 EUR; odświeżenie strony zachowuje dane. Sprawdź niedostępną wycenę, korektę oraz jednostki ułamkowe. Przygotuj i sprawdź procedurę kopii i odtworzenia lokalnej bazy w oddzielnej bazie. Zaktualizuj dokumentację i listę znanych ograniczeń. Pierwsza wersja wymaga FT-001 do FT-004.
 

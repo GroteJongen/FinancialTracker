@@ -113,4 +113,4 @@ Na komputerze tworzącym projekt brakuje Dockera i Pythona; dostępny jest Node 
 - [Decyzje](docs/decisions.md)
 - [Instrukcje agenta](AGENTS.md)
 
-FT-003 przeszedł wstępny przebieg CI: 73 testy backendu, 12 testów przeglądarkowych i budowanie. Końcowe sprawdzenie ceny po restarcie jest w toku; szczegóły w verification.md. Kolejne zadanie to FT-004: odbiór pierwszej wersji i sprawdzenie kopii zapasowych. Nie udostępniaj obecnego trybu lokalnego w internecie.
+FT-003 przeszedł pełny przebieg CI: 73 testy backendu, 12 testów przeglądarkowych, budowanie oraz zachowanie ręcznej ceny i wyniku po restarcie kontenerów. Szczegóły w verification.md. Kolejne zadanie to FT-004: odbiór pierwszej wersji i sprawdzenie kopii zapasowych. Nie udostępniaj obecnego trybu lokalnego w internecie.

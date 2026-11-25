@@ -56,6 +56,8 @@ Ograniczenia lokalnego środowiska i profilu testowego Compose pozostają takie 
 - 12 testów Playwright: poprzednie funkcje oraz przykład 98 EUR / 9,78%, odświeżenie strony, korekta i przeliczenie wyniku, za stara data, późniejszy zakup, przywrócenie wyceny, utrata odpowiedzi ceny i ponowienie bez duplikatu oraz mobilna szerokość strony.
 - Typy TypeScript, ESLint, build, Ruff i format przechodzą. Lockfile pozostały bez zmian.
 
-Zmiany formatowania z CI zapisano w źródłach; tymczasowy krok formatowania jest usuwany przed końcowym przebiegiem. Osobny skrypt smoke-valuation.mjs sprawdza trwałość ceny i wyniku po restarcie Compose; jego wynik zostanie potwierdzony w końcowym przebiegu.
+Zmiany formatowania z CI zapisano w źródłach; tymczasowy krok formatowania usunięto. [Końcowy przebieg CI](https://github.com/GroteJongen/FinancialTracker/actions/runs/45708396119) przeszedł we wszystkich trzech jobach, bez zmieniania kodu przez CI. Potwierdzono 73 testy backendu, 12 testów przeglądarkowych, lint/typy/build, zgodność migracji oraz pełny Compose.
+
+Skrypt smoke-valuation.mjs potwierdził przed i po restarcie db/backend/frontend: prywatną cenę ręczną, brak duplikatu po ponowieniu, historię ceny i identyczny wynik. Dla syntetycznej pozycji 0,25 jednostki po 100,12345678 EUR oraz 0,10 EUR prowizji, cena 110 EUR daje koszt 25,13 EUR, wartość 27,50 EUR i wynik 2,37 EUR po zaokrągleniu. Przeszły również kontrola awarii bazy i odzyskanie gotowości.
 
 Testy przeglądarkowe mają oddzielne syntetyczne rachunki TEST utworzone jawną komendą tests.seed_browser, bez dodawania danych przy zwykłym starcie aplikacji. Baza testów pytest pozostaje oddzielona od bazy aplikacji. Lokalnego startu na Windows nadal nie wykonano z powodu braku Dockera; działanie sprawdzane jest na runnerze Linux.
