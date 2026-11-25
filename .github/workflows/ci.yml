@@ -13,44 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Jednorazowy bootstrap w FT-001. Po zapisaniu lockfile zostanie usunięty.
-  dependencies:
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    outputs:
-      sha: ${{ steps.result.outputs.sha }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - name: Resolve dependencies and format initial Python code
-        run: |
-          if [ ! -f frontend/package-lock.json ]; then
-            (cd frontend && npm install --package-lock-only --ignore-scripts)
-          fi
-          if [ ! -f backend/requirements.lock ]; then
-            python -m pip install 'uv==0.9.10'
-            uv pip compile backend/requirements.in --generate-hashes --python-version 3.13 -o backend/requirements.lock
-          fi
-          python -m pip install --require-hashes -r backend/requirements.lock
-          ruff check --fix backend
-          ruff format backend
-          git add frontend/package-lock.json backend
-          if ! git diff --cached --quiet; then
-            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build: lock dependencies and format initial Python code'
-            git push origin HEAD:${{ github.ref_name }}
-          fi
-      - id: result
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
   backend:
-    needs: dependencies
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -61,7 +24,7 @@ jobs:
           POSTGRES_DB: financialtracker_test
         ports: ['5432:5432']
         options: >-
-          --health-cmd 'pg_isready -U ft_test -d financialtracker_test'
+          --health-cmd "pg_isready -U ft_test -d financialtracker_test"
           --health-interval 3s --health-timeout 3s --health-retries 20
     env:
       DATABASE_HOST: 127.0.0.1
@@ -75,7 +38,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.dependencies.outputs.sha }}
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
@@ -87,7 +49,6 @@ jobs:
       - run: alembic check
 
   frontend:
-    needs: dependencies
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -95,7 +56,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.dependencies.outputs.sha }}
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -106,13 +66,11 @@ jobs:
       - run: npm run build
 
   compose:
-    needs: dependencies
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.dependencies.outputs.sha }}
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:

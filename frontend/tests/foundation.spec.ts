@@ -14,6 +14,15 @@ test('mobile layout fits viewport', async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
 })
 
+test('empty account list is an empty state, not a fictitious portfolio', async ({ page }) => {
+  await page.route('**/api/accounts', (route) => route.fulfill({
+    status: 200, contentType: 'application/json', body: '[]',
+  }))
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Jeszcze nie masz rachunków' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'IKE — demonstracja' })).toHaveCount(0)
+})
+
 test('reports backend error and allows retry', async ({ page }) => {
   await page.route('**/api/health/ready', (route) => route.fulfill({
     status: 503, contentType: 'application/json', body: '{"status":"unavailable"}',
