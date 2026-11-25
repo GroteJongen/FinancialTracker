@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test'
 
 test('shows live backend and seeded account', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('status')).toHaveText('Aplikacja i baza danych są połączone')
+  await expect(page.getByRole('status', { name: 'Stan połączenia' })).toHaveText('Aplikacja i baza danych są połączone')
   await expect(page.getByRole('heading', { name: 'IKE — demonstracja' })).toBeVisible()
-  await expect(page.getByText('Bez aktywów i transakcji')).toBeVisible()
+  await expect(page.getByText('Rachunek inwestycyjny')).toBeVisible()
 })
 
 test('mobile layout fits viewport', async ({ page }) => {
@@ -31,6 +31,6 @@ test('reports backend error and allows retry', async ({ page }) => {
   await expect(page.getByRole('alert')).toContainText('Nie udało się połączyć')
   await page.unroute('**/api/health/ready')
   await page.getByRole('button', { name: 'Spróbuj ponownie' }).click()
-  await expect(page.getByRole('status')).toHaveText('Aplikacja i baza danych są połączone')
+  await expect(page.getByRole('status', { name: 'Stan połączenia' })).toHaveText('Aplikacja i baza danych są połączone')
 })
 

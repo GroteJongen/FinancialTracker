@@ -21,7 +21,7 @@ Kryteria:
 
 ## FT-002 — Instrument i historia zakupów
 
-Status: Gotowe. Zależności: FT-001 zakończone.
+Status: W trakcie — zakupy, korekty i historia zmian przygotowane, weryfikacja CI w toku. Zależności: FT-001 zakończone.
 
 Dodaj Instrument, Listing, zakup i ślad korekty. Skonfiguruj IUSQ na Xetra, EUR. Formularz i historia po polsku. Obsłuż walidację, jednostki ułamkowe, wiele zakupów i przypisanie do rachunku. Testy API i PostgreSQL obejmują zapis, korektę i odmowę dostępu do obcego rachunku. Żądanie nie wybiera właściciela. Ponowne uruchomienie nie duplikuje instrumentu ani danych demonstracyjnych.
 

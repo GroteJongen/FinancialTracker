@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import Purchases from './purchases/Purchases'
 
 type Account = { id: string; name: string; kind: string; currency: string }
 type Connection =
@@ -84,8 +85,8 @@ export default function App() {
             <div className="welcome-copy">
               <span className="small-label">TWÓJ PORTFEL</span>
               <h2 id="welcome-title">Miejsce na Twoje inwestycje.</h2>
-              <p>Fundament jest gotowy na kolejne kroki. Zaczniesz od ETF-u IUSQ,
-                a później dołączysz obligacje i inne aktywa.</p>
+              <p>Zapisuj kolejne zakupy IUSQ i porządkuj historię inwestycji.
+                W następnych etapach dodasz wycenę i obligacje.</p>
               <div className="asset-tags"><span>ETF-y</span><span>Akcje</span><span>Obligacje</span></div>
             </div>
             <div className="welcome-art" aria-hidden="true">
@@ -103,7 +104,7 @@ export default function App() {
               <button onClick={() => { setConnection({ status: 'loading' }); refresh() }}>Spróbuj ponownie</button>
             </div>}
             {connection.status === 'ready' && <>
-              <div className="connection-ok" role="status"><span /> Aplikacja i baza danych są połączone</div>
+              <div className="connection-ok" role="status" aria-label="Stan połączenia"><span /> Aplikacja i baza danych są połączone</div>
               {connection.accounts.length === 0
                 ? <div className="empty-state"><div className="empty-icon" aria-hidden="true">＋</div>
                   <h3>Jeszcze nie masz rachunków</h3>
@@ -115,15 +116,17 @@ export default function App() {
                     <div className="account-top"><span className="account-symbol" aria-hidden="true">◈</span>
                       <span className="account-type">{account.kind}</span></div>
                     <h3>{account.name}</h3><p>Waluta rachunku <strong>{account.currency}</strong></p>
-                    <div className="account-footer">Bez aktywów i transakcji</div>
+                    <div className="account-footer">Rachunek inwestycyjny</div>
                   </article>,
                 )}</div>}
             </>}
           </section>
+          {connection.status === 'ready' && connection.accounts.length > 0 &&
+            <Purchases accounts={connection.accounts} />}
           <section className="next-step">
             <span className="step-number">01</span>
-            <div><h3>Następny krok: pierwsza inwestycja</h3>
-              <p>Dodawanie zakupów IUSQ będzie dostępne w kolejnym etapie.</p></div>
+            <div><h3>Następny krok: wycena portfela</h3>
+              <p>Aktualne ceny i wynik inwestycji pojawią się w kolejnym etapie.</p></div>
             <span className="step-arrow" aria-hidden="true">↗</span>
           </section>
           <footer>FinancialTracker <span>Przejrzystość na każdym etapie.</span></footer>
