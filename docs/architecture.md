@@ -12,7 +12,7 @@
 - e2e/: testy Playwright.
 - docs/: źródło zakresu i decyzji; compose.yaml: środowisko lokalne.
 
-To docelowy podział, nie istniejący jeszcze kod. Twórz katalogi wraz z rzeczywistą implementacją.
+FT-001 wdraża frontend, API, warstwę aplikacyjną dla odczytu rachunków, modele Owner/Account i migrację. Pozostałe moduły twórz wraz z rzeczywistą implementacją.
 
 ## Encje
 

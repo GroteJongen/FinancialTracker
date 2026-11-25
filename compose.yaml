@@ -1,0 +1,85 @@
+name: financialtracker
+x-backend: &backend
+  build: ./backend
+  environment: &backend-env
+    DATABASE_HOST: db
+    DATABASE_PORT: "5432"
+    DATABASE_NAME: ${POSTGRES_DB:-financialtracker}
+    DATABASE_USER: ${POSTGRES_USER:-financialtracker}
+    DATABASE_PASSWORD: ${POSTGRES_PASSWORD:?Ustaw POSTGRES_PASSWORD w pliku .env}
+    LOCAL_OWNER_ID: ${LOCAL_OWNER_ID:-00000000-0000-4000-8000-000000000001}
+services:
+  db:
+    image: postgres:17.7-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-financialtracker}
+      POSTGRES_USER: ${POSTGRES_USER:-financialtracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Ustaw POSTGRES_PASSWORD w pliku .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  migrate:
+    <<: *backend
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+  backend:
+    <<: *backend
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/ready', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 12
+    restart: unless-stopped
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:5173:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+  test-db:
+    image: postgres:17.7-alpine
+    profiles: ["test"]
+    environment:
+      POSTGRES_USER: ft_test
+      POSTGRES_PASSWORD: synthetic-test-only
+      POSTGRES_DB: financialtracker_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ft_test -d financialtracker_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  test:
+    <<: *backend
+    profiles: ["test"]
+    environment:
+      <<: *backend-env
+      DATABASE_HOST: test-db
+      DATABASE_NAME: financialtracker_test
+      DATABASE_USER: ft_test
+      DATABASE_PASSWORD: synthetic-test-only
+      TEST_DATABASE_URL: postgresql+psycopg://ft_test:synthetic-test-only@test-db:5432/financialtracker_test
+    command: ["pytest", "-q"]
+    depends_on:
+      test-db:
+        condition: service_healthy
+    restart: "no"
+volumes:
+  postgres-data:
+

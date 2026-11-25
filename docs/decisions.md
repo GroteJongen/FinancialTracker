@@ -13,6 +13,10 @@ Stan: uzgodniony kierunek z rozmowy; szczegóły implementacji potwierdzamy podc
 | ADR-007 | Właściciel danych od pierwszej migracji | Przygotowanie kontroli dostępu; nie zastępuje rzeczywistego uwierzytelniania |
 | ADR-008 | Wersjonowanie reguł obligacji według emisji | Unikanie stosowania aktualnych warunków do dawnych zakupów |
 | ADR-009 | Prywatny tryb lokalny w pierwszym wydaniu | Brak publicznego wdrożenia i płatności; porty tylko lokalne |
+| ADR-010 | Python 3.13, Node 24 i PostgreSQL 17 w kontenerach | Zgodność środowiska CI i Compose bez zależności od starego lokalnego Node |
+| ADR-011 | Interfejs korzysta z proxy /api | Jeden origin, brak CORS i kluczy w przeglądarce |
+| ADR-012 | Demonstracja jawną komendą | Pierwszy start nie udaje prawdziwego portfela |
+| ADR-013 | Lockfile wygenerowane przez CI na gałęzi FT-001 | Bootstrap został usunięty; standardowe CI ma wyłącznie odczyt repozytorium |
 
 ## Źródła identyfikacji i integracji
 
