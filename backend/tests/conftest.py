@@ -1,13 +1,26 @@
 import os
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi.testclient import TestClient
+from sqlalchemy import delete, select
 from sqlalchemy.engine import make_url
+from sqlalchemy.orm import Session
 
 from app.infrastructure.config import Settings
 from app.infrastructure.database import make_engine
+from app.infrastructure.models import (
+    Account,
+    AuditEvent,
+    Operation,
+    Owner,
+    PriceObservation,
+    PurchaseDetails,
+)
+from app.main import create_app
 
 
 @pytest.fixture(scope="session")
@@ -55,3 +68,28 @@ def test_database():
             os.environ.pop(key, None)
         else:
             os.environ[key] = value
+
+
+@pytest.fixture
+def ledger(test_database):
+    engine, settings, _ = test_database
+    owner_id, account_id = uuid4(), uuid4()
+    with Session(engine) as session, session.begin():
+        session.add(Owner(id=owner_id, name="Właściciel zakupów — test"))
+        session.flush()
+        session.add(
+            Account(
+                id=account_id, owner_id=owner_id, name="IKE testowe", kind="IKE", currency="EUR"
+            )
+        )
+    settings = settings.model_copy(update={"local_owner_id": owner_id})
+    with TestClient(create_app(settings, engine)) as client:
+        yield client, engine, settings, account_id
+    with Session(engine) as session, session.begin():
+        ids = select(Operation.id).where(Operation.account_id == account_id)
+        session.execute(delete(PriceObservation).where(PriceObservation.account_id == account_id))
+        session.execute(delete(AuditEvent).where(AuditEvent.owner_id == owner_id))
+        session.execute(delete(PurchaseDetails).where(PurchaseDetails.operation_id.in_(ids)))
+        session.execute(delete(Operation).where(Operation.account_id == account_id))
+        session.execute(delete(Account).where(Account.id == account_id))
+        session.execute(delete(Owner).where(Owner.id == owner_id))

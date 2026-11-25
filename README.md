@@ -1,6 +1,6 @@
 # FinancialTracker
 
-Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja zawiera lokalne rachunki oraz dodawanie zakupów IUSQ, korekty i historię zmian. Wycenę portfela i obligacje dodamy w kolejnych zadaniach.
+Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja zawiera zakupy IUSQ, korekty, historię zmian i ręczną wycenę pozycji z wynikiem w EUR. Automatyczne kursy, PLN i obligacje dodamy w kolejnych etapach. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
 
 ## Zakupy IUSQ
 
@@ -9,6 +9,16 @@ Po utworzeniu rachunku demonstracyjnego wybierz go w sekcji „Zakupy IUSQ”. W
 „Popraw” otwiera korektę wymagającą powodu. „Zmiany” pokazuje poprzednie i nowe wartości oraz czas korekty. Zapis zakupu i audytu jest atomowy. Ponowienie zapisu po utracie odpowiedzi nie tworzy drugiego zakupu; równoczesne korekty tej samej wersji powodują konflikt, który wymaga odświeżenia historii. Audyt nie ma endpointu edycji ani usuwania; administrator bazy nadal ma techniczny dostęp do danych.
 
 Migracja 0002 dodaje katalog IUSQ (ISIN IE00B6R52259, Xetra/XETR, EUR), nie dodaje żadnych transakcji i zachowuje wcześniejsze rachunki. Rzeczywiste zakupy dodaje użytkownik. Dane demonstracyjne są opcjonalne. Lista zakupów pokazuje dane transakcyjne, nie aktualną wycenę ani wynik inwestycji.
+
+## Ręczna wycena IUSQ
+
+W sekcji „Wycena IUSQ” wpisz cenę jednostki w EUR i datę. Aplikacja pokaże ilość jednostek, łączny koszt z prowizjami, średni koszt, wartość pozycji i niezrealizowany wynik kwotowo oraz procentowo. Przykład: 10 jednostek po 100 EUR i 2 EUR prowizji, wycenionych po 110 EUR, daje wartość 1100 EUR i wynik 98 EUR (9,78%).
+
+Data ceny musi mieścić się pomiędzy ostatnim zakupem a dniem bieżącym według Europe/Warsaw. Późniejszy zakup lub korekta daty mogą sprawić, że cena będzie zbyt stara. Wtedy zobaczysz prośbę o aktualizację, a wartość pozycji i wynik będą niedostępne. Ilość i koszt zakupów pozostaną widoczne. Brak ceny także oznacza brak wyceny, nie wynik zerowy.
+
+Ceny są prywatne dla rachunku i notowania. Każdy zapis zachowuje cenę, datę, źródło ręczne i czas zapisu; historię rozwiniesz pod formularzem. Najnowsza data ceny ma pierwszeństwo, a w obrębie tej samej daty wybierany jest ostatni zapis. Starsza data dodana później nie zastępuje nowszej. Ponowienie po utracie odpowiedzi nie dopisuje duplikatu. Wynik aktualizuje się po zakupie lub korekcie, bez ręcznego odświeżania strony.
+
+Obliczenia używają Decimal i co najmniej 38 cyfr precyzji; prezentacja EUR i procentu stosuje ROUND_HALF_UP do 2 miejsc. Wynik nie obejmuje podatku ani przyszłych kosztów sprzedaży. Ceny bieżące nie są jeszcze pobierane automatycznie.
 
 ## Uruchomienie na Windows
 
@@ -55,6 +65,13 @@ docker compose run --rm migrate alembic current
 
 ## Sprawdzenia
 
+Testy przeglądarkowe wykonuj wyłącznie na oddzielnej instancji z syntetycznymi danymi. Dodają zakupy, korekty i ceny do rachunków testowych. Przed ich uruchomieniem przygotuj demonstrację oraz puste rachunki testowe:
+
+```powershell
+docker compose exec backend python -m app.seed
+docker compose exec backend python -m tests.seed_browser
+```
+
 Backend na oddzielnej, efemerycznej bazie PostgreSQL:
 
 ```powershell
@@ -96,4 +113,4 @@ Na komputerze tworzącym projekt brakuje Dockera i Pythona; dostępny jest Node 
 - [Decyzje](docs/decisions.md)
 - [Instrukcje agenta](AGENTS.md)
 
-FT-002 przeszedł testy CI: 38 testów backendu, testy przeglądarkowe oraz zapis i korekta zakupu zachowane po restarcie. Szczegóły w verification.md. Kolejne zadanie to FT-003: ręczna wycena i wynik. Nie udostępniaj obecnego trybu lokalnego w internecie.
+FT-003 przeszedł pełny przebieg CI: 73 testy backendu, 12 testów przeglądarkowych, budowanie oraz zachowanie ręcznej ceny i wyniku po restarcie kontenerów. Szczegóły w verification.md. Kolejne zadanie to FT-004: odbiór pierwszej wersji i sprawdzenie kopii zapasowych. Nie udostępniaj obecnego trybu lokalnego w internecie.

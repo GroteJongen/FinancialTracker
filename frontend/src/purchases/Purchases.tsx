@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { ApiError, formatDate, formatDecimal, request, todayWarsaw } from './api'
 import type { Account, Listing, Purchase } from './api'
 import AuditHistory from './AuditHistory'
+import Valuation from '../valuation/Valuation'
 
 type Form = {
   listing_id: string; trade_date: string; quantity: string
@@ -171,7 +172,10 @@ function AccountPurchases({ account, onBusyChange }: {
       : <p role="status" aria-label="Stan zakupów">Pobieranie zakupów…</p>}
   </div>
 
-  return <div className="purchase-panel">
+  return <>
+    {listings[0] && <Valuation accountId={account.id} listingId={listings[0].id}
+      ledgerVersion={purchases.map((item) => item.id + ':' + item.revision).join('|')} />}
+    <div className="purchase-panel">
     <div className="purchase-form-heading">
       <div><h3>{editing ? 'Popraw zakup' : 'Dodaj zakup'}</h3>
         <p>Zapisz rzeczywiste dane z potwierdzenia transakcji. Kwoty w EUR.</p></div>
@@ -240,5 +244,6 @@ function AccountPurchases({ account, onBusyChange }: {
     {auditId && <AuditHistory
       key={auditId + ':' + purchases.find((purchase) => purchase.id === auditId)?.revision}
       accountId={account.id} purchaseId={auditId} />}
-  </div>
+    </div>
+  </>
 }

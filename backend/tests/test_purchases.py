@@ -6,7 +6,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, func, insert, select, text
+from sqlalchemy import func, insert, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from sqlalchemy.schema import CreateSchema
@@ -16,38 +16,11 @@ from app.domain.purchases import business_today
 from app.infrastructure.catalog import IUSQ_INSTRUMENT_ID, IUSQ_LISTING_ID
 from app.infrastructure.models import (
     Account,
-    AuditEvent,
     Instrument,
     Listing,
-    Operation,
     Owner,
-    PurchaseDetails,
 )
 from app.main import create_app
-
-
-@pytest.fixture
-def ledger(test_database):
-    engine, settings, _ = test_database
-    owner_id, account_id = uuid4(), uuid4()
-    with Session(engine) as session, session.begin():
-        session.add(Owner(id=owner_id, name="Właściciel zakupów — test"))
-        session.flush()
-        session.add(
-            Account(
-                id=account_id, owner_id=owner_id, name="IKE testowe", kind="IKE", currency="EUR"
-            )
-        )
-    settings = settings.model_copy(update={"local_owner_id": owner_id})
-    with TestClient(create_app(settings, engine)) as client:
-        yield client, engine, settings, account_id
-    with Session(engine) as session, session.begin():
-        ids = select(Operation.id).where(Operation.account_id == account_id)
-        session.execute(delete(AuditEvent).where(AuditEvent.owner_id == owner_id))
-        session.execute(delete(PurchaseDetails).where(PurchaseDetails.operation_id.in_(ids)))
-        session.execute(delete(Operation).where(Operation.account_id == account_id))
-        session.execute(delete(Account).where(Account.id == account_id))
-        session.execute(delete(Owner).where(Owner.id == owner_id))
 
 
 def payload(**changes):

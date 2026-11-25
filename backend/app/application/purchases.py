@@ -161,7 +161,7 @@ def correct_purchase(
     data: PurchaseCorrection,
 ) -> PurchaseResponse:
     with session.begin():
-        owned_account(session, account_id, owner_id)
+        owned_account(session, account_id, owner_id, lock=True)
         operation, details, _, _ = find_purchase(session, account_id, purchase_id, lock=True)
         if operation.revision != data.expected_revision:
             raise PurchaseError(

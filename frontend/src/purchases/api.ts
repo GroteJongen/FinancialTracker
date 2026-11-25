@@ -16,6 +16,7 @@ const labels: Record<string, string> = {
   trade_date: 'Data zakupu', quantity: 'Liczba jednostek', unit_price: 'Cena jednostki',
   commission: 'Prowizja', currency: 'Waluta', reason: 'Powód korekty',
   listing_id: 'Instrument', expected_revision: 'Wersja zakupu',
+  price: 'Cena wyceny', observed_on: 'Data wyceny',
 }
 
 export class ApiError extends Error {

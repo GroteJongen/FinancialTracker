@@ -22,6 +22,9 @@ from app.application.purchases import (
     get_audit,
     get_purchases,
 )
+from app.application.valuation_contracts import PriceCreate, PriceResponse, ValuationResponse
+from app.application.valuations import create_price, get_valuation
+from app.infrastructure.catalog import IUSQ_LISTING_ID
 from app.infrastructure.models import Instrument, Listing
 
 router = APIRouter(prefix="/api")
@@ -125,3 +128,29 @@ def purchase_audit(
     session: Session = Depends(get_session),
 ):
     return get_audit(session, request.app.state.settings.local_owner_id, account_id, purchase_id)
+
+
+@router.get("/accounts/{account_id}/valuation", response_model=ValuationResponse)
+def valuation(
+    account_id: UUID,
+    request: Request,
+    listing_id: UUID = IUSQ_LISTING_ID,
+    session: Session = Depends(get_session),
+):
+    return get_valuation(session, request.app.state.settings.local_owner_id, account_id, listing_id)
+
+
+@router.post("/accounts/{account_id}/prices", response_model=PriceResponse, status_code=201)
+def add_price(
+    account_id: UUID,
+    data: PriceCreate,
+    request: Request,
+    response: Response,
+    session: Session = Depends(get_session),
+):
+    result, created = create_price(
+        session, request.app.state.settings.local_owner_id, account_id, data
+    )
+    if not created:
+        response.status_code = 200
+    return result

@@ -30,6 +30,16 @@ Klucz request_id jest unikalny dla rachunku i związany ze skrótem pierwotnej t
 
 AuditEvent jest dopisywany przez aplikację; API nie oferuje zmiany ani usunięcia zdarzenia. Nie jest to zewnętrzny, odporny na działania administratora dziennik. Odczyt audytu jest chroniony tak samo jak odczyt zakupu. Cena zakupu nie jest ceną aktualnej wyceny.
 
+## Wycena FT-003
+
+PriceObservation przechowuje prywatną cenę ręczną rachunku i notowania, datę ceny, źródło MANUAL i czas zapisu UTC. Obserwacje są dopisywane, nie aktualizowane. Klucz ponowienia jest unikalny w rachunku i zapobiega duplikatom po utracie odpowiedzi.
+
+POST /api/accounts/{id}/prices zapisuje obserwację, a GET /api/accounts/{id}/valuation?listing_id=... zwraca obliczenia, wartości prezentacyjne, wybraną cenę i historię. Obie ścieżki sprawdzają właściciela. Ręczna cena z jednego rachunku nie jest używana na innym. Porządek wyboru ceny to observed_on, recorded_at i identyfikator, malejąco. recorded_at korzysta z clock_timestamp(), aby odzwierciedlać czas rzeczywistego zapisu po uzyskaniu blokady.
+
+Odczyt wyceny i zapisy zakupów, korekt oraz cen synchronizują się przez wiersz rachunku. Podsumowanie nie łączy ilości sprzed korekty z kosztem po korekcie. Czyste funkcje domain/valuation.py obliczają wynik bez HTTP i bazy. Gdy cena jest wcześniejsza niż najpóźniejszy zakup, wycena ma status outdated i nie zwraca wartości pozycji ani wyniku. Nie usuwamy wtedy historii cen ani zakupów.
+
+Frontend i backend pozostają w jednym repozytorium, z odrębnymi obrazami i zadaniami CI. Podział repozytoriów wymagałby później wersjonowanego kontraktu API i uzgodnienia zgodności wydań; obecna zmiana tego podziału nie wprowadza.
+
 ## Encje
 
 | Encja | Rola |

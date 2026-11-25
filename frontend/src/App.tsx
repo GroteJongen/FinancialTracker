@@ -86,7 +86,7 @@ export default function App() {
               <span className="small-label">TWÓJ PORTFEL</span>
               <h2 id="welcome-title">Miejsce na Twoje inwestycje.</h2>
               <p>Zapisuj kolejne zakupy IUSQ i porządkuj historię inwestycji.
-                W następnych etapach dodasz wycenę i obligacje.</p>
+                Wpisz cenę wyceny i sprawdź wynik pozycji w EUR.</p>
               <div className="asset-tags"><span>ETF-y</span><span>Akcje</span><span>Obligacje</span></div>
             </div>
             <div className="welcome-art" aria-hidden="true">
@@ -125,8 +125,8 @@ export default function App() {
             <Purchases accounts={connection.accounts} />}
           <section className="next-step">
             <span className="step-number">01</span>
-            <div><h3>Następny krok: wycena portfela</h3>
-              <p>Aktualne ceny i wynik inwestycji pojawią się w kolejnym etapie.</p></div>
+            <div><h3>Następny krok: automatyczne ceny</h3>
+              <p>Na razie wpisujesz ceny ręcznie. Kolejne etapy dodadzą notowania i obligacje.</p></div>
             <span className="step-arrow" aria-hidden="true">↗</span>
           </section>
           <footer>FinancialTracker <span>Przejrzystość na każdym etapie.</span></footer>

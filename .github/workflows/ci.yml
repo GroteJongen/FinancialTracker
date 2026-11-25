@@ -84,11 +84,13 @@ jobs:
           docker compose exec -T backend python -m app.seed
           node scripts/smoke.mjs
           node scripts/smoke-purchases.mjs create
+          node scripts/smoke-valuation.mjs create
       - name: Check persistence after restart
         run: |
           docker compose restart db backend frontend
           node scripts/smoke.mjs
           node scripts/smoke-purchases.mjs verify
+          node scripts/smoke-valuation.mjs verify
       - name: Check database outage and recovery
         run: |
           docker compose stop db
@@ -96,6 +98,8 @@ jobs:
           docker compose start db
           node scripts/smoke.mjs
       - name: Check actual browser connection and mobile layout
+        run: docker compose exec -T backend python -m tests.seed_browser
+      - name: Run browser tests
         working-directory: frontend
         run: |
           npm ci

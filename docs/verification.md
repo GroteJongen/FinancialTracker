@@ -44,4 +44,20 @@ FT-001 nie zawierał jeszcze dodawania inwestycji. Program pozostaje lokalny, be
 
 W CI użyto tymczasowego kroku formatowania i odczytano dokładne zmiany źródeł. Poprawki zapisano w repozytorium; tymczasowy krok usunięto. Standardowe CI tylko sprawdza kod i ma wyłącznie odczyt repozytorium. Po jego usunięciu wykonywany jest również końcowy przebieg.
 
-Ograniczenia lokalnego środowiska i profilu testowego Compose pozostają takie jak w FT-001. W tej zmianie nie wdrożono aktualnych cen, wyceny portfela, wyniku inwestycji ani sprzedaży. Cena zapisana przy zakupie jest ceną transakcyjną.
+Ograniczenia lokalnego środowiska i profilu testowego Compose pozostają takie jak w FT-001. FT-002 nie wdrażał jeszcze wyceny. Cena zapisana przy zakupie pozostaje ceną transakcyjną, oddzielną od ceny wyceny.
+
+## FT-003 — ręczna wycena i wynik
+
+[Pierwszy pełny przebieg](https://github.com/GroteJongen/FinancialTracker/actions/runs/45707784227): backend, frontend i Compose zakończone powodzeniem.
+
+- 73 testy backendu: przykłady z calculations.md, prowizje, wiele zakupów, ułamki, utrata i zaokrąglenie małych wartości, HALF_UP, ujemne zero, duże sumy i niezależność od globalnej precyzji Decimal.
+- Integracja PostgreSQL: wycena bez ceny, ręczna cena, ponowienie bez duplikatu, historia i porządek cen, prywatność między właścicielami i rachunkami, stare/przyszłe daty, aktualizacja po zakupie oraz korekcie, unieważnienie starej ceny i odtworzenie po podaniu nowszej.
+- Migracja 0002 → 0003 zachowuje istniejący zakup; cofnięcie 0003 zachowuje zakup i rachunek. Alembic nie wykrywa różnic między modelami i bazą.
+- 12 testów Playwright: poprzednie funkcje oraz przykład 98 EUR / 9,78%, odświeżenie strony, korekta i przeliczenie wyniku, za stara data, późniejszy zakup, przywrócenie wyceny, utrata odpowiedzi ceny i ponowienie bez duplikatu oraz mobilna szerokość strony.
+- Typy TypeScript, ESLint, build, Ruff i format przechodzą. Lockfile pozostały bez zmian.
+
+Zmiany formatowania z CI zapisano w źródłach; tymczasowy krok formatowania usunięto. [Końcowy przebieg CI](https://github.com/GroteJongen/FinancialTracker/actions/runs/45708396119) przeszedł we wszystkich trzech jobach, bez zmieniania kodu przez CI. Potwierdzono 73 testy backendu, 12 testów przeglądarkowych, lint/typy/build, zgodność migracji oraz pełny Compose.
+
+Skrypt smoke-valuation.mjs potwierdził przed i po restarcie db/backend/frontend: prywatną cenę ręczną, brak duplikatu po ponowieniu, historię ceny i identyczny wynik. Dla syntetycznej pozycji 0,25 jednostki po 100,12345678 EUR oraz 0,10 EUR prowizji, cena 110 EUR daje koszt 25,13 EUR, wartość 27,50 EUR i wynik 2,37 EUR po zaokrągleniu. Przeszły również kontrola awarii bazy i odzyskanie gotowości.
+
+Testy przeglądarkowe mają oddzielne syntetyczne rachunki TEST utworzone jawną komendą tests.seed_browser, bez dodawania danych przy zwykłym starcie aplikacji. Baza testów pytest pozostaje oddzielona od bazy aplikacji. Lokalnego startu na Windows nadal nie wykonano z powodu braku Dockera; działanie sprawdzane jest na runnerze Linux.

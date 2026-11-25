@@ -22,6 +22,10 @@ Stan: uzgodniony kierunek z rozmowy; szczegóły implementacji potwierdzamy podc
 | ADR-016 | Powód korekty, rewizja i audyt w jednej transakcji | Zachowujemy wartości przed i po; konflikt wersji zwraca 409, nie nadpisuje cudzego zapisu |
 | ADR-017 | Klucz ponowienia unikalny dla rachunku | Ponowienie identycznego zakupu nie tworzy duplikatu; inna treść z tym kluczem zwraca 409 |
 | ADR-018 | Dzień transakcji względem Europe/Warsaw | Backend odrzuca przyszłe daty; kontener instaluje systemowe dane stref czasowych |
+| ADR-019 | Cena ręczna prywatna dla rachunku i notowania | Zapis ceny nie zmienia wycen na innych rachunkach; historia jest dopisywana |
+| ADR-020 | Cena co najmniej z dnia ostatniego zakupu | Późniejszy zakup lub korekta daty unieważnia użycie wcześniejszej ceny; koszt i ilość nadal są widoczne |
+| ADR-021 | Obliczenia Decimal, prezentacja HALF_UP do 2 miejsc | Nie zaokrąglamy średniego kosztu przed obliczeniem wyniku; kwoty w API są tekstem |
+| ADR-022 | Frontend i backend pozostają w jednym repozytorium | Oddzielne moduły, obrazy i zadania CI; wspólne zmiany kontraktu są atomowe. Podział repo rozważymy przy niezależnych cyklach wydań lub zespołach |
 
 ## Źródła identyfikacji i integracji
 
