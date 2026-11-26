@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
+test.use({ actionTimeout: 10000 })
+
 async function createAccount(page: Page, name: string, kind = 'STANDARD') {
   await page.goto('/')
   const section = page.getByRole('region', { name: 'Obligacje skarbowe', exact: true })

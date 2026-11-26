@@ -115,7 +115,7 @@ export default function App() {
                 : <div className="account-grid">{connection.accounts.map((account) =>
                   <article className="account-card" key={account.id}>
                     <div className="account-top"><span className="account-symbol" aria-hidden="true">◈</span>
-                      <span className="account-type">{account.kind}</span></div>
+                      <span className="account-type">{account.kind === 'IKE_BONDS' ? 'IKE' : account.kind === 'STANDARD' ? 'Zwykły' : account.kind}</span></div>
                     <h3>{account.name}</h3><p>Waluta rachunku <strong>{account.currency}</strong></p>
                     <div className="account-footer">Rachunek inwestycyjny</div>
                   </article>,
