@@ -13,3 +13,5 @@
 
 
 .bonds-section{margin-top:30px}.bond-account-form{margin-bottom:18px}.bond-account-form fieldset{border:0;margin:0;padding:0;min-width:0}.bonds-section .purchase-account-picker{flex-wrap:wrap}.bonds-section .purchase-table td{vertical-align:top;line-height:1.7}.bonds-section .row-actions{flex-wrap:wrap;white-space:normal;min-width:120px}
+
+.bond-select-field{display:flex;flex-direction:column;gap:8px}

@@ -46,7 +46,7 @@ export default function Bonds({ accounts, onAccountsChanged }: {
 
   async function createAccount(event: FormEvent) {
     event.preventDefault()
-    if (savingRef.current) return
+    if (savingRef.current || busy) return
     savingRef.current = true; setSaving(true); setError('')
     try {
       const saved = await request<Account>('/api/bond-accounts', {
@@ -73,22 +73,25 @@ export default function Bonds({ accounts, onAccountsChanged }: {
     </div>
     {(creating || !account) && <form className="purchase-panel bond-account-form" aria-label="Nowy rachunek obligacji"
       onSubmit={(event) => { void createAccount(event) }}>
-      <fieldset disabled={saving}><div className="purchase-form-grid">
+      <fieldset disabled={saving || busy}><div className="purchase-form-grid">
         <label htmlFor="bond-account-name">Nazwa rachunku
           <input id="bond-account-name" required maxLength={120} value={name} onChange={(event) => setName(event.target.value)} /></label>
-        <label htmlFor="bond-account-kind">Typ rachunku
+        <div className="bond-select-field"><label htmlFor="bond-account-kind">Typ rachunku</label>
           <select id="bond-account-kind" value={kind} onChange={(event) => setKind(event.target.value)}>
             {Object.entries(accountKinds).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-          </select></label>
+          </select></div>
       </div><p className="form-hint">Waluta: PLN. Typ rachunku służy ewidencji; nie nalicza podatków ani limitów IKE/IKZE.</p>
       <button className="primary-button" type="submit">{saving ? 'Zapisywanie…' : 'Zapisz rachunek obligacji'}</button></fieldset>
     </form>}
     {error && <p role="alert" className="purchase-message message-error">{error}</p>}
-    {account && <BondLedger key={account.id} account={account} onBusy={setBusy} />}
+    {account && <BondLedger key={account.id} account={account} onBusy={setBusy}
+      disabled={saving || (!!selected && !options.some((item) => item.id === selected))} />}
   </section>
 }
 
-function BondLedger({ account, onBusy }: { account: Account; onBusy: (value: boolean) => void }) {
+function BondLedger({ account, onBusy, disabled }: {
+  account: Account; onBusy: (value: boolean) => void; disabled: boolean
+}) {
   const [items, setItems] = useState<Bond[]>([])
   const [loaded, setLoaded] = useState(false)
   const [loadError, setLoadError] = useState('')
@@ -124,7 +127,7 @@ function BondLedger({ account, onBusy }: { account: Account; onBusy: (value: boo
 
   async function save(event: FormEvent) {
     event.preventDefault()
-    if (savingRef.current) return
+    if (savingRef.current || disabled) return
     const series = form.series.trim().toUpperCase()
     if (!/^(TOS|COI|EDO)(0[1-9]|1[0-2])[0-9]{2}$/.test(series) || !series.startsWith(form.bond_type)) {
       setMessage({ text: 'Podaj serię zgodną z rodzajem obligacji, np. TOS1129.', error: true }); return
@@ -167,11 +170,11 @@ function BondLedger({ account, onBusy }: { account: Account; onBusy: (value: boo
     <div className="purchase-form-heading"><div><h3>{editing ? 'Popraw zakup obligacji' : 'Dodaj zakup obligacji'}</h3>
       <p>Rachunek: {account.name}. Wpisz dane z potwierdzenia zakupu.</p></div><span className="account-type">PLN</span></div>
     <form aria-label={editing ? 'Korekta obligacji' : 'Nowy zakup obligacji'} noValidate onSubmit={(event) => { void save(event) }}>
-      <fieldset disabled={saving}><div className="purchase-form-grid">
-        <label htmlFor="bond-type">Rodzaj obligacji
+      <fieldset disabled={saving || disabled}><div className="purchase-form-grid">
+        <div className="bond-select-field"><label htmlFor="bond-type">Rodzaj obligacji</label>
           <select id="bond-type" value={form.bond_type} onChange={(event) => setForm((previous) => ({
             ...previous, bond_type: event.target.value as BondType, series: '', margin: '',
-          }))}>{Object.entries(terms).map(([type, text]) => <option key={type} value={type}>{type} · {text}</option>)}</select></label>
+          }))}>{Object.entries(terms).map(([type, text]) => <option key={type} value={type}>{type} · {text}</option>)}</select></div>
         <label htmlFor="bond-series">Seria obligacji
           <input id="bond-series" required maxLength={7} placeholder="np. TOS1129" value={form.series}
             onChange={(event) => field('series', event.target.value.toUpperCase())} /></label>
@@ -215,8 +218,8 @@ function BondLedger({ account, onBusy }: { account: Account; onBusy: (value: boo
           <td>{item.annual_rate === null ? 'Brak stopy' : formatDecimal(item.annual_rate) + '%'}
             {item.margin !== null && <><br />Marża: {formatDecimal(item.margin)}%</>}<br />Podane ręcznie
             {item.source_url && <><br /><a className="text-button" href={item.source_url} target="_blank" rel="noopener noreferrer">Dokument emisji</a></>}</td>
-          <td className="row-actions"><button type="button" className="text-button" disabled={saving} onClick={() => edit(item)}>Popraw obligacje</button>
-            <button type="button" className="text-button" disabled={saving} aria-expanded={auditId === item.id}
+          <td className="row-actions"><button type="button" className="text-button" disabled={saving || disabled} onClick={() => edit(item)}>Popraw obligacje</button>
+            <button type="button" className="text-button" disabled={saving || disabled} aria-expanded={auditId === item.id}
               onClick={() => setAuditId((previous) => previous === item.id ? null : item.id)}>Zmiany obligacji</button></td>
         </tr>)}</tbody></table></div>}
     {auditId && <BondHistory key={auditId + ':' + items.find((item) => item.id === auditId)?.revision} accountId={account.id} purchaseId={auditId} />}
