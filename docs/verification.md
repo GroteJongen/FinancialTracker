@@ -61,3 +61,13 @@ Zmiany formatowania z CI zapisano w źródłach; tymczasowy krok formatowania us
 Skrypt smoke-valuation.mjs potwierdził przed i po restarcie db/backend/frontend: prywatną cenę ręczną, brak duplikatu po ponowieniu, historię ceny i identyczny wynik. Dla syntetycznej pozycji 0,25 jednostki po 100,12345678 EUR oraz 0,10 EUR prowizji, cena 110 EUR daje koszt 25,13 EUR, wartość 27,50 EUR i wynik 2,37 EUR po zaokrągleniu. Przeszły również kontrola awarii bazy i odzyskanie gotowości.
 
 Testy przeglądarkowe mają oddzielne syntetyczne rachunki TEST utworzone jawną komendą tests.seed_browser, bez dodawania danych przy zwykłym starcie aplikacji. Baza testów pytest pozostaje oddzielona od bazy aplikacji. Lokalnego startu na Windows nadal nie wykonano z powodu braku Dockera; działanie sprawdzane jest na runnerze Linux.
+
+## FT-009 — Zakupy obligacji, 2026-11-27
+
+Zaliczony pełny [przebieg CI](https://github.com/GroteJongen/FinancialTracker/actions/runs/45912108634). Backend: 105 testów na PostgreSQL 17, ruff check, ruff format --check, alembic check; migracje od pustej bazy oraz od wcześniejszych rewizji zachowują zakupy ETF. Frontend: TypeScript, ESLint i build Vite. Przeglądarka: 16 testów Playwright, w tym 4 nowe scenariusze obligacji i 12 dotychczasowych.
+
+Nowe scenariusze obejmują TOS/COI/EDO na rachunkach zwykły/IKE/IKZE, koszt PLN z ceną zamiany, korektę z powodem, audyt, odświeżenie, niepoprawną liczbę sztuk, ponowienie po utracie odpowiedzi i szerokość mobilną. Testy API sprawdzają też izolację właścicieli i rachunków, konflikt klucza i rewizji, równoczesne zapisy, niezmienne współdzielone wersje emisji oraz atomowe wycofanie przy błędzie audytu.
+
+Compose: start z migracją 0004, syntetyczny zakup obligacji i audyt, ich trwałość po restarcie db/backend/frontend oraz kontrolowana niedostępność i powrót bazy. Wszystkie sprawdzenia wykonano na danych syntetycznych w CI. Lokalnie sprawdzono konfigurację Compose z .env.example i git diff --check; środowisko agenta nie ma dostępu do lokalnego silnika Docker (odmowa dostępu do named pipe), więc nie wykonano testów na lokalnej bazie użytkownika.
+
+Zakres nie obejmuje odsetek, podatków, wykupu, importu i potwierdzania istnienia emisji. Parametry są ręczne i niezweryfikowane. FT-007/FT-008 nadal wymagają listów emisyjnych i tabel konkretnych serii. Użytkownik potwierdził zwykły rachunek jako podstawowy oraz potrzebę typów IKE/IKZE; typ nie zastępuje zasad podatkowych.

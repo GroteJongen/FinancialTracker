@@ -67,6 +67,6 @@ Eksport/import, sprzedaż i rozliczenie partii, dywidendy wypłacane, podziały 
 
 ## FT-009 — Ewidencja zakupów obligacji
 
-Status: W trakcie weryfikacji. Priorytet nadany przez użytkownika przed FT-004–FT-008.
+Status: Ukończone — 105 testów backendu, 16 testów przeglądarkowych oraz migracje i trwałość Compose potwierdzone w CI. Priorytet nadany przez użytkownika przed FT-004–FT-008.
 
 Zakres: tworzenie rachunków PLN zwykły/IKE/IKZE, zakupy TOS/COI/EDO, niezmienne wersje parametrów emisji, koszt zakupu Decimal, korekty z audytem, izolacja właścicieli, idempotencja, migracja 0004, formularz i testy. Szczegóły w bonds.md. Nie obejmuje silnika odsetek ani zasad podatkowych; FT-007 i FT-008 pozostają osobnymi zadaniami wymagającymi dokumentów źródłowych.
