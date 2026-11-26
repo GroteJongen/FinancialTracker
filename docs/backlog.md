@@ -64,3 +64,9 @@ Oddziel wypłaty COI od kapitalizacji EDO. Dodaj znane stopy dla okresów i osob
 ## Dalszy backlog
 
 Eksport/import, sprzedaż i rozliczenie partii, dywidendy wypłacane, podziały jednostek, transfery, kolejne klasy aktywów, rzeczywiste logowanie i wdrożenie sieciowe. Każde wymaga własnego opisu i kryteriów. Abonamenty i komercjalizacja nie są bieżącym zakresem.
+
+## FT-009 — Ewidencja zakupów obligacji
+
+Status: W trakcie weryfikacji. Priorytet nadany przez użytkownika przed FT-004–FT-008.
+
+Zakres: tworzenie rachunków PLN zwykły/IKE/IKZE, zakupy TOS/COI/EDO, niezmienne wersje parametrów emisji, koszt zakupu Decimal, korekty z audytem, izolacja właścicieli, idempotencja, migracja 0004, formularz i testy. Szczegóły w bonds.md. Nie obejmuje silnika odsetek ani zasad podatkowych; FT-007 i FT-008 pozostają osobnymi zadaniami wymagającymi dokumentów źródłowych.

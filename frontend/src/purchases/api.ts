@@ -17,6 +17,8 @@ const labels: Record<string, string> = {
   commission: 'Prowizja', currency: 'Waluta', reason: 'Powód korekty',
   listing_id: 'Instrument', expected_revision: 'Wersja zakupu',
   price: 'Cena wyceny', observed_on: 'Data wyceny',
+  series: 'Seria obligacji', annual_rate: 'Oprocentowanie', margin: 'Marża',
+  source_url: 'Dokument emisji', name: 'Nazwa rachunku', kind: 'Typ rachunku',
 }
 
 export class ApiError extends Error {

@@ -74,3 +74,7 @@ Domyślnie porty związane z aplikacją i bazą wiążemy z 127.0.0.1. Identyfik
 ## Integracje później
 
 IUSQ.DE jest kandydatem do pobierania dziennych cen. Dostępność i format wymagają testu integracji. Zapisuj walutę i źródło; nie zastępuj braku notowania ceną innej giełdy bez jawnej decyzji. Odświeżanie ma timeout, ograniczone ponowienia i ochronę przed duplikatami. Brak sieci nie kasuje ostatniej ceny. Licencje komercyjne pozostają osobną decyzją przed ewentualnym udostępnieniem produktu.
+
+## Zakupy obligacji FT-009
+
+BondIssue, BondPurchase i BondAuditEvent dodaje migracja 0004. Warstwa domain/bonds.py nie zależy od HTTP ani ORM. Endpointy, prywatność, wersjonowanie i semantykę ponowień opisuje [bonds.md](bonds.md). Wszystkie zapisy obligacji blokują wiersz właściciela, następnie rachunku, co serializuje dobór wersji parametrów i równoczesne korekty. Dane ręczne nie służą jeszcze do wyliczania odsetek.

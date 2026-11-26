@@ -9,6 +9,19 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.application.accounts import list_accounts
+from app.application.bond_contracts import (
+    BondAccountCreate,
+    BondCorrection,
+    BondCreate,
+    BondResponse,
+)
+from app.application.bonds import (
+    correct_bond_purchase,
+    create_bond_account,
+    create_bond_purchase,
+    get_bond_audit,
+    get_bond_purchases,
+)
 from app.application.purchase_contracts import (
     AuditResponse,
     ListingResponse,
@@ -154,3 +167,60 @@ def add_price(
     if not created:
         response.status_code = 200
     return result
+
+
+@router.post("/bond-accounts", response_model=AccountResponse, status_code=201)
+def add_bond_account(
+    data: BondAccountCreate,
+    request: Request,
+    response: Response,
+    session: Session = Depends(get_session),
+):
+    result, created = create_bond_account(session, request.app.state.settings.local_owner_id, data)
+    if not created:
+        response.status_code = 200
+    return result
+
+
+@router.get("/accounts/{account_id}/bonds", response_model=list[BondResponse])
+def bonds(account_id: UUID, request: Request, session: Session = Depends(get_session)):
+    return get_bond_purchases(session, request.app.state.settings.local_owner_id, account_id)
+
+
+@router.post("/accounts/{account_id}/bonds", response_model=BondResponse, status_code=201)
+def add_bond(
+    account_id: UUID,
+    data: BondCreate,
+    request: Request,
+    response: Response,
+    session: Session = Depends(get_session),
+):
+    result, created = create_bond_purchase(
+        session, request.app.state.settings.local_owner_id, account_id, data
+    )
+    if not created:
+        response.status_code = 200
+    return result
+
+
+@router.put("/accounts/{account_id}/bonds/{purchase_id}", response_model=BondResponse)
+def edit_bond(
+    account_id: UUID,
+    purchase_id: UUID,
+    data: BondCorrection,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    return correct_bond_purchase(
+        session, request.app.state.settings.local_owner_id, account_id, purchase_id, data
+    )
+
+
+@router.get("/accounts/{account_id}/bonds/{purchase_id}/audit", response_model=list[AuditResponse])
+def bond_audit(
+    account_id: UUID,
+    purchase_id: UUID,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    return get_bond_audit(session, request.app.state.settings.local_owner_id, account_id, purchase_id)

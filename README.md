@@ -1,6 +1,6 @@
 # FinancialTracker
 
-Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja zawiera zakupy IUSQ, korekty, historię zmian i ręczną wycenę pozycji z wynikiem w EUR. Automatyczne kursy, PLN i obligacje dodamy w kolejnych etapach. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
+Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja zawiera zakupy IUSQ, korekty, historię zmian i ręczną wycenę pozycji z wynikiem w EUR. Dodawanie obligacji COI, TOS i EDO opisuje [instrukcja](docs/bonds.md). Automatyczne kursy i naliczanie odsetek dodamy w kolejnych etapach. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
 
 ## Zakupy IUSQ
 
@@ -114,3 +114,7 @@ Na komputerze tworzącym projekt brakuje Dockera i Pythona; dostępny jest Node 
 - [Instrukcje agenta](AGENTS.md)
 
 FT-003 przeszedł pełny przebieg CI: 73 testy backendu, 12 testów przeglądarkowych, budowanie oraz zachowanie ręcznej ceny i wyniku po restarcie kontenerów. Szczegóły w verification.md. Kolejne zadanie to FT-004: odbiór pierwszej wersji i sprawdzenie kopii zapasowych. Nie udostępniaj obecnego trybu lokalnego w internecie.
+
+## Zakupy obligacji
+
+Sekcja „Obligacje skarbowe” pozwala tworzyć rachunki PLN (zwykły, IKE, IKZE), zapisywać serie i zakupy COI/TOS/EDO oraz poprawiać dane z historią zmian. Opcjonalne parametry emisji są podane ręcznie i niezweryfikowane. Koszt zakupu nie jest bieżącą wyceną; odsetki i podatki nie są naliczane. Pełna [instrukcja i kontrakt API](docs/bonds.md).

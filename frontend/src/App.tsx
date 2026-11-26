@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import Purchases from './purchases/Purchases'
+import Bonds from './bonds/Bonds'
 
 type Account = { id: string; name: string; kind: string; currency: string }
 type Connection =
@@ -121,12 +122,13 @@ export default function App() {
                 )}</div>}
             </>}
           </section>
-          {connection.status === 'ready' && connection.accounts.length > 0 &&
-            <Purchases accounts={connection.accounts} />}
+          {connection.status === 'ready' && connection.accounts.some((account) => account.currency === 'EUR') &&
+            <Purchases accounts={connection.accounts.filter((account) => account.currency === 'EUR')} />}
+          {connection.status === 'ready' && <Bonds accounts={connection.accounts} onAccountsChanged={refresh} />}
           <section className="next-step">
             <span className="step-number">01</span>
             <div><h3>Następny krok: automatyczne ceny</h3>
-              <p>Na razie wpisujesz ceny ręcznie. Kolejne etapy dodadzą notowania i obligacje.</p></div>
+              <p>Na razie wpisujesz ceny ręcznie. Kolejne etapy dodadzą notowania i naliczanie odsetek obligacji.</p></div>
             <span className="step-arrow" aria-hidden="true">↗</span>
           </section>
           <footer>FinancialTracker <span>Przejrzystość na każdym etapie.</span></footer>

@@ -18,9 +18,10 @@ for (let attempt = 0; attempt < 40; attempt++) {
         signal: AbortSignal.timeout(5000),
       })
       const accounts = await response.json()
-      if (response.status !== 200 || accounts.length !== 1 ||
-          accounts[0].id !== '00000000-0000-4000-8000-000000000002' ||
-          accounts[0].kind !== 'IKE') throw new Error('Seed or persistence check failed')
+      const demo = accounts.filter((item) => item.id === '00000000-0000-4000-8000-000000000002')
+      if (response.status !== 200 || demo.length !== 1 || demo[0].kind !== 'IKE') {
+        throw new Error('Seed or persistence check failed')
+      }
       const page = await fetch('http://127.0.0.1:5173', { signal: AbortSignal.timeout(5000) })
       if (page.status !== 200 || !(await page.text()).includes('FinancialTracker')) {
         throw new Error('Frontend is unavailable')

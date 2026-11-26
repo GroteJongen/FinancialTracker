@@ -11,3 +11,5 @@
 @media(max-width:1050px){.valuation-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.price-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.price-form-grid button{grid-column:1/-1}}
 @media(max-width:640px){.valuation-section{padding:20px 16px}.valuation-heading span{font-size:8px;letter-spacing:.6px}.valuation-cards dd{font-size:16px}.valuation-cards>div{padding:15px 12px}.price-form-grid{grid-template-columns:1fr}.price-form-grid button{grid-column:auto}}
 
+
+.bonds-section{margin-top:30px}.bond-account-form{margin-bottom:18px}.bond-account-form fieldset{border:0;margin:0;padding:0;min-width:0}.bonds-section .purchase-account-picker{flex-wrap:wrap}.bonds-section .purchase-table td{vertical-align:top;line-height:1.7}.bonds-section .row-actions{flex-wrap:wrap;white-space:normal;min-width:120px}

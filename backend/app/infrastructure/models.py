@@ -149,3 +149,65 @@ class PriceObservation(Base):
     recorded_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.clock_timestamp()
     )
+
+
+class BondIssue(Base):
+    """Immutable, owner-private snapshot of manually supplied issue parameters."""
+
+    __tablename__ = "bond_issues"
+    __table_args__ = (
+        UniqueConstraint("owner_id", "series", "terms_version", name="uq_bond_issue_version"),
+        CheckConstraint("bond_type IN ('TOS', 'COI', 'EDO')", name="ck_bond_issue_type"),
+        CheckConstraint("annual_rate BETWEEN 0 AND 100", name="ck_bond_issue_rate"),
+        CheckConstraint("margin BETWEEN 0 AND 100", name="ck_bond_issue_margin"),
+        CheckConstraint("bond_type <> 'TOS' OR margin IS NULL", name="ck_bond_issue_tos_margin"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    owner_id: Mapped[UUID] = mapped_column(ForeignKey("owners.id"))
+    series: Mapped[str] = mapped_column(String(7))
+    bond_type: Mapped[str] = mapped_column(String(3))
+    terms_version: Mapped[str] = mapped_column(String(64))
+    annual_rate: Mapped[Decimal | None] = mapped_column(Numeric(11, 8))
+    margin: Mapped[Decimal | None] = mapped_column(Numeric(11, 8))
+    source_url: Mapped[str | None] = mapped_column(String(2000))
+
+
+class BondPurchase(Base):
+    __tablename__ = "bond_purchases"
+    __table_args__ = (
+        UniqueConstraint("account_id", "request_id", name="uq_bond_purchase_request"),
+        CheckConstraint("quantity BETWEEN 1 AND 999999999", name="ck_bond_purchase_quantity"),
+        CheckConstraint("unit_price > 0", name="ck_bond_purchase_price"),
+        CheckConstraint("revision > 0", name="ck_bond_purchase_revision"),
+        Index("ix_bond_purchases_account_date", "account_id", "trade_date"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    account_id: Mapped[UUID] = mapped_column(ForeignKey("accounts.id"))
+    issue_id: Mapped[UUID] = mapped_column(ForeignKey("bond_issues.id"))
+    trade_date: Mapped[date] = mapped_column(Date)
+    quantity: Mapped[int]
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    revision: Mapped[int] = mapped_column(server_default=text("1"))
+    request_id: Mapped[UUID]
+    request_hash: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class BondAuditEvent(Base):
+    __tablename__ = "bond_audit_events"
+    __table_args__ = (
+        UniqueConstraint("purchase_id", "revision", name="uq_bond_audit_revision"),
+        CheckConstraint("kind IN ('CREATE', 'CORRECT')", name="ck_bond_audit_kind"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    purchase_id: Mapped[UUID] = mapped_column(ForeignKey("bond_purchases.id"))
+    owner_id: Mapped[UUID] = mapped_column(ForeignKey("owners.id"))
+    revision: Mapped[int]
+    kind: Mapped[str] = mapped_column(String(20))
+    reason: Mapped[str | None] = mapped_column(String(500))
+    before: Mapped[dict[str, str] | None] = mapped_column(JSONB(none_as_null=True))
+    after: Mapped[dict[str, str]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
