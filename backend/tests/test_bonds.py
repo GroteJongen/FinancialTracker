@@ -37,10 +37,14 @@ def payload(**changes):
 
 
 def correction(data, **changes):
-    return {key: value for key, value in data.items() if key != "request_id"} | {
-        "expected_revision": 1,
-        "reason": "Poprawiono dane z potwierdzenia",
-    } | changes
+    return (
+        {key: value for key, value in data.items() if key != "request_id"}
+        | {
+            "expected_revision": 1,
+            "reason": "Poprawiono dane z potwierdzenia",
+        }
+        | changes
+    )
 
 
 @pytest.mark.parametrize("kind", ["STANDARD", "IKE_BONDS", "IKZE"])
@@ -53,11 +57,19 @@ def test_account_types_and_retry(ledger, kind):
     again = client.post("/api/bond-accounts", json=values)
     assert again.status_code == 200
     assert again.json() == first.json()
+    other_kind = "IKZE" if kind != "IKZE" else "STANDARD"
+    assert client.post("/api/bond-accounts", json=values | {"kind": other_kind}).status_code == 409
     assert client.post("/api/bond-accounts", json=values | {"name": " "}).status_code == 422
-    assert client.post("/api/bond-accounts", json=values | {"owner_id": str(uuid4())}).status_code == 422
+    assert (
+        client.post("/api/bond-accounts", json=values | {"owner_id": str(uuid4())}).status_code
+        == 422
+    )
 
 
-@pytest.mark.parametrize(("series", "years", "margin"), [("TOS1129", 3, None), ("COI1130", 4, "1.5"), ("EDO1136", 10, "2")])
+@pytest.mark.parametrize(
+    ("series", "years", "margin"),
+    [("TOS1129", 3, None), ("COI1130", 4, "1.5"), ("EDO1136", 10, "2")],
+)
 def test_purchase_cost_correction_immutable_terms_and_reopen(ledger, series, years, margin):
     client, engine, settings, _ = ledger
     account_id = account(client)
@@ -71,7 +83,9 @@ def test_purchase_cost_correction_immutable_terms_and_reopen(ledger, series, yea
     assert first["terms_status"] == "MANUAL_UNVERIFIED"
     assert first["currency"] == "PLN"
     assert "gain" not in first and "accrued_interest" not in first
-    changed = client.put(path + "/" + first["id"], json=correction(data, annual_rate="4.5", quantity=11))
+    changed = client.put(
+        path + "/" + first["id"], json=correction(data, annual_rate="4.5", quantity=11)
+    )
     assert changed.status_code == 200, changed.text
     assert changed.json()["issue_id"] != first["issue_id"]
     assert changed.json()["cost"] == "1098.90"
@@ -85,7 +99,9 @@ def test_purchase_cost_correction_immutable_terms_and_reopen(ledger, series, yea
     with TestClient(create_app(settings, engine)) as reopened:
         assert reopened.get(path).json()[0]["revision"] == 2
     assert client.put(path + "/" + first["id"], json=correction(data)).status_code == 409
-    assert client.put(path + "/" + first["id"], json=correction(data, reason=" ")).status_code == 422
+    assert (
+        client.put(path + "/" + first["id"], json=correction(data, reason=" ")).status_code == 422
+    )
 
 
 def test_retry_after_correction_and_conflicting_payload(ledger):
@@ -102,14 +118,46 @@ def test_retry_after_correction_and_conflicting_payload(ledger):
     assert len(client.get(path).json()) == 1
 
 
-@pytest.mark.parametrize(("field", "value"), [
-    ("quantity", 0), ("quantity", -1), ("quantity", 1.5), ("quantity", True), ("quantity", "10"),
-    ("quantity", 1000000000), ("unit_price", "0"), ("unit_price", "99.999"),
-    ("unit_price", 100), ("unit_price", "NaN"), ("unit_price", "1e2"),
-    ("annual_rate", "101"), ("annual_rate", "-1"), ("annual_rate", "0.123456789"),
-    ("series", "TOS1329"), ("series", "ABC1129"), ("source_url", "javascript:alert(1)"),
-    ("margin", "2"), ("trade_date", "2026-02-30"), ("owner_id", str(uuid4())),
-])
+def test_issue_version_is_shared_without_mutating_other_purchases(ledger):
+    client, _, _, _ = ledger
+    path = f"/api/accounts/{account(client)}/bonds"
+    data = payload()
+    first = client.post(path, json=data).json()
+    second = client.post(path, json=payload(annual_rate="4.4000")).json()
+    assert first["issue_id"] == second["issue_id"]
+    changed = client.put(path + "/" + first["id"], json=correction(data, annual_rate="5.00"))
+    assert changed.status_code == 200
+    assert changed.json()["issue_id"] != second["issue_id"]
+    other = next(item for item in client.get(path).json() if item["id"] == second["id"])
+    assert other["annual_rate"] == second["annual_rate"]
+    assert other["terms_version"] == second["terms_version"]
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("quantity", 0),
+        ("quantity", -1),
+        ("quantity", 1.5),
+        ("quantity", True),
+        ("quantity", "10"),
+        ("quantity", 1000000000),
+        ("unit_price", "0"),
+        ("unit_price", "99.999"),
+        ("unit_price", 100),
+        ("unit_price", "NaN"),
+        ("unit_price", "1e2"),
+        ("annual_rate", "101"),
+        ("annual_rate", "-1"),
+        ("annual_rate", "0.123456789"),
+        ("series", "TOS1329"),
+        ("series", "ABC1129"),
+        ("source_url", "javascript:alert(1)"),
+        ("margin", "2"),
+        ("trade_date", "2026-02-30"),
+        ("owner_id", str(uuid4())),
+    ],
+)
 def test_invalid_input_never_writes(ledger, field, value):
     client, _, _, _ = ledger
     path = f"/api/accounts/{account(client)}/bonds"
@@ -183,6 +231,27 @@ def test_audit_failure_rolls_back_purchase_and_issue(ledger, monkeypatch):
     assert client.post(path, json=payload()).status_code == 503
     assert client.get(path).json() == []
     with Session(engine) as session:
-        assert session.scalar(select(func.count()).select_from(BondIssue).where(BondIssue.owner_id == settings.local_owner_id)) == 0
-        assert session.scalar(select(func.count()).select_from(BondAuditEvent).where(BondAuditEvent.owner_id == settings.local_owner_id)) == 0
-        assert session.scalar(select(func.count()).select_from(BondPurchase).where(BondPurchase.account_id == path.split('/')[3])) == 0
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(BondIssue)
+                .where(BondIssue.owner_id == settings.local_owner_id)
+            )
+            == 0
+        )
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(BondAuditEvent)
+                .where(BondAuditEvent.owner_id == settings.local_owner_id)
+            )
+            == 0
+        )
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(BondPurchase)
+                .where(BondPurchase.account_id == path.split("/")[3])
+            )
+            == 0
+        )

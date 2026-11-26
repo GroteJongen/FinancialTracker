@@ -38,13 +38,17 @@ def upgrade() -> None:
         sa.Column("revision", sa.Integer(), nullable=False, server_default=sa.text("1")),
         sa.Column("request_id", sa.Uuid(), nullable=False),
         sa.Column("request_hash", sa.String(64), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.UniqueConstraint("account_id", "request_id", name="uq_bond_purchase_request"),
         sa.CheckConstraint("quantity BETWEEN 1 AND 999999999", name="ck_bond_purchase_quantity"),
         sa.CheckConstraint("unit_price > 0", name="ck_bond_purchase_price"),
         sa.CheckConstraint("revision > 0", name="ck_bond_purchase_revision"),
     )
-    op.create_index("ix_bond_purchases_account_date", "bond_purchases", ["account_id", "trade_date"])
+    op.create_index(
+        "ix_bond_purchases_account_date", "bond_purchases", ["account_id", "trade_date"]
+    )
     op.create_table(
         "bond_audit_events",
         sa.Column("id", sa.Uuid(), primary_key=True),
@@ -55,7 +59,9 @@ def upgrade() -> None:
         sa.Column("reason", sa.String(500)),
         sa.Column("before", postgresql.JSONB(none_as_null=True)),
         sa.Column("after", postgresql.JSONB(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.UniqueConstraint("purchase_id", "revision", name="uq_bond_audit_revision"),
         sa.CheckConstraint("kind IN ('CREATE', 'CORRECT')", name="ck_bond_audit_kind"),
     )

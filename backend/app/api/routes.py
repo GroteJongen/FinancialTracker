@@ -223,4 +223,6 @@ def bond_audit(
     request: Request,
     session: Session = Depends(get_session),
 ):
-    return get_bond_audit(session, request.app.state.settings.local_owner_id, account_id, purchase_id)
+    return get_bond_audit(
+        session, request.app.state.settings.local_owner_id, account_id, purchase_id
+    )

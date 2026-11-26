@@ -33,12 +33,16 @@ def create_bond_account(session: Session, owner_id: UUID, data: BondAccountCreat
         if existing is not None:
             if existing.kind != data.kind or existing.currency != "PLN":
                 raise PurchaseError("Rachunek o tej nazwie ma już inny typ lub walutę.", 409)
-            return dict(id=existing.id, name=existing.name, kind=existing.kind, currency=existing.currency), False
+            return dict(
+                id=existing.id, name=existing.name, kind=existing.kind, currency=existing.currency
+            ), False
         account = Account(owner_id=owner_id, name=data.name, kind=data.kind, currency="PLN")
         session.add(account)
         session.flush()
         # Return detached response values before commit expires the ORM attributes.
-        result = dict(id=account.id, name=account.name, kind=account.kind, currency=account.currency)
+        result = dict(
+            id=account.id, name=account.name, kind=account.kind, currency=account.currency
+        )
         return result, True
 
 
@@ -88,6 +92,7 @@ def issue_for(session: Session, owner_id: UUID, data: BondFields):
         )
         session.add(issue)
         session.flush()
+        session.refresh(issue)
     return issue
 
 
