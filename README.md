@@ -1,6 +1,6 @@
 # FinancialTracker
 
-Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja zawiera zakupy IUSQ, korekty, historię zmian i ręczną wycenę pozycji z wynikiem w EUR. Dodawanie obligacji COI, TOS i EDO opisuje [instrukcja](docs/bonds.md). Kursy ETF/akcji pobieramy z Yahoo Finance; naliczanie odsetek obligacji pozostaje kolejnym etapem. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
+Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja obsluguje wlasne portfele grupujace rachunki, rozne ETF-y, akcje, gieldowe REIT-y i obligacje, z historia zakupow i wycen. Dodawanie obligacji COI, TOS i EDO opisuje [instrukcja](docs/bonds.md). Kursy ETF/akcji pobieramy z Yahoo Finance; naliczanie odsetek obligacji pozostaje kolejnym etapem. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
 
 ## Zakupy IUSQ
 
@@ -130,9 +130,9 @@ FT-003 przeszedł pełny przebieg CI: 73 testy backendu, 12 testów przeglądark
 
 Sekcja „Obligacje skarbowe” pozwala tworzyć rachunki PLN (zwykły, IKE, IKZE), zapisywać serie i zakupy COI/TOS/EDO oraz poprawiać dane z historią zmian. Opcjonalne parametry emisji są podane ręcznie i niezweryfikowane. Koszt zakupu nie jest bieżącą wyceną; odsetki i podatki nie są naliczane. Pełna [instrukcja i kontrakt API](docs/bonds.md).
 
-## Akcje
+## Instrumenty gieldowe
 
-Sekcja „Akcje” pozwala dodać własne spółki i notowania, tworzyć rachunki zwykłe/IKE/IKZE, zapisywać zakupy i ręczne ceny oraz przeglądać koszt i wynik w PLN, EUR lub USD. Katalog startuje pusty. [Instrukcja i ograniczenia](docs/stocks.md).
+Sekcja „Instrumenty giełdowe” w panelu operacji pozwala dodawac ETF-y, akcje i gieldowe REIT-y, wybierac notowania, zapisywac zakupy, ceny oraz korekty z audytem. Waluty: PLN, EUR, USD. [Zasady portfeli i katalogu](docs/portfolios.md).
 
 ## Dashboard portfela
 
