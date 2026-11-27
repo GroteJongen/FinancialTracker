@@ -49,3 +49,7 @@ Na prośbę użytkownika FT-009 wdraża samą ewidencję COI/TOS/EDO przed FT-00
 ## ADR-024 — Prywatny katalog akcji i wspólny rejestr papierów
 
 Akcje używają istniejących Instrument/Listing, Operation/PurchaseDetails, AuditEvent i PriceObservation. Instrument.owner_id izoluje prywatne dane katalogu; publiczny IUSQ ma owner_id null. ISIN jest unikalny w katalogu właściciela, a publiczny katalog zachowuje własną unikalność. Identyczne rejestracje są rozpoznawane po tickerze/MIC/walucie pod blokadą właściciela, bez automatycznego pobierania danych. Zakupy i wyceny są w walucie notowania; rachunek bazowy nie uruchamia przeliczenia FX. Korekta nie zmienia notowania zakupu.
+
+## ADR-025 — Wspólny dashboard w PLN
+
+Koszt walutowy przeliczamy historycznie jako jawny szacunek NBP, a wartość aktualnym dostępnym kursem referencyjnym. Wypłacone odsetki są skumulowanym dochodem, nie kolejnym aktywem ani kolejnymi wpłatami. Brak pełnej wyceny daje null i blokuje pełny wykres wartości. Ręczna wycena partii obligacji nie udaje automatycznego silnika reguł emisji. Konto IKE_BONDS należy do filtra IKE. Blokadę właściciela zmieniono na FOR NO KEY UPDATE, aby umożliwić równoczesne kontrole klucza obcego podczas zapisu zakupów/audytu; test wymusza tę kolejność współbieżną.

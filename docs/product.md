@@ -48,3 +48,7 @@ Użytkownik może ewidencjonować zakupy COI/TOS/EDO na rachunkach PLN typu zwyk
 ## Dodany zakres FT-010
 
 Użytkownik ma możliwość samodzielnego dodawania akcji do pustego katalogu i ich podglądu. Nie dodajemy wybranych za użytkownika spółek. Podgląd z zakupami i ceną ręczną pokazuje pozycję, koszt i wynik w walucie notowania, z korektami i audytem. Patrz stocks.md.
+
+## Dodany zakres FT-011
+
+Dashboard wszystkich zakupionych aktywów z filtrami zwykłe/IKE/IKZE/razem, sumą PLN, wynikiem i diagramem kołowym. Nie dopisuje aktywów demonstracyjnych. Pokazuje dane niepełne wprost, zapisuje ręczne wyceny obligacji i sumuje wypłacone odsetki; zapewnia referencyjne przeliczenie NBP. Szczegóły: portfolio.md.

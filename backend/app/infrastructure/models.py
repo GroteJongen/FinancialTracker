@@ -224,3 +224,40 @@ class BondAuditEvent(Base):
     before: Mapped[dict[str, str] | None] = mapped_column(JSONB(none_as_null=True))
     after: Mapped[dict[str, str]] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class BondValuation(Base):
+    __tablename__ = "bond_valuations"
+    __table_args__ = (
+        UniqueConstraint("purchase_id", "request_id", name="uq_bond_valuations_request"),
+        CheckConstraint("value >= 0 AND paid_interest >= 0", name="ck_bond_valuations_amounts"),
+        CheckConstraint("purchase_revision > 0", name="ck_bond_valuations_revision"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    purchase_id: Mapped[UUID] = mapped_column(ForeignKey("bond_purchases.id"))
+    purchase_revision: Mapped[int]
+    request_id: Mapped[UUID]
+    value: Mapped[Decimal] = mapped_column(Numeric(22, 2))
+    paid_interest: Mapped[Decimal] = mapped_column(Numeric(22, 2))
+    observed_on: Mapped[date] = mapped_column(Date)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
+
+
+class FxRate(Base):
+    __tablename__ = "fx_rates"
+    __table_args__ = (
+        UniqueConstraint("currency", "requested_on", name="uq_fx_rates_requested"),
+        CheckConstraint("currency IN ('EUR', 'USD')", name="ck_fx_rates_currency"),
+        CheckConstraint("rate > 0 AND effective_on <= requested_on", name="ck_fx_rates_values"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    currency: Mapped[str] = mapped_column(String(3))
+    requested_on: Mapped[date] = mapped_column(Date)
+    effective_on: Mapped[date] = mapped_column(Date)
+    rate: Mapped[Decimal] = mapped_column(Numeric(18, 8))
+    table_number: Mapped[str] = mapped_column(String(40))
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
