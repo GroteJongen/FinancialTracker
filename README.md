@@ -134,7 +134,7 @@ Sekcja „Obligacje skarbowe” pozwala tworzyć rachunki PLN (zwykły, IKE, IKZ
 
 ## Instrumenty gieldowe
 
-Sekcja „Instrumenty giełdowe” w panelu operacji pozwala dodawac ETF-y, akcje i gieldowe REIT-y, wybierac notowania, zapisywac zakupy, ceny oraz korekty z audytem. Waluty: PLN, EUR, USD. [Zasady portfeli i katalogu](docs/portfolios.md).
+Sekcja „Instrumenty” w panelu operacji pozwala dodawac ETF-y, akcje i gieldowe REIT-y, wybierac notowania, zapisywac zakupy, ceny oraz korekty z audytem. Waluty: PLN, EUR, USD. [Zasady portfeli i katalogu](docs/portfolios.md).
 
 ## Dashboard portfela
 

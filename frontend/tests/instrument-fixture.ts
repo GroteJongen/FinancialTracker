@@ -6,7 +6,7 @@ const accounts = new WeakMap<Page, string>()
 export async function iusqAccount(page: Page, name = 'TEST wspólny ETF') {
   let account = accounts.get(page)
   if (!account) {
-    const response = await page.request.post('/api/investment-accounts', { data: { name: name + ' ' + Date.now(), kind: 'STANDARD', currency: 'EUR' } })
+    const response = await page.request.post('/api/investment-accounts', { data: { name: name + ' ' + crypto.randomUUID(), kind: 'STANDARD', currency: 'EUR' } })
     if (!response.ok()) throw new Error('Synthetic account creation failed')
     account = (await response.json() as { id: string }).id
     accounts.set(page, account)
