@@ -48,7 +48,7 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   if (!response.ok) {
     const message = typeof body.detail === 'string' ? body.detail : 'Nie udało się wykonać operacji.'
     const fields = Array.isArray(body.errors) ? body.errors.map((error: { field: string; message: string }) =>
-      (labels[error.field] ?? 'Pole formularza') + ': ' + error.message,
+      (path === '/api/stocks' && error.field === 'name' ? 'Nazwa spółki' : labels[error.field] ?? 'Pole formularza') + ': ' + error.message,
     ).join(' ') : ''
     throw new ApiError([message, fields].filter(Boolean).join(' '), response.status)
   }

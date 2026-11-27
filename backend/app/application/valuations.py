@@ -3,7 +3,13 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.application.purchases import PurchaseError, matching_currency, owned_account, supported_account, supported_listing
+from app.application.purchases import (
+    PurchaseError,
+    matching_currency,
+    owned_account,
+    supported_account,
+    supported_listing,
+)
 from app.application.valuation_contracts import (
     DisplayPosition,
     PriceCreate,

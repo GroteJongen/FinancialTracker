@@ -31,7 +31,7 @@ for (const [currency, kind] of [['PLN', 'STANDARD'], ['EUR', 'IKE'], ['USD', 'IK
     await section.getByLabel(`Prowizja zakupu akcji (${currency})`, { exact: true }).fill('2')
     await section.getByLabel('Data zakupu akcji', { exact: true }).fill('2026-10-05')
     await section.getByRole('button', { name: 'Zapisz zakup akcji', exact: true }).click()
-    const card = (label: string) => section.locator('.stock-position-cards > div').filter({ hasText: label }).locator('dd')
+    const card = (label: string) => section.locator('.stock-position-cards > div').filter({ has: page.getByText(label, { exact: true }) }).locator('dd')
     await expect(card('Koszt akcji')).toHaveText('1\u00a0002,00 ' + currency)
     await expect(card('Wartość akcji')).toHaveText('—')
     await section.getByLabel(`Cena wyceny akcji (${currency})`, { exact: true }).fill('110')

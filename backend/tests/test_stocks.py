@@ -12,7 +12,13 @@ from app.main import create_app
 
 
 def company(**changes):
-    return {"name": "Spółka syntetyczna", "symbol": "SYN", "mic": "XWAR", "currency": "PLN", "isin": "PL0000000001"} | changes
+    return {
+        "name": "Spółka syntetyczna",
+        "symbol": "SYN",
+        "mic": "XWAR",
+        "currency": "PLN",
+        "isin": "PL0000000001",
+    } | changes
 
 
 def stock(client, **changes):
@@ -22,7 +28,15 @@ def stock(client, **changes):
 
 
 def trade(listing, **changes):
-    return {"request_id": str(uuid4()), "listing_id": listing["id"], "trade_date": "2026-10-05", "quantity": "10", "unit_price": "100", "commission": "2", "currency": listing["currency"]} | changes
+    return {
+        "request_id": str(uuid4()),
+        "listing_id": listing["id"],
+        "trade_date": "2026-10-05",
+        "quantity": "10",
+        "unit_price": "100",
+        "commission": "2",
+        "currency": listing["currency"],
+    } | changes
 
 
 @pytest.mark.parametrize("currency", ["PLN", "EUR", "USD"])
@@ -38,14 +52,24 @@ def test_native_currency_purchase_view_correction_and_price(ledger, currency):
     assert client.post(root + "/purchases", json=data).status_code == 200
     unpriced = client.get(root + "/valuation", params={"listing_id": listing["id"]}).json()
     assert unpriced["status"] == "unpriced" and unpriced["display"]["cost"] == "1002.00"
-    quote = {"request_id": str(uuid4()), "listing_id": listing["id"], "price": "110", "observed_on": "2026-10-06", "currency": currency}
+    quote = {
+        "request_id": str(uuid4()),
+        "listing_id": listing["id"],
+        "price": "110",
+        "observed_on": "2026-10-06",
+        "currency": currency,
+    }
     assert client.post(root + "/prices", json=quote).status_code == 201
     assert client.post(root + "/prices", json=quote).status_code == 200
     result = client.get(root + "/valuation", params={"listing_id": listing["id"]}).json()
     assert result["display"]["gain"] == "98.00"
     assert result["display"]["gain_percent"] == "9.78"
     assert result["currency"] == currency
-    correction = {key: value for key, value in data.items() if key != "request_id"} | {"quantity": "9", "expected_revision": 1, "reason": "Syntetyczna korekta ilości"}
+    correction = {key: value for key, value in data.items() if key != "request_id"} | {
+        "quantity": "9",
+        "expected_revision": 1,
+        "reason": "Syntetyczna korekta ilości",
+    }
     assert client.put(root + "/purchases/" + first.json()["id"], json=correction).status_code == 200
     changed = client.get(root + "/valuation", params={"listing_id": listing["id"]}).json()
     assert changed["display"]["gain"] == "88.00"
@@ -55,7 +79,10 @@ def test_native_currency_purchase_view_correction_and_price(ledger, currency):
     assert client.put(root + "/purchases/" + first.json()["id"], json=correction).status_code == 409
     later = client.post(root + "/purchases", json=trade(listing, trade_date="2026-10-07"))
     assert later.status_code == 201
-    assert client.get(root + "/valuation", params={"listing_id": listing["id"]}).json()["status"] == "outdated"
+    assert (
+        client.get(root + "/valuation", params={"listing_id": listing["id"]}).json()["status"]
+        == "outdated"
+    )
 
 
 def test_catalogue_retry_conflicts_and_market_identity(ledger):
@@ -72,12 +99,23 @@ def test_catalogue_retry_conflicts_and_market_identity(ledger):
     assert client.post("/api/stocks", json=company(symbol="OTHER")).status_code == 409
 
 
-@pytest.mark.parametrize(("field", "value"), [
-    ("name", " "), ("name", "a" * 201), ("symbol", "A B"), ("symbol", ""),
-    ("symbol", "A" * 31), ("mic", "GPW"), ("mic", "X W "), ("currency", "GBP"),
-    ("isin", "bad"), ("isin", "PL000000000A"), ("owner_id", str(uuid4())),
-    ("kind", "ETF"),
-])
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("name", " "),
+        ("name", "a" * 201),
+        ("symbol", "A B"),
+        ("symbol", ""),
+        ("symbol", "A" * 31),
+        ("mic", "GPW"),
+        ("mic", "X W "),
+        ("currency", "GBP"),
+        ("isin", "bad"),
+        ("isin", "PL000000000A"),
+        ("owner_id", str(uuid4())),
+        ("kind", "ETF"),
+    ],
+)
 def test_invalid_catalogue_fields_do_not_write(ledger, field, value):
     client, _, _, _ = ledger
     assert client.post("/api/stocks", json=company(**{field: value})).status_code == 422
@@ -89,9 +127,20 @@ def test_currency_and_position_isolation(ledger):
     first, second = stock(client), stock(client, symbol="SECOND", isin=None, currency="USD")
     root = f"/api/accounts/{account_id}"
     assert client.post(root + "/purchases", json=trade(first, currency="USD")).status_code == 422
-    assert client.post(root + "/purchases", json=trade(first)).status_code == 201
+    original = client.post(root + "/purchases", json=trade(first))
+    assert original.status_code == 201
+    replacement = trade(second) | {"expected_revision": 1, "reason": "Inny instrument"}
+    replacement.pop("request_id")
+    path = root + "/purchases/" + original.json()["id"]
+    assert client.put(path, json=replacement).status_code == 422
     assert client.post(root + "/purchases", json=trade(second, quantity="0.125")).status_code == 201
-    quote = {"request_id": str(uuid4()), "listing_id": first["id"], "price": "110", "observed_on": "2026-10-06", "currency": "USD"}
+    quote = {
+        "request_id": str(uuid4()),
+        "listing_id": first["id"],
+        "price": "110",
+        "observed_on": "2026-10-06",
+        "currency": "USD",
+    }
     assert client.post(root + "/prices", json=quote).status_code == 422
     first_view = client.get(root + "/valuation", params={"listing_id": first["id"]}).json()
     second_view = client.get(root + "/valuation", params={"listing_id": second["id"]}).json()
@@ -112,9 +161,23 @@ def test_private_catalogue_and_foreign_listing_are_not_accessible(ledger):
             assert stranger.get("/api/listings?kind=STOCK").json() == []
             other = stock(stranger)
             assert other["id"] != first["id"]
-            assert client.post(f"/api/accounts/{account_id}/purchases", json=trade(other)).status_code == 404
-            assert client.get(f"/api/accounts/{account_id}/valuation", params={"listing_id": other["id"]}).status_code == 404
-            quote = {"request_id": str(uuid4()), "listing_id": other["id"], "price": "110", "observed_on": "2026-10-06", "currency": "PLN"}
+            assert (
+                client.post(f"/api/accounts/{account_id}/purchases", json=trade(other)).status_code
+                == 404
+            )
+            assert (
+                client.get(
+                    f"/api/accounts/{account_id}/valuation", params={"listing_id": other["id"]}
+                ).status_code
+                == 404
+            )
+            quote = {
+                "request_id": str(uuid4()),
+                "listing_id": other["id"],
+                "price": "110",
+                "observed_on": "2026-10-06",
+                "currency": "PLN",
+            }
             assert client.post(f"/api/accounts/{account_id}/prices", json=quote).status_code == 404
     finally:
         with Session(engine) as session, session.begin():
@@ -131,12 +194,27 @@ def test_investment_accounts_and_treasury_only_account(ledger, kind):
     first = client.post("/api/investment-accounts", json=body)
     assert first.status_code == 201
     assert client.post("/api/investment-accounts", json=body).json()["id"] == first.json()["id"]
-    assert client.post("/api/investment-accounts", json=body | {"currency": "USD"}).status_code == 409
-    assert client.post("/api/investment-accounts", json=body | {"owner_id": str(uuid4())}).status_code == 422
+    assert (
+        client.post("/api/investment-accounts", json=body | {"currency": "USD"}).status_code == 409
+    )
+    assert (
+        client.post("/api/investment-accounts", json=body | {"owner_id": str(uuid4())}).status_code
+        == 422
+    )
     listing = stock(client)
-    assert client.post(f"/api/accounts/{first.json()['id']}/purchases", json=trade(listing)).status_code == 201
-    bonds = client.post("/api/bond-accounts", json={"name": "Tylko obligacje IKE", "kind": "IKE_BONDS"}).json()
-    assert client.post(f"/api/accounts/{bonds['id']}/purchases", json=trade(listing)).status_code == 422
+    assert (
+        client.post(
+            f"/api/accounts/{first.json()['id']}/purchases", json=trade(listing)
+        ).status_code
+        == 201
+    )
+    bonds = client.post(
+        "/api/bond-accounts", json={"name": "Tylko obligacje IKE", "kind": "IKE_BONDS"}
+    ).json()
+    assert (
+        client.post(f"/api/accounts/{bonds['id']}/purchases", json=trade(listing)).status_code
+        == 422
+    )
 
 
 def test_concurrent_catalogue_retry_creates_one_listing(ledger):

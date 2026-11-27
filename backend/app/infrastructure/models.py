@@ -52,8 +52,15 @@ class Instrument(Base):
     __tablename__ = "instruments"
     __table_args__ = (
         UniqueConstraint("owner_id", "isin", name="uq_instruments_owner_isin"),
-        Index("uq_instruments_public_isin", "isin", unique=True, postgresql_where=text("owner_id IS NULL")),
-        CheckConstraint("kind <> 'STOCK' OR owner_id IS NOT NULL", name="ck_instruments_stock_owner"),
+        Index(
+            "uq_instruments_public_isin",
+            "isin",
+            unique=True,
+            postgresql_where=text("owner_id IS NULL"),
+        ),
+        CheckConstraint(
+            "kind <> 'STOCK' OR owner_id IS NOT NULL", name="ck_instruments_stock_owner"
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)

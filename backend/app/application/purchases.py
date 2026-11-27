@@ -54,7 +54,10 @@ def matching_currency(listing: Listing, currency: str):
 
 
 def supported_account(session: Session, account: Account, listing: Listing):
-    if account.kind == "IKE_BONDS" and session.get(Instrument, listing.instrument_id).kind == "STOCK":
+    if (
+        account.kind == "IKE_BONDS"
+        and session.get(Instrument, listing.instrument_id).kind == "STOCK"
+    ):
         raise PurchaseError("Wybierz rachunek inwestycyjny do ewidencji akcji.", 422)
 
 

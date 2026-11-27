@@ -96,7 +96,9 @@ def ledger(test_database):
         session.execute(delete(BondAuditEvent).where(BondAuditEvent.owner_id == owner_id))
         session.execute(delete(BondPurchase).where(BondPurchase.account_id.in_(account_ids)))
         session.execute(delete(BondIssue).where(BondIssue.owner_id == owner_id))
-        session.execute(delete(PriceObservation).where(PriceObservation.account_id.in_(account_ids)))
+        session.execute(
+            delete(PriceObservation).where(PriceObservation.account_id.in_(account_ids))
+        )
         session.execute(delete(AuditEvent).where(AuditEvent.owner_id == owner_id))
         session.execute(delete(PurchaseDetails).where(PurchaseDetails.operation_id.in_(ids)))
         session.execute(delete(Operation).where(Operation.account_id.in_(account_ids)))
