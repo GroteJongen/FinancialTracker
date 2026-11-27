@@ -103,4 +103,4 @@ Status: Ukończone - 202 testy backendu i 34 przeglądarkowe zaliczone w CI. Pob
 
 ## FT-016 - Obligacje w formularzu Dodaj instrument
 
-Status: Weryfikacja w CI. Wybór Obligacje przełącza formularz na istniejącą ewidencję TOS/COI/EDO z rachunkiem, parametrami emisji i zakupem. Jedno miejsce dodawania, bez zagnieżdżania formularzy i duplikowania pól. Zachowana walidacja, korekty i historia. Bez zmian API i migracji.
+Status: Ukończone - 202 testy backendu i 35 przeglądarkowych zaliczone w CI. Wybór Obligacje przełącza formularz na istniejącą ewidencję TOS/COI/EDO z rachunkiem, parametrami emisji i zakupem. Jedno miejsce dodawania, bez zagnieżdżania formularzy i duplikowania pól. Zachowana walidacja, korekty i historia. Bez zmian API i migracji.
