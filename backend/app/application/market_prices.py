@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -48,11 +48,16 @@ def configure(session: Session, owner_id: UUID, listing_id: UUID, symbol: str | 
 
 
 def mapping_info(row: YahooListing | None):
-    return None if row is None else dict(
-        symbol=row.symbol, failed=row.failed,
-        attempted_at=row.attempted_at.isoformat() if row.attempted_at else None,
-        fetched_at=row.fetched_at.isoformat() if row.fetched_at else None,
-        quoted_at=row.quoted_at.isoformat() if row.quoted_at else None,
+    return (
+        None
+        if row is None
+        else dict(
+            symbol=row.symbol,
+            failed=row.failed,
+            attempted_at=row.attempted_at.isoformat() if row.attempted_at else None,
+            fetched_at=row.fetched_at.isoformat() if row.fetched_at else None,
+            quoted_at=row.quoted_at.isoformat() if row.quoted_at else None,
+        )
     )
 
 
@@ -65,9 +70,14 @@ def selected_price(manual, automatic: YahooListing | None, listing: Listing):
     if chosen and (chosen.observed_on, chosen.recorded_at) >= (day, automatic.quoted_at):
         return chosen
     return PriceResponse(
-        id=automatic.id, listing_id=listing.id, price=automatic.price,
-        currency=listing.currency, observed_on=day, source="YAHOO",
-        recorded_at=automatic.fetched_at, quoted_at=automatic.quoted_at,
+        id=automatic.id,
+        listing_id=listing.id,
+        price=automatic.price,
+        currency=listing.currency,
+        observed_on=day,
+        source="YAHOO",
+        recorded_at=automatic.fetched_at,
+        quoted_at=automatic.quoted_at,
         provider_symbol=automatic.symbol,
     )
 
@@ -76,16 +86,18 @@ def refresh(session: Session, owner_id: UUID):
     # Select only owned holdings, not the user's entire catalogue or another owner's symbols.
     with session.begin():
         held = select(Operation.listing_id).join(Account).where(Account.owner_id == owner_id)
-        rows = list(session.execute(
-            select(YahooListing, Listing, Instrument)
-            .join(Listing, Listing.id == YahooListing.listing_id)
-            .join(Instrument, Instrument.id == Listing.instrument_id)
-            .where(YahooListing.listing_id.in_(held))
-            .order_by(YahooListing.attempted_at.asc().nullsfirst(), YahooListing.listing_id)
-            .with_for_update(of=YahooListing, skip_locked=True)
-        ))
+        rows = list(
+            session.execute(
+                select(YahooListing, Listing, Instrument)
+                .join(Listing, Listing.id == YahooListing.listing_id)
+                .join(Instrument, Instrument.id == Listing.instrument_id)
+                .where(YahooListing.listing_id.in_(held))
+                .order_by(YahooListing.attempted_at.asc().nullsfirst(), YahooListing.listing_id)
+                .with_for_update(of=YahooListing, skip_locked=True)
+            )
+        )
         jobs = []
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         for row, listing, instrument in rows:
             if len(jobs) == 8:
                 break
@@ -93,7 +105,10 @@ def refresh(session: Session, owner_id: UUID):
                 continue
             token = uuid4()
             row.attempted_at, row.lease = now, token
-            jobs.append((listing.id, token, row.symbol, listing.mic, listing.currency, instrument.kind))
+            jobs.append(
+                (listing.id, token, row.symbol, listing.mic, listing.currency, instrument.kind)
+            )
+
     # No database connection or transaction is held during HTTP.
     def fetch(job):
         try:
@@ -117,6 +132,6 @@ def refresh(session: Session, owner_id: UUID):
             # An upstream replica returning an older quote must not roll the cache backwards.
             if row.quoted_at is None or answer.quoted_at >= row.quoted_at:
                 row.price, row.quoted_at = answer.price, answer.quoted_at
-                row.fetched_at = datetime.now(timezone.utc)
+                row.fetched_at = datetime.now(UTC)
                 updated += 1
     return dict(updated=updated, failed=failed, cooldown_seconds=300)

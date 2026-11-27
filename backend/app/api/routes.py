@@ -10,7 +10,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.application.accounts import list_accounts
-from app.application.market_prices import MappingCreate, configure, refresh as refresh_yahoo
 from app.application.bond_contracts import (
     BondAccountCreate,
     BondCorrection,
@@ -24,6 +23,8 @@ from app.application.bonds import (
     get_bond_audit,
     get_bond_purchases,
 )
+from app.application.market_prices import MappingCreate, configure
+from app.application.market_prices import refresh as refresh_yahoo
 from app.application.portfolio import get_portfolio, refresh_fx, save_bond_valuation
 from app.application.portfolio_contracts import BondValuationCreate
 from app.application.purchase_contracts import (
@@ -49,24 +50,26 @@ router = APIRouter(prefix="/api")
 PortfolioScope = Literal["ALL", "STANDARD", "IKE", "IKZE", "RETIREMENT"]
 
 
+def get_session(request: Request) -> Generator[Session]:
+    with request.app.state.session_factory() as session:
+        yield session
+
+
 @router.post("/market-prices/refresh")
 def market_refresh(request: Request, session: Session = Depends(get_session)):
     return refresh_yahoo(session, request.app.state.settings.local_owner_id)
 
 
 @router.put("/listings/{listing_id}/yahoo")
-def yahoo_mapping(listing_id: UUID, data: MappingCreate, request: Request, session: Session = Depends(get_session)):
+def yahoo_mapping(
+    listing_id: UUID, data: MappingCreate, request: Request, session: Session = Depends(get_session)
+):
     return configure(session, request.app.state.settings.local_owner_id, listing_id, data.symbol)
 
 
 @router.delete("/listings/{listing_id}/yahoo")
 def yahoo_disable(listing_id: UUID, request: Request, session: Session = Depends(get_session)):
     return configure(session, request.app.state.settings.local_owner_id, listing_id, None)
-
-
-def get_session(request: Request) -> Generator[Session]:
-    with request.app.state.session_factory() as session:
-        yield session
 
 
 class AccountResponse(BaseModel):

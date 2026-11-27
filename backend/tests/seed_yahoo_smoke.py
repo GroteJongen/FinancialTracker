@@ -1,7 +1,7 @@
 """Explicit synthetic CI quote for the existing SYN.TEST smoke holding, never Yahoo HTTP."""
 
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -18,18 +18,29 @@ if __name__ == "__main__":
     engine = make_engine(settings.database_url)
     try:
         with Session(engine) as session, session.begin():
-            listing = session.scalar(select(Listing).join(Instrument).where(
-                Listing.symbol == "SYN.TEST", Listing.mic == "XWAR",
-                Instrument.name == "Spolka syntetyczna CI",
-                Instrument.owner_id == settings.local_owner_id,
-            ))
+            listing = session.scalar(
+                select(Listing)
+                .join(Instrument)
+                .where(
+                    Listing.symbol == "SYN.TEST",
+                    Listing.mic == "XWAR",
+                    Instrument.name == "Spolka syntetyczna CI",
+                    Instrument.owner_id == settings.local_owner_id,
+                )
+            )
             if listing is None:
                 raise RuntimeError("Expected synthetic CI holding not found.")
-            now = datetime.now(timezone.utc)
-            session.add(YahooListing(
-                listing_id=listing.id, symbol="SYN.TEST.WA", price=Decimal("110"),
-                quoted_at=now, fetched_at=now, attempted_at=now,
-            ))
+            now = datetime.now(UTC)
+            session.add(
+                YahooListing(
+                    listing_id=listing.id,
+                    symbol="SYN.TEST.WA",
+                    price=Decimal("110"),
+                    quoted_at=now,
+                    fetched_at=now,
+                    attempted_at=now,
+                )
+            )
         print("PASS: explicit synthetic Yahoo smoke quote saved")
     finally:
         engine.dispose()

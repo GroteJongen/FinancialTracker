@@ -28,16 +28,21 @@ def upgrade():
             name="ck_yahoo_quote_complete",
         ),
     )
-    op.execute(table.insert().values(
-        listing_id="00000000-0000-4000-8000-000000000004",
-        id="00000000-0000-4000-8000-000000000007", symbol="IUSQ.DE",
-    ))
+    op.execute(
+        table.insert().values(
+            listing_id="00000000-0000-4000-8000-000000000004",
+            id="00000000-0000-4000-8000-000000000007",
+            symbol="IUSQ.DE",
+        )
+    )
 
 
 def downgrade():
-    if op.get_bind().scalar(sa.text(
-        "SELECT EXISTS (SELECT 1 FROM yahoo_listings "
-        "WHERE listing_id <> '00000000-0000-4000-8000-000000000004')"
-    )):
+    if op.get_bind().scalar(
+        sa.text(
+            "SELECT EXISTS (SELECT 1 FROM yahoo_listings "
+            "WHERE listing_id <> '00000000-0000-4000-8000-000000000004')"
+        )
+    ):
         raise RuntimeError("Export and resolve private Yahoo mappings before reverting.")
     op.drop_table("yahoo_listings")

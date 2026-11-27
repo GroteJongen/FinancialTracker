@@ -4,7 +4,6 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.application.market_prices import selected_price
-
 from app.application.purchases import (
     PurchaseError,
     matching_currency,

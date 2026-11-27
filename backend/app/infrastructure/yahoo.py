@@ -6,11 +6,12 @@ No cookies, authentication, scraping, adjusted prices or alternate exchanges.
 import json
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, localcontext
+from datetime import UTC, datetime, timedelta
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation, localcontext
+from http.client import HTTPException
 from urllib.error import URLError
 from urllib.parse import quote
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 from zoneinfo import ZoneInfo
 
 MARKETS = {
@@ -24,6 +25,15 @@ LIMIT = 128 * 1024
 
 class YahooUnavailable(Exception):
     pass
+
+
+class NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise YahooUnavailable("Nieoczekiwane przekierowanie Yahoo.")
+
+
+def urlopen(request, *, timeout):
+    return build_opener(NoRedirect()).open(request, timeout=timeout)
 
 
 @dataclass(frozen=True)
@@ -42,7 +52,7 @@ def symbol_text(value):
 
 
 def parse(payload: bytes, symbol: str, mic: str, currency: str, kind: str, *, now=None):
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     try:
         if len(payload) > LIMIT or mic not in MARKETS:
             raise ValueError("response/market")
@@ -73,8 +83,8 @@ def parse(payload: bytes, symbol: str, mic: str, currency: str, kind: str, *, no
         stamp = meta["regularMarketTime"]
         if type(stamp) is not int:
             raise ValueError("time")
-        instant = datetime.fromtimestamp(stamp, timezone.utc)
-        if instant < datetime(2000, 1, 1, tzinfo=timezone.utc) or instant > now + timedelta(seconds=60):
+        instant = datetime.fromtimestamp(stamp, UTC)
+        if instant < datetime(2000, 1, 1, tzinfo=UTC) or instant > now + timedelta(seconds=60):
             raise ValueError("time range")
         return Quote(price, instant, currency, symbol, mic)
     except (KeyError, TypeError, ValueError, IndexError, InvalidOperation, OverflowError) as exc:
@@ -88,7 +98,10 @@ def lookup(symbol: str, mic: str, currency: str, kind: str) -> Quote:
     url = "https://query1.finance.yahoo.com/v8/finance/chart/" + quote(symbol, safe="")
     request = Request(
         url + "?interval=1d&range=5d&includePrePost=false",
-        headers={"User-Agent": "FinancialTracker/0.1 (personal portfolio)", "Accept": "application/json"},
+        headers={
+            "User-Agent": "FinancialTracker/0.1 (personal portfolio)",
+            "Accept": "application/json",
+        },
     )
     try:
         with urlopen(request, timeout=4) as response:
@@ -96,7 +109,7 @@ def lookup(symbol: str, mic: str, currency: str, kind: str) -> Quote:
             if response.geturl() != request.full_url:
                 raise YahooUnavailable("Nieoczekiwane przekierowanie Yahoo.")
             payload = response.read(LIMIT + 1)
-    except (URLError, TimeoutError, OSError) as exc:
+    except (URLError, TimeoutError, OSError, HTTPException) as exc:
         raise YahooUnavailable("Yahoo jest niedostepne lub ogranicza liczbe zapytan.") from exc
     return parse(payload, symbol, mic, currency, kind)
 

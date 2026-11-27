@@ -127,9 +127,12 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL"):
         groups = defaultdict(list)
         for row in securities:
             groups[(row[0].account_id, row[0].listing_id)].append(row)
-        automatic = {row.listing_id: row for row in session.scalars(
-            select(YahooListing).where(YahooListing.listing_id.in_({key[1] for key in groups}))
-        )}
+        automatic = {
+            row.listing_id: row
+            for row in session.scalars(
+                select(YahooListing).where(YahooListing.listing_id.in_({key[1] for key in groups}))
+            )
+        }
         items, holdings = [], []
 
         def add(
