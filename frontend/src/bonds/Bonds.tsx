@@ -30,8 +30,8 @@ const sort = (items: Bond[]) => [...items].sort((a, b) =>
 )
 const accountKinds: Record<string, string> = { STANDARD: 'Zwykły', IKE_BONDS: 'IKE', IKZE: 'IKZE' }
 
-export default function Bonds({ accounts, onAccountsChanged }: {
-  accounts: Account[]; onAccountsChanged: () => void
+export default function Bonds({ accounts, onAccountsChanged, onBusyChange }: {
+  accounts: Account[]; onAccountsChanged: () => void; onBusyChange?: (value: boolean) => void
 }) {
   const options = accounts.filter((item) => item.currency === 'PLN' && item.kind in accountKinds)
   const [selected, setSelected] = useState('')
@@ -47,7 +47,7 @@ export default function Bonds({ accounts, onAccountsChanged }: {
   async function createAccount(event: FormEvent) {
     event.preventDefault()
     if (savingRef.current || busy) return
-    savingRef.current = true; setSaving(true); setError('')
+    savingRef.current = true; setSaving(true); onBusyChange?.(true); setError('')
     try {
       const saved = await request<Account>('/api/bond-accounts', {
         method: 'POST', body: JSON.stringify({ name: name.trim(), kind }),
@@ -55,7 +55,7 @@ export default function Bonds({ accounts, onAccountsChanged }: {
       setSelected(saved.id); setCreating(false); onAccountsChanged()
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Nie udało się dodać rachunku.')
-    } finally { savingRef.current = false; setSaving(false) }
+    } finally { savingRef.current = false; setSaving(false); onBusyChange?.(false) }
   }
 
   return <section className="purchases-section bonds-section" aria-labelledby="bonds-title">
@@ -84,7 +84,7 @@ export default function Bonds({ accounts, onAccountsChanged }: {
       <button className="primary-button" type="submit">{saving ? 'Zapisywanie…' : 'Zapisz rachunek obligacji'}</button></fieldset>
     </form>}
     {error && <p role="alert" className="purchase-message message-error">{error}</p>}
-    {account && <BondLedger key={account.id} account={account} onBusy={setBusy}
+    {account && <BondLedger key={account.id} account={account} onBusy={(value) => { setBusy(value); onBusyChange?.(value) }}
       disabled={saving || (!!selected && !options.some((item) => item.id === selected))} />}
   </section>
 }

@@ -2,7 +2,7 @@ import { expect, test } from './fixtures'
 import type { Page } from '@playwright/test'
 
 test.use({ actionTimeout: 10000 })
-const sectionOf = (page: Page) => page.getByRole('region', { name: 'Instrumenty giełdowe', exact: true })
+const sectionOf = (page: Page) => page.getByRole('region', { name: 'Instrumenty', exact: true })
 
 async function prepareCompany(page: Page, currency: string) {
   await page.goto('/')

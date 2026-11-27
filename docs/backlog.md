@@ -100,3 +100,7 @@ Status: Ukonczone - 200 testow backendu i 31 przegladarkowych zaliczone w CI. Gr
 ## FT-015 - Automatyczne kursy NBP przy otwarciu
 
 Status: Ukończone - 202 testy backendu i 34 przeglądarkowe zaliczone w CI. Pobranie aktualnych i brakujących historycznych kursów po otwarciu strony, partie bez ponownego pobierania wypełnionych dat, zachowanie znanych kwot i wyniku w walucie instrumentu przy awarii. Bez migracji bazy.
+
+## FT-016 - Obligacje w formularzu Dodaj instrument
+
+Status: Weryfikacja w CI. Wybór Obligacje przełącza formularz na istniejącą ewidencję TOS/COI/EDO z rachunkiem, parametrami emisji i zakupem. Jedno miejsce dodawania, bez zagnieżdżania formularzy i duplikowania pól. Zachowana walidacja, korekty i historia. Bez zmian API i migracji.
