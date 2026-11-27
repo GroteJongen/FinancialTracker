@@ -104,3 +104,7 @@ Status: Ukończone - 202 testy backendu i 34 przeglądarkowe zaliczone w CI. Pob
 ## FT-016 - Obligacje w formularzu Dodaj instrument
 
 Status: Ukończone - 202 testy backendu i 35 przeglądarkowych zaliczone w CI. Wybór Obligacje przełącza formularz na istniejącą ewidencję TOS/COI/EDO z rachunkiem, parametrami emisji i zakupem. Jedno miejsce dodawania, bez zagnieżdżania formularzy i duplikowania pól. Zachowana walidacja, korekty i historia. Bez zmian API i migracji.
+
+## FT-017 - Rachunek wymagany przy dodaniu instrumentu
+
+Status: Ukończone - 207 testów backendu i 38 przeglądarkowych zaliczone w CI. Wybór istniejącego rachunku, walidacja właściciela i typu na serwerze, trwałe przypisania katalogu bez fikcyjnych zakupów. Brak rachunków prowadzi do utworzenia rachunku przed wprowadzeniem instrumentu. Migracja 0009 zachowuje operacje i odczytuje ich dotychczasowe przypisania.

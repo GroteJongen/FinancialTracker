@@ -13,7 +13,8 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
   const [catalogue, setCatalogue] = useState<{ version: number; items: Listing[] } | null>(null)
   const [loadError, setLoadError] = useState('')
   const [listingId, setListingId] = useState(focus?.listingId ?? '')
-  const [accountId, setAccountId] = useState(focus?.accountId ?? accounts.find((item) => item.kind in kinds)?.id ?? '')
+  const [accountId, setAccountId] = useState(focus?.accountId ?? '')
+  const [instrumentAccountId, setInstrumentAccountId] = useState('')
   const [createStock, setCreateStock] = useState(false)
   const [createAccount, setCreateAccount] = useState(false)
   const [stockForm, setStockForm] = useState(initial)
@@ -26,7 +27,9 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
   const listings = current?.items ?? []
   const listing = listings.find((item) => item.id === listingId) ?? listings[0]
   const eligible = accounts.filter((item) => item.kind in kinds)
-  const account = eligible.find((item) => item.id === accountId) ?? eligible[0]
+  const account = eligible.find((item) => item.id === accountId) ?? eligible.find((item) => listing?.account_ids?.includes(item.id)) ?? eligible[0]
+  const draftAccountId = instrumentAccountId || account?.id || ''
+  const draftAccount = eligible.find((item) => item.id === draftAccountId)
   const blocked = saving || ledgerBusy
 
   useEffect(() => {
@@ -41,18 +44,21 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
   async function save(event: FormEvent, mode: 'stock' | 'account') {
     event.preventDefault()
     if (savingRef.current || ledgerBusy) return
+    if (mode === 'stock' && !draftAccount) {
+      setMessage({ text: eligible.length ? 'Wybrany rachunek nie istnieje lub jest niedostępny. Wybierz istniejący rachunek.' : 'Najpierw dodaj rachunek, aby zapisać instrument.', error: true }); return
+    }
     savingRef.current = true; setSaving(true); setMessage(null)
     try {
       if (mode === 'stock') {
         const saved = await request<Listing>('/api/securities', { method: 'POST', body: JSON.stringify({
-          ...stockForm, name: stockForm.name.trim(), symbol: stockForm.symbol.trim().toUpperCase(),
+          ...stockForm, account_id: draftAccountId, name: stockForm.name.trim(), symbol: stockForm.symbol.trim().toUpperCase(),
           mic: stockForm.mic.trim().toUpperCase(), isin: stockForm.isin.trim().toUpperCase() || null,
         }) })
-        setListingId(saved.id); setCreateStock(false); setStockForm(initial()); setRefresh((value) => value + 1)
+        setAccountId(draftAccountId); setListingId(saved.id); setCreateStock(false); setStockForm(initial()); setRefresh((value) => value + 1)
         setMessage({ text: 'Instrument został zapisany w katalogu instrumentu.', error: false })
       } else {
         const saved = await request<Account>('/api/investment-accounts', { method: 'POST', body: JSON.stringify({ ...accountForm, name: accountForm.name.trim() }) })
-        setAccountId(saved.id); setCreateAccount(false); onAccountsChanged()
+        setAccountId(saved.id); setInstrumentAccountId(saved.id); setCreateAccount(false); onAccountsChanged()
         setMessage({ text: 'Rachunek inwestycyjny został zapisany.', error: false })
       }
     } catch (failure) {
@@ -76,8 +82,13 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
           <option value="STOCK">Akcje</option><option value="ETF">ETF</option><option value="REIT">REIT giełdowy</option><option value="BOND">Obligacje</option>
         </select></div></div>
       {stockForm.kind === 'BOND' ? <Bonds accounts={accounts} onAccountsChanged={onAccountsChanged} onBusyChange={setLedgerBusy} /> :
-        <form aria-label="Nowy instrument" noValidate onSubmit={(event) => { void save(event, 'stock') }}>
+        eligible.length === 0 ? <p role="status" aria-label="Wymagany rachunek">Nie masz rachunku dla tego rodzaju instrumentu. Najpierw dodaj rachunek w formularzu poniżej.</p> : <form aria-label="Nowy instrument" noValidate onSubmit={(event) => { void save(event, 'stock') }}>
       <fieldset disabled={blocked}><div className="purchase-form-grid">
+        <div className="bond-select-field"><label htmlFor="instrument-account">Rachunek dla nowego instrumentu</label>
+          <select id="instrument-account" required value={draftAccountId} onChange={(event) => { setInstrumentAccountId(event.target.value); setMessage(null) }}>
+            {!draftAccount && <option value={draftAccountId}>Wybierz istniejący rachunek</option>}
+            {eligible.map((item) => <option key={item.id} value={item.id}>{item.name} · {kinds[item.kind]}</option>)}
+          </select></div>
         <label className="instrument-field" htmlFor="stock-company-name">Nazwa instrumentu<input id="stock-company-name" required maxLength={200} value={stockForm.name} onChange={(event) => setStockForm((previous) => ({ ...previous, name: event.target.value }))} /></label>
         <label htmlFor="stock-symbol">Ticker instrumentu<input id="stock-symbol" required maxLength={30} value={stockForm.symbol} onChange={(event) => setStockForm((previous) => ({ ...previous, symbol: event.target.value }))} /></label>
         <label htmlFor="stock-mic">Giełda instrumentu (MIC)<input id="stock-mic" required maxLength={4} placeholder="np. XWAR" value={stockForm.mic} onChange={(event) => setStockForm((previous) => ({ ...previous, mic: event.target.value }))} /></label>
@@ -110,7 +121,7 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
     {current && listings.length === 0 && <p className="empty-purchases">Katalog instrumentu jest pusty. Dodaj pierwszy instrument.</p>}
     {stockForm.kind !== 'BOND' && listing && <>
       <div className="purchase-account-picker"><label htmlFor="stock-listing">Wybierz instrument</label>
-        <select id="stock-listing" value={listing.id} disabled={blocked} onChange={(event) => { setListingId(event.target.value); setMessage(null) }}>
+        <select id="stock-listing" value={listing.id} disabled={blocked} onChange={(event) => { setListingId(event.target.value); setAccountId(''); setMessage(null) }}>
           {listings.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.symbol} · {item.mic} · {item.currency}</option>)}
         </select></div>
       <div className="stock-reference"><strong>{listing.name}</strong><p>{listing.symbol} · {listing.mic} · {listing.currency} · ISIN: {listing.isin ?? 'nie podano'}</p><p>Dane instrumentu podane ręcznie.</p></div>

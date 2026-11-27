@@ -2,6 +2,8 @@
 
 Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja obsluguje wlasne portfele grupujace rachunki, rozne ETF-y, akcje, gieldowe REIT-y i obligacje, z historia zakupow i wycen. Dodawanie obligacji COI, TOS i EDO opisuje [instrukcja](docs/bonds.md). Kursy ETF/akcji pobieramy z Yahoo Finance; naliczanie odsetek obligacji pozostaje kolejnym etapem. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
 
+Dodawanie instrumentu w sekcji „Instrumenty” wymaga wyboru istniejącego rachunku. Jeśli nie masz zgodnego rachunku, najpierw utwórz go w pokazanym formularzu. Nieistniejący lub niedostępny rachunek powoduje komunikat błędu, a wpisane dane instrumentu pozostają zachowane.
+
 ## Zakupy IUSQ
 
 Po utworzeniu rachunku demonstracyjnego wybierz go w sekcji „Zakupy IUSQ”. Wpisz datę, liczbę jednostek, cenę i prowizję w EUR. Jednostki ułamkowe oraz kwoty obsługują do 8 miejsc po przecinku. Formularz przyjmuje przecinek lub kropkę; backend zapisuje dokładne wartości dziesiętne, odrzuca wartości ujemne, zerową ilość/cenę oraz przyszłe daty według Europe/Warsaw.

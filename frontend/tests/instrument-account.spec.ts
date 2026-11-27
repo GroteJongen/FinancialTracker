@@ -1,0 +1,63 @@
+import { expect, test } from './fixtures'
+import type { Account } from '../src/purchases/api'
+
+test('instrument registration selects and remembers an existing account', async ({ page }) => {
+  const tag = Date.now().toString()
+  const account = await (await page.request.post('/api/investment-accounts', { data: { name: 'TEST przypisanie ' + tag, kind: 'IKZE', currency: 'PLN' } })).json()
+  await page.goto('/')
+  await page.locator('.operations-panel > summary').click()
+  const section = page.getByRole('region', { name: 'Instrumenty', exact: true })
+  await section.getByRole('button', { name: 'Dodaj instrument', exact: true }).click()
+  const form = section.getByRole('form', { name: 'Nowy instrument', exact: true })
+  await form.getByLabel('Rachunek dla nowego instrumentu', { exact: true }).selectOption(account.id)
+  await form.getByLabel('Nazwa instrumentu', { exact: true }).fill('TEST przypisany ' + tag)
+  await form.getByLabel('Ticker instrumentu', { exact: true }).fill('REG' + tag)
+  await form.getByLabel('Giełda instrumentu (MIC)', { exact: true }).fill('XWAR')
+  await form.getByRole('button', { name: 'Zapisz instrument', exact: true }).click()
+  await expect(section.getByRole('status', { name: 'Zapis katalogu instrumentu' })).toContainText('zapisany')
+  const listing = await section.getByLabel('Wybierz instrument', { exact: true }).inputValue()
+  await expect(section.getByLabel('Rachunek instrumentu', { exact: true })).toHaveValue(account.id)
+  await page.reload()
+  await page.locator('.operations-panel > summary').click()
+  await section.getByLabel('Wybierz instrument', { exact: true }).selectOption(listing)
+  await expect(section.getByLabel('Rachunek instrumentu', { exact: true })).toHaveValue(account.id)
+})
+
+test('without accounts the user must create an account before entering an instrument', async ({ page }) => {
+  let accounts: Account[] = []
+  await page.route('**/api/accounts', (route) => route.fulfill({ json: accounts }))
+  await page.route('**/api/investment-accounts', async (route) => {
+    const response = await route.fetch()
+    accounts = [await response.json() as Account]
+    await route.fulfill({ response })
+  })
+  await page.goto('/')
+  await page.getByRole('link', { name: 'Dodaj pierwszy rachunek w sekcji Instrumenty' }).click()
+  const section = page.getByRole('region', { name: 'Instrumenty', exact: true })
+  await section.getByRole('button', { name: 'Dodaj instrument', exact: true }).click()
+  await expect(section.getByRole('status', { name: 'Wymagany rachunek', exact: true })).toContainText('Najpierw dodaj rachunek')
+  await expect(section.getByRole('form', { name: 'Nowy instrument', exact: true })).toHaveCount(0)
+  await expect(section.getByRole('form', { name: 'Nowy rachunek instrumentu', exact: true })).toBeVisible()
+  await section.getByLabel('Rodzaj aktywa', { exact: true }).selectOption('BOND')
+  await expect(section.getByRole('status', { name: 'Wymagany rachunek obligacji', exact: true })).toBeVisible()
+  await expect(section.getByRole('form', { name: 'Nowy zakup obligacji', exact: true })).toHaveCount(0)
+  await section.getByLabel('Rodzaj aktywa', { exact: true }).selectOption('STOCK')
+  await section.getByLabel('Nazwa rachunku instrumentu', { exact: true }).fill('TEST pierwszy rachunek ' + Date.now())
+  await section.getByRole('button', { name: 'Zapisz rachunek instrumentu', exact: true }).click()
+  await expect(section.getByRole('form', { name: 'Nowy instrument', exact: true })).toBeVisible()
+  await expect(section.getByLabel('Rachunek dla nowego instrumentu', { exact: true })).toHaveValue(accounts[0].id)
+})
+
+test('a stale account reported by the server displays an error and preserves the instrument draft', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('.operations-panel > summary').click()
+  const section = page.getByRole('region', { name: 'Instrumenty', exact: true })
+  await section.getByRole('button', { name: 'Dodaj instrument', exact: true }).click()
+  await section.getByLabel('Nazwa instrumentu', { exact: true }).fill('TEST zachowany szkic')
+  await section.getByLabel('Ticker instrumentu', { exact: true }).fill('STALE')
+  await section.getByLabel('Giełda instrumentu (MIC)', { exact: true }).fill('XWAR')
+  await page.route('**/api/securities', (route) => route.fulfill({ status: 404, json: { detail: 'Wybrany rachunek nie istnieje lub jest niedostępny. Wybierz istniejący rachunek.' } }))
+  await section.getByRole('button', { name: 'Zapisz instrument', exact: true }).click()
+  await expect(section.getByRole('alert')).toContainText('rachunek nie istnieje')
+  await expect(section.getByLabel('Nazwa instrumentu', { exact: true })).toHaveValue('TEST zachowany szkic')
+})

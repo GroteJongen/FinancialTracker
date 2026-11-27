@@ -62,3 +62,7 @@ Nieoficjalny endpoint chart, bez nowej zaleznosci, sluzy prywatnej aplikacji. Su
 ## ADR-028 - Portfel jako prywatna grupa rachunkow
 
 PortfolioGroup i PortfolioAccount tworza relacje wiele-do-wielu; portfel prezentacyjny nie przenosi zakupow ani historii. Suma wszystkich rachunkow nie laczy wynikow grup, wiec ich przeciecia nie duplikuja kapitalu. Rachunki/tax wrapper i instrumenty/notowania pozostaja oddzielne. Prywatny katalog dopuszcza ETF/akcje/gieldowe REIT, a obligacje zachowuja odrebna wycene. Pozycje sa rozdzielone rachunkiem, by nie mieszac prywatnych cen. Bez zgadywania regul dla przyszlych klas aktywow.
+
+## ADR-029 - Rejestracja instrumentu na rachunku
+
+Przypisanie notowania do rachunku jest osobną relacją account_listings, bez tworzenia zerowych lub fikcyjnych zakupów. Walidacja rachunku i zapis instrumentu oraz przypisania odbywają się w jednej transakcji, pod istniejącą blokadą właściciela. Katalog odczytuje także rachunki z rzeczywistych operacji; nie przenosimy historii ani nie zmieniamy wycen. Właściciela ustala serwer. Usunięcie rachunku/notowania usuwa jedynie metadata przypisania przez FK CASCADE; operacje finansowe nadal mają dotychczasowe ograniczenia.

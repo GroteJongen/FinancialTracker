@@ -298,3 +298,13 @@ class YahooListing(Base):
     attempted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     lease: Mapped[UUID | None]
     failed: Mapped[bool] = mapped_column(server_default=text("false"))
+
+
+class AccountListing(Base):
+    __tablename__ = "account_listings"
+    account_id: Mapped[UUID] = mapped_column(
+        ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True
+    )
+    listing_id: Mapped[UUID] = mapped_column(
+        ForeignKey("listings.id", ondelete="CASCADE"), primary_key=True
+    )

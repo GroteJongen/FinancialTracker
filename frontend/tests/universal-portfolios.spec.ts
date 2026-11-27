@@ -4,8 +4,8 @@ test('custom portfolio groups mixed assets, filters IKE and shows the six reques
   const tag = Date.now().toString()
   const standard = await (await page.request.post('/api/investment-accounts', { data: { name: 'TEST group standard ' + tag, kind: 'STANDARD', currency: 'PLN' } })).json()
   const ike = await (await page.request.post('/api/investment-accounts', { data: { name: 'TEST group IKE ' + tag, kind: 'IKE', currency: 'PLN' } })).json()
-  const stock = await (await page.request.post('/api/securities', { data: { kind: 'ETF', name: 'TEST World ETF ' + tag, symbol: 'W' + tag, mic: 'XETR', currency: 'PLN' } })).json()
-  const reit = await (await page.request.post('/api/securities', { data: { kind: 'REIT', name: 'TEST REIT ' + tag, symbol: 'R' + tag, mic: 'XNYS', currency: 'PLN' } })).json()
+  const stock = await (await page.request.post('/api/securities', { data: { account_id: standard.id, kind: 'ETF', name: 'TEST World ETF ' + tag, symbol: 'W' + tag, mic: 'XETR', currency: 'PLN' } })).json()
+  const reit = await (await page.request.post('/api/securities', { data: { account_id: ike.id, kind: 'REIT', name: 'TEST REIT ' + tag, symbol: 'R' + tag, mic: 'XNYS', currency: 'PLN' } })).json()
   for (const [account, listing, price] of [[standard, stock, '110'], [ike, reit, '90']]) {
     await page.request.post(`/api/accounts/${account.id}/purchases`, { data: { listing_id: listing.id, request_id: crypto.randomUUID(), trade_date: '2026-11-01', quantity: '10', unit_price: '100', commission: '0', currency: 'PLN' } })
     await page.request.post(`/api/accounts/${account.id}/prices`, { data: { listing_id: listing.id, request_id: crypto.randomUUID(), observed_on: '2026-11-20', price, currency: 'PLN' } })
