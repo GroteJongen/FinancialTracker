@@ -43,7 +43,7 @@ test('custom portfolio groups mixed assets, filters IKE and shows the six reques
 test('generic catalogue can register a second ETF and a listed REIT without an IUSQ-specific view', async ({ page }) => {
   await page.goto('/')
   await page.locator('.operations-panel > summary').click()
-  const section = page.getByRole('region', { name: 'Instrumenty giełdowe', exact: true })
+  const section = page.getByRole('region', { name: 'Instrumenty', exact: true })
   for (const kind of ['ETF', 'REIT']) {
     const tag = Date.now().toString()
     await section.getByRole('button', { name: 'Dodaj instrument', exact: true }).click()

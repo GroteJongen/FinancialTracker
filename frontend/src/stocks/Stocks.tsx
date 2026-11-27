@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { request } from '../purchases/api'
 import type { Account, Listing } from '../purchases/api'
 import StockPosition from './StockPosition'
+import Bonds from '../bonds/Bonds'
 
 const initial = () => ({ name: '', symbol: '', mic: '', currency: 'PLN', isin: '', kind: 'STOCK' })
 const kinds: Record<string, string> = { STANDARD: 'Zwykły', IKE: 'IKE', IKZE: 'IKZE' }
@@ -60,21 +61,23 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
   }
 
   return <section id="security-operations" className="purchases-section stocks-section" aria-labelledby="stocks-title">
-    <div className="section-heading"><h2 id="stocks-title">Instrumenty giełdowe</h2><span>KATALOG I POZYCJE</span></div>
-    <p className="valuation-note">Dodaj instrument z giełdą i walutą notowania, a potem zapisz zakupy i cenę wyceny.
+    <div className="section-heading"><h2 id="stocks-title">Instrumenty</h2><span>KATALOG I POZYCJE</span></div>
+    <p className="valuation-note">Wybierz rodzaj aktywa: akcje, ETF, REIT lub obligacje. Formularz dopasuje się do wybranego rodzaju.
       Dane instrumentu i ceny wpisujesz ręcznie.</p>
     <div className="form-actions stock-toolbar">
       <button type="button" className="secondary-button" disabled={blocked} aria-expanded={createStock || listings.length === 0}
         onClick={() => setCreateStock((value) => !value)}>Dodaj instrument</button>
-      <button type="button" className="secondary-button" disabled={blocked} aria-expanded={createAccount || !account}
-        onClick={() => setCreateAccount((value) => !value)}>Dodaj rachunek instrumentu</button>
+      {stockForm.kind !== 'BOND' && <button type="button" className="secondary-button" disabled={blocked} aria-expanded={createAccount || !account}
+        onClick={() => setCreateAccount((value) => !value)}>Dodaj rachunek instrumentu</button>}
     </div>
-    {(createStock || (current && listings.length === 0)) && <form className="purchase-panel stock-catalogue-form" aria-label="Nowy instrument"
-      noValidate onSubmit={(event) => { void save(event, 'stock') }}>
+    {(createStock || (current && listings.length === 0)) && <div className="purchase-panel stock-catalogue-form">
+      <div className="purchase-form-grid"><div className="bond-select-field"><label htmlFor="security-kind">Rodzaj aktywa</label>
+        <select id="security-kind" disabled={blocked} value={stockForm.kind} onChange={(event) => { setStockForm({ ...stockForm, kind: event.target.value }); setMessage(null) }}>
+          <option value="STOCK">Akcje</option><option value="ETF">ETF</option><option value="REIT">REIT giełdowy</option><option value="BOND">Obligacje</option>
+        </select></div></div>
+      {stockForm.kind === 'BOND' ? <Bonds accounts={accounts} onAccountsChanged={onAccountsChanged} onBusyChange={setLedgerBusy} /> :
+        <form aria-label="Nowy instrument" noValidate onSubmit={(event) => { void save(event, 'stock') }}>
       <fieldset disabled={blocked}><div className="purchase-form-grid">
-        <div className="bond-select-field"><label htmlFor="security-kind">Rodzaj aktywa</label><select id="security-kind" value={stockForm.kind} onChange={(event) => setStockForm({ ...stockForm, kind: event.target.value })}>
-          <option value="STOCK">Akcje</option><option value="ETF">ETF</option><option value="REIT">REIT giełdowy</option>
-        </select></div>
         <label className="instrument-field" htmlFor="stock-company-name">Nazwa instrumentu<input id="stock-company-name" required maxLength={200} value={stockForm.name} onChange={(event) => setStockForm((previous) => ({ ...previous, name: event.target.value }))} /></label>
         <label htmlFor="stock-symbol">Ticker instrumentu<input id="stock-symbol" required maxLength={30} value={stockForm.symbol} onChange={(event) => setStockForm((previous) => ({ ...previous, symbol: event.target.value }))} /></label>
         <label htmlFor="stock-mic">Giełda instrumentu (MIC)<input id="stock-mic" required maxLength={4} placeholder="np. XWAR" value={stockForm.mic} onChange={(event) => setStockForm((previous) => ({ ...previous, mic: event.target.value }))} /></label>
@@ -86,7 +89,8 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
       </div><p className="form-hint">Ticker nie wystarcza do identyfikacji. Podaj giełdę i walutę z potwierdzenia transakcji.</p>
       <button className="primary-button" type="submit">Zapisz instrument</button></fieldset>
     </form>}
-    {(createAccount || !account) && <form className="purchase-panel stock-catalogue-form" aria-label="Nowy rachunek instrumentu" noValidate onSubmit={(event) => { void save(event, 'account') }}>
+    </div>}
+    {stockForm.kind !== 'BOND' && (createAccount || !account) && <form className="purchase-panel stock-catalogue-form" aria-label="Nowy rachunek instrumentu" noValidate onSubmit={(event) => { void save(event, 'account') }}>
       <fieldset disabled={blocked}><div className="purchase-form-grid">
         <label htmlFor="stock-account-name">Nazwa rachunku instrumentu<input id="stock-account-name" required maxLength={120} value={accountForm.name} onChange={(event) => setAccountForm((previous) => ({ ...previous, name: event.target.value }))} /></label>
         <div className="bond-select-field"><label htmlFor="stock-account-kind">Typ rachunku instrumentu</label>
@@ -104,7 +108,7 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
     {!current && !loadError && <p role="status">Pobieranie katalogu instrumentu…</p>}
     {loadError && <div role="alert"><p>{loadError}</p><button onClick={() => setRefresh((value) => value + 1)}>Ponów odczyt katalogu instrumentu</button></div>}
     {current && listings.length === 0 && <p className="empty-purchases">Katalog instrumentu jest pusty. Dodaj pierwszy instrument.</p>}
-    {listing && <>
+    {stockForm.kind !== 'BOND' && listing && <>
       <div className="purchase-account-picker"><label htmlFor="stock-listing">Wybierz instrument</label>
         <select id="stock-listing" value={listing.id} disabled={blocked} onChange={(event) => { setListingId(event.target.value); setMessage(null) }}>
           {listings.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.symbol} · {item.mic} · {item.currency}</option>)}

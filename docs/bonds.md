@@ -4,7 +4,7 @@ Zakres: ewidencja zakupów detalicznych obligacji TOS, COI i EDO. Użytkownik tw
 
 ## Wprowadzanie danych
 
-Sekcja „Obligacje skarbowe” pozwala utworzyć rachunek, wybrać typ obligacji, wpisać serię, datę zakupu, całkowitą liczbę sztuk oraz rzeczywistą cenę jednej obligacji w PLN. Domyślną cenę 100,00 PLN można zmienić, np. przy zakupie w drodze zamiany. Zapisujemy koszt: sztuki × cena. Nie jest to nominał ani bieżąca wartość obligacji.
+W sekcji „Instrumenty” kliknij „Dodaj instrument” i wybierz rodzaj aktywa „Obligacje”. Formularz pokaże sekcję „Obligacje skarbowe”, która pozwala utworzyć rachunek, wybrać typ obligacji, wpisać serię, datę zakupu, całkowitą liczbę sztuk oraz rzeczywistą cenę jednej obligacji w PLN. Domyślną cenę 100,00 PLN można zmienić, np. przy zakupie w drodze zamiany. Zapisujemy koszt: sztuki × cena. Nie jest to nominał ani bieżąca wartość obligacji.
 
 Opcjonalnie użytkownik wpisuje oprocentowanie (stałe dla TOS, pierwszego roku dla COI/EDO), marżę dla COI/EDO i adres HTTPS dokumentu emisji. Stopy nie są uzupełniane aktualną ofertą. Puste oprocentowanie jest brakiem danych, nie stopą 0%. Parametry zawsze mają status MANUAL_UNVERIFIED. Podanie adresu nie oznacza, że aplikacja pobrała lub zweryfikowała dokument.
 

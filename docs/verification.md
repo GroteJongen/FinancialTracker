@@ -126,3 +126,9 @@ Lokalnie git diff --check zaliczone. Nie uruchamiano testow na portfelu uzytkown
 CI https://github.com/GroteJongen/FinancialTracker/actions/runs/46068427463: 202 testy backendu, 34 Playwright, TypeScript/ESLint/build, Ruff, Alembic oraz pełny Compose i przejście na obrazy zaliczone. Sprawdzono pobranie NBP przy otwarciu strony z pustym i istniejącym cache, aktualizację sum PLN bez klikania, wartość i wynik w EUR przy awarii bez pętli ponowień oraz uzupełnienie 14 par waluta/data w partiach 8+6 bez powtarzania bieżącego kursu. Frontend pobiera kolejne partie w trybie only_missing. Publiczne odczyty NBP i Yahoo również zaliczone, osobno od testów z atrapami. Końcowy kod podlega standardowym kontrolom CI bez kroku formatowania źródeł w workflow.
 
 Lokalnie git diff --check i docker compose --env-file .env.example config --quiet zaliczone. Bez migracji i operacji na bazie użytkownika. Suma portfela pozostaje niepełna, gdy brak kursów; znane kwoty i wynik pozycji pokazujemy w walucie instrumentu z jawnym oznaczeniem.
+
+## FT-016 - Obligacje w Dodaj instrument, 2026-11-27
+
+CI https://github.com/GroteJongen/FinancialTracker/actions/runs/46070421678: 202 testy backendu, 35 Playwright, TypeScript/ESLint/build, Ruff, Alembic, pełny Compose i przejście na gotowe obrazy zaliczone. Testy obligacji przechodzą teraz przez wybór Rodzaj aktywa → Obligacje: zapis TOS/COI/EDO, rachunki zwykły/IKE/IKZE, korekta, audyt, ponowienie i trwałość. Nowy scenariusz sprawdza zamianę pól giełdowych na obligacje, marżę wyłącznie dla COI/EDO, powrót do ETF z zachowaniem szkicu danych instrumentu i brak zagnieżdżonych formularzy.
+
+Sekcja Instrumenty korzysta z dotychczasowego komponentu obligacji i endpointów. Podczas zapisu zablokowana jest zmiana rodzaju i zamknięcie formularza. Brak zmian schematu bazy i zasad odsetek. Lokalnie git diff --check oraz docker compose --env-file .env.example config --quiet zaliczone; bez operacji na rzeczywistych aktywach użytkownika.

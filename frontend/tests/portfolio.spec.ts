@@ -66,7 +66,7 @@ test('actual stock price update refreshes portfolio without a page reload', asyn
   await page.locator('.operations-panel > summary').click()
   const row = portfolio(page).getByRole('row').filter({ hasText: account.name })
   await expect(row).toContainText('1\u00a0100,00 PLN')
-  const stocks = page.getByRole('region', { name: 'Instrumenty giełdowe', exact: true })
+  const stocks = page.getByRole('region', { name: 'Instrumenty', exact: true })
   await stocks.getByLabel('Wybierz instrument', { exact: true }).selectOption(listing.id)
   await stocks.getByLabel('Rachunek instrumentu', { exact: true }).selectOption(account.id)
   await stocks.getByLabel('Cena wyceny instrumentu (PLN)', { exact: true }).fill('120')
