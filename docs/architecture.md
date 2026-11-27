@@ -82,3 +82,7 @@ BondIssue, BondPurchase i BondAuditEvent dodaje migracja 0004. Warstwa domain/bo
 ## Akcje FT-010
 
 Migracja 0005 wprowadza prywatny katalog Instrument.owner_id oraz obsługę PLN/EUR/USD we wspólnych zakupach i cenach. Warstwa application/stocks.py odpowiada za tożsamość katalogu i rejestrację, a purchases.py i valuations.py zachowują wspólne obliczenia i audyt. Frontend rozdziela widoki ETF i akcji; domyślny GET /listings nadal pokazuje ETF. Kontrakt i ograniczenia opisuje stocks.md.
+
+## Portfel FT-011
+
+Agregacja jest odrębnym przypadkiem użycia application/portfolio.py, z czystym sumowaniem domain/portfolio.py i osobnym adapterem infrastructure/nbp.py. BondValuation przechowuje niezmienne, ręczne obserwacje dla rewizji zakupu. FxRate przechowuje publiczne kursy NBP dla dat wymaganych przez portfel. GET nie wykonuje HTTP do dostawcy. Kontrakt, spójność odczytu i zasady niepełnych danych: portfolio.md.

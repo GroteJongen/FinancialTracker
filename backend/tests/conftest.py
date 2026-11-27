@@ -18,6 +18,8 @@ from app.infrastructure.models import (
     BondAuditEvent,
     BondIssue,
     BondPurchase,
+    BondValuation,
+    FxRate,
     Instrument,
     Listing,
     Operation,
@@ -93,6 +95,9 @@ def ledger(test_database):
     with Session(engine) as session, session.begin():
         account_ids = select(Account.id).where(Account.owner_id == owner_id)
         ids = select(Operation.id).where(Operation.account_id.in_(account_ids))
+        bond_ids = select(BondPurchase.id).where(BondPurchase.account_id.in_(account_ids))
+        session.execute(delete(BondValuation).where(BondValuation.purchase_id.in_(bond_ids)))
+        session.execute(delete(FxRate))
         session.execute(delete(BondAuditEvent).where(BondAuditEvent.owner_id == owner_id))
         session.execute(delete(BondPurchase).where(BondPurchase.account_id.in_(account_ids)))
         session.execute(delete(BondIssue).where(BondIssue.owner_id == owner_id))

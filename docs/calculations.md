@@ -52,3 +52,7 @@ Koszt partii w PLN = całkowita liczba sztuk × rzeczywista cena jednej sztuki w
 ## FT-010 — Akcje w walucie notowania
 
 Te same wzory kosztu, średniej, wartości i wyniku stosujemy osobno dla każdego rachunku/notowania akcji w PLN, EUR i USD. Przykład 10 × 100 + 2 prowizji przy cenie 110 daje koszt 1002, wartość 1100, wynik 98 i 9,78% w każdej z tych walut osobno. Waluta bazowa rachunku nie jest kursem przewalutowania. Nie sumujemy różnych walut, nie uwzględniamy dywidend, sprzedaży, splitów ani podatków.
+
+## FT-011 — Suma portfela
+
+Łączny wynik PLN = suma bieżących wartości PLN + skumulowane wypłacone odsetki brutto PLN − suma historycznych kosztów PLN. Walutowy koszt liczony jest dla każdej transakcji po historycznym kursie NBP; bieżąca wartość po aktualnym dostępnym kursie. To szacunek, bez rzeczywistego FX brokera i podatków. Przykład: koszt 175000, wartość 185000, wypłaty 0 daje wynik 10000 i 5,71%. Wartość 175000 i odsetki już wypłacone 10000 daje ten sam wynik, ale inny stan aktywów. Udziały bazują wyłącznie na wartości aktywów lub na koszcie, bez dopisywania wypłaconych kwot. Reguły braków i precyzji: portfolio.md.

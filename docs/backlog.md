@@ -76,3 +76,9 @@ Zakres: tworzenie rachunków PLN zwykły/IKE/IKZE, zakupy TOS/COI/EDO, niezmienn
 Status: Ukończone — 127 testów backendu, 21 testów przeglądarkowych oraz migracje i trwałość Compose potwierdzone w CI. Priorytet nadany przez użytkownika.
 
 Pusty, prywatny katalog akcji, ręczna rejestracja spółki/notowania, rachunki zwykłe/IKE/IKZE, zakupy i korekty, ręczna wycena, koszt i wynik w walucie notowania PLN/EUR/USD. Migracja 0005, izolacja właścicieli, idempotencja oraz regresja ETF i obligacji. Automatyczne kursy, FX, dywidendy i sprzedaż pozostają osobnymi zadaniami. Patrz stocks.md.
+
+## FT-011 — Dashboard całego portfela
+
+Status: W trakcie weryfikacji. Priorytet użytkownika.
+
+Agregacja obligacji, ETF i akcji w PLN, koszt i wynik, ręczne wyceny obligacji i wypłacone odsetki, filtry zwykłe/IKE/IKZE/razem, wykres wartości lub kosztu, kursy NBP bieżące i historyczne, ochrona przed brakami i podwójnym liczeniem. Migracja 0006 i testy. Nie wdraża automatycznego naliczania odsetek z listów emisyjnych ani gotówki. Patrz portfolio.md.

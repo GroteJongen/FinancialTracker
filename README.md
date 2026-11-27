@@ -122,3 +122,7 @@ Sekcja „Obligacje skarbowe” pozwala tworzyć rachunki PLN (zwykły, IKE, IKZ
 ## Akcje
 
 Sekcja „Akcje” pozwala dodać własne spółki i notowania, tworzyć rachunki zwykłe/IKE/IKZE, zapisywać zakupy i ręczne ceny oraz przeglądać koszt i wynik w PLN, EUR lub USD. Katalog startuje pusty. [Instrukcja i ograniczenia](docs/stocks.md).
+
+## Dashboard portfela
+
+„Mój portfel” pokazuje koszt, wartość aktywów i wynik w PLN, filtry zwykłe/IKE/IKZE/wszystkie oraz wykres udziałów. Wyceny giełdowe są ręczne; dla obligacji można zapisać bieżącą wartość i skumulowane wypłacone odsetki brutto. Waluty wymagają pobrania referencyjnych kursów NBP. Braki nie są traktowane jako zero. [Zasady i ograniczenia](docs/portfolio.md).

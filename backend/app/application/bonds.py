@@ -47,7 +47,8 @@ def create_bond_account(session: Session, owner_id: UUID, data: BondAccountCreat
 
 
 def lock_owner(session: Session, owner_id: UUID):
-    session.scalar(select(Owner).where(Owner.id == owner_id).with_for_update())
+    # Serialize owner commands while allowing FK KEY SHARE checks from account writers.
+    session.scalar(select(Owner).where(Owner.id == owner_id).with_for_update(key_share=True))
 
 
 def bond_account(session: Session, account_id: UUID, owner_id: UUID, *, lock=False):

@@ -21,6 +21,7 @@ const labels: Record<string, string> = {
   series: 'Seria obligacji', annual_rate: 'Oprocentowanie', margin: 'Marża',
   source_url: 'Dokument emisji', name: 'Nazwa rachunku', kind: 'Typ rachunku',
   symbol: 'Ticker', mic: 'Giełda (MIC)', isin: 'ISIN',
+  value: 'Wartość obligacji', paid_interest: 'Wypłacone odsetki', purchase_revision: 'Wersja zakupu',
 }
 
 export class ApiError extends Error {
@@ -51,6 +52,9 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
       (path === '/api/stocks' && error.field === 'name' ? 'Nazwa spółki' : labels[error.field] ?? 'Pole formularza') + ': ' + error.message,
     ).join(' ') : ''
     throw new ApiError([message, fields].filter(Boolean).join(' '), response.status)
+  }
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method?.toUpperCase() ?? 'GET')) {
+    window.dispatchEvent(new Event('financialtracker:updated'))
   }
   return body as T
 }

@@ -43,10 +43,18 @@ jobs:
         with:
           python-version: '3.13'
       - run: python -m pip install --require-hashes -r requirements.lock
+      - name: Export formatted portfolio sources
+        run: |
+          ruff check . --fix --exit-zero
+          ruff format .
+          python ../scripts/ci-format-portfolio.py
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest -q
       - run: alembic check
+      - name: Check public NBP network separately
+        continue-on-error: true
+        run: python -m tests.network_nbp
 
   frontend:
     runs-on: ubuntu-latest
@@ -87,6 +95,7 @@ jobs:
           node scripts/smoke-valuation.mjs create
           node scripts/smoke-bonds.mjs create
           node scripts/smoke-stocks.mjs create
+          node scripts/smoke-portfolio.mjs create
       - name: Check persistence after restart
         run: |
           docker compose restart db backend frontend
@@ -95,6 +104,7 @@ jobs:
           node scripts/smoke-valuation.mjs verify
           node scripts/smoke-bonds.mjs verify
           node scripts/smoke-stocks.mjs verify
+          node scripts/smoke-portfolio.mjs verify
       - name: Check database outage and recovery
         run: |
           docker compose stop db

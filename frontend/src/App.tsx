@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Purchases from './purchases/Purchases'
 import Bonds from './bonds/Bonds'
 import Stocks from './stocks/Stocks'
+import Portfolio from './portfolio/Portfolio'
 
 type Account = { id: string; name: string; kind: string; currency: string }
 type Connection =
@@ -83,6 +84,7 @@ export default function App() {
             </div>
             <span className="version">WERSJA ROZWOJOWA · 0.1</span>
           </div>
+          {connection.status === 'ready' && <Portfolio />}
           <section className="welcome-card" aria-labelledby="welcome-title">
             <div className="welcome-copy">
               <span className="small-label">TWÓJ PORTFEL</span>
