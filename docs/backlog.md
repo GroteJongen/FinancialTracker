@@ -112,3 +112,7 @@ Status: Ukończone - 207 testów backendu i 38 przeglądarkowych zaliczone w CI.
 ## FT-018 - Usunięcie osobnych operacji ETF EUR
 
 Status: Ukończone - 208 testów backendu i 39 przeglądarkowych zaliczone w CI. Jeden widok Instrumenty dla ETF, akcji i REIT, z historią cen i zakupów oraz korektami. Usunięte komponenty Purchases i Valuation ograniczone do EUR, wspólne API i audyt w shared. Wycena backendu wymaga jawnego listing_id, bez domyślnego IUSQ. Bez zmian schematu i usuwania danych.
+
+## FT-019 - Wyłącznie historia zakupów instrumentu
+
+Status: Weryfikacja w CI. Usunięcie całego panelu Pozycja i formularzy ceny oraz nowego zakupu. Pozostaje historia zakupów, korekta wybranego wpisu i audyt. Bez pobierania wyceny przez historię, bez zmian backendu i usuwania danych.

@@ -55,3 +55,7 @@ POST /api/securities wymaga account_id. Migracja 0009 dodaje account_listings: u
 ## Jeden widok operacji
 
 Sekcja Operacje ETF (EUR) została usunięta. IUSQ wybiera się w sekcji Instrumenty, podobnie jak każdy inny ETF, akcję lub REIT. Wspólna pozycja pokazuje cenę jednostki, koszt, wynik, historię cen ręcznych, zakupy i audyt korekt. GET /api/accounts/{id}/valuation wymaga listing_id; brak parametru zwraca 422. Dane zakupów, cen, audytu i rachunków pozostają zachowane, bez migracji.
+
+## Historia zamiast panelu Pozycja (FT-019)
+
+Po wybraniu instrumentu i rachunku w operacjach pozostaje wyłącznie Historia zakupów instrumentu. Panel Pozycja, kafelki, źródło wyceny, ręczna cena, historia cen i formularz nowego zakupu zostały usunięte z UI. Formularz korekty otwiera się tylko z wybranego wiersza historii; audyt pozostaje dostępny. Historia pobiera tylko zakupy, bez GET valuation i bez reagowania na aktualizacje kursów. Dashboard i istniejące API nadal obliczają wycenę. Dane cen i zakupów nie są usuwane.
