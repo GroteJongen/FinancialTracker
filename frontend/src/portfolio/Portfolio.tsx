@@ -100,6 +100,7 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
       {scopes.map(([value, label]) => <button key={value} type="button" aria-pressed={scope === value} disabled={busy}
         onClick={() => { setScope(value); setEditing(null); setMessage('') }}>{label}</button>)}
     </div>
+    <dl className="portfolio-cards">{cards.map(([label, value]) => <div key={label} className={label === 'Łączny zysk / strata' && totals?.gain?.startsWith('-') ? 'portfolio-loss' : ''}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
     <div className="portfolio-actions"><button type="button" className="text-button" disabled={busy || marketBusy} onClick={() => { setVersion((value) => value + 1); void fetchMarket() }}>Odśwież podsumowanie</button>
       <button type="button" className="secondary-button" disabled={busy || !data} onClick={() => { void fetchFx() }}>{busy ? 'Pobieranie…' : 'Pobierz kursy NBP'}</button></div>
     {!data && !error && <p role="status">Pobieranie podsumowania portfela…</p>}
@@ -107,7 +108,7 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
     {message && <p role="status" aria-label="Informacja portfela" className="valuation-note">{message}</p>}
     {marketMessage && <p role="status" aria-label="Stan Yahoo" className="valuation-note">{marketMessage}</p>}
     <p className="form-hint">Yahoo Finance: notowania mogą być opóźnione; Xetra około 15 minut. Czas notowania nie jest czasem pobrania. Nowsza cena ręczna ma pierwszeństwo do pojawienia się późniejszego notowania. NBP aktualizujesz osobnym przyciskiem. Jedno odświeżenie obejmuje do 8 notowań; przy większym portfelu powtórz odświeżenie.</p>
-    <dl className="portfolio-cards">{cards.map(([label, value]) => <div key={label} className={label === 'Łączny zysk / strata' && totals?.gain?.startsWith('-') ? 'portfolio-loss' : ''}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+
     {data && !totals?.complete && <p className="portfolio-warning" role="status" aria-label="Kompletność portfela">
       Podsumowanie jest niepełne. Wartość pozycji z dostępną wyceną: {amount(totals?.known_value)}.
       Uzupełnij brakujące ceny, wyceny obligacji lub kursy NBP. Braki nie są traktowane jako zero.</p>}

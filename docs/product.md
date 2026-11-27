@@ -56,3 +56,7 @@ Dashboard wszystkich zakupionych aktywów z filtrami zwykłe/IKE/IKZE/razem, sum
 ## Dodany zakres FT-005
 
 Odswiezenie strony sprawdza automatyczne ceny posiadanych ETF/akcji z limitem 5 minut. IUSQ ma jawne mapowanie, akcje wymagaja wpisania symbolu Yahoo. Interfejs rozroznia czas notowania i pobrania; ceny reczne i dane przy awarii sa zachowane. Szczegoly: yahoo.md.
+
+## Portfele mieszane FT-014
+
+Uzytkownik tworzy wlasne grupy rachunkow, wybiera portfel i filtr IKE/IKZE, odczytuje podsumowanie oraz wspolna liste ETF, akcji, gieldowych REIT i obligacji. Tabela ma liczbe jednostek, nazwe, cene jednostki, wartosc i wynik kwotowo/procentowo. Instrument w tabeli otwiera szczegoly; glowny widok nie jest przypisany do IUSQ. Szczegoly: portfolios.md.

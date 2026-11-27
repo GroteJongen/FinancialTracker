@@ -95,4 +95,4 @@ Status: Ukonczone - 196 testow backendu i 29 testow przegladarkowych zaliczone w
 
 ## FT-014 - Wlasne portfele i rozne aktywa
 
-Status: W trakcie. Grupy rachunkow z filtrami IKE/IKZE, wspolna tabela o szesciu kolumnach, prywatny katalog roznych ETF/akcji/REIT oraz istniejace obligacje. Podsumowanie wybranego portfela u gory, operacje i katalog w rozwijanej sekcji, wycena zalezy od wybranego instrumentu. Migracja 0008 zachowuje stare dane. Szczegoly: portfolios.md.
+Status: Ukonczone - 200 testow backendu i 31 przegladarkowych zaliczone w CI. Grupy rachunkow z filtrami IKE/IKZE, wspolna tabela o szesciu kolumnach, prywatny katalog roznych ETF/akcji/REIT oraz istniejace obligacje. Podsumowanie wybranego portfela u gory, operacje i katalog w rozwijanej sekcji, wycena zalezy od wybranego instrumentu. Migracja 0008 zachowuje stare dane. Szczegoly: portfolios.md.

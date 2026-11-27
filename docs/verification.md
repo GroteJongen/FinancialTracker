@@ -114,3 +114,9 @@ Lokalnie git diff --check i docker compose --env-file .env.example config --quie
 ## FT-013 - Kurs jednostki IUSQ, 2026-11-27
 
 CI https://github.com/GroteJongen/FinancialTracker/actions/runs/46023471827: 196 testow backendu, 29 Playwright, ruff/format, TypeScript/ESLint/build, migracje Alembic, start/restart Compose i przejscie na gotowe obrazy zaliczone. Rozszerzono istniejace scenariusze: 10 jednostek po kursie 110 EUR nadal daje wartosc pozycji 1100 EUR, kurs ma osobny kafelek, brak wyceny daje kreske, a dashboard pokazuje jednostkowa cene Yahoo oddzielnie od wartosci pakietu. Pole API unit_price jest tekstem Decimal z wybranej ceny, bez nowych obliczen lub zaokraglen. Bez zmian schematu, zasad pobierania i priorytetu cen. Lokalnie git diff --check zaliczone. Testy nie byly uruchamiane na bazie uzytkownika; publikator GHCR jest pominiety na galezi i uruchomi sie po merge na main.
+
+## FT-014 - Portfele mieszane, 2026-11-27
+
+CI https://github.com/GroteJongen/FinancialTracker/actions/runs/46065075789 zaliczony: 200 testow backendu, 31 Playwright, ruff/format, TypeScript/ESLint/build, Alembic, pelny Compose z migracja 0008, restartem i przejsciem na obrazy. Nowe scenariusze sprawdzaja grupy/filtry, przeciecia bez podwojnego liczenia, rewizje, idempotencje, izolacje wlascicieli, katalog prywatnych ETF/REIT, brak FX jako brak danych, szesc kolumn i wejscie w instrument. Smoke potwierdza trwalosc skladu portfela i wynikow na syntetycznych zakupach, obligacjach oraz cenach. Dotychczasowe scenariusze ewidencji pozostaly aktywne i otwieraja wtorny panel operacji jawnie.
+
+Lokalnie git diff --check zaliczone. Nie uruchamiano testow na portfelu uzytkownika ani nie tworzono w nim aktywow/grup. Brak nowych zasad odsetek/podatkow/dywidend i migracji operacji pomiedzy rachunkami. REIT oznacza papier gieldowy. Dokumentacja definicji: portfolios.md.
