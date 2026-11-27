@@ -62,7 +62,8 @@ export default function Portfolio() {
     ['Wypłacone odsetki', amount(totals?.paid_income)], ['Łączny zysk / strata', amount(totals?.gain)],
     ['Wynik względem kosztu', totals?.gain_percent == null ? '—' : formatDecimal(totals.gain_percent, 2) + '%'],
   ]
-  const bond = data?.positions.find((item) => item.purchase_id === editing)
+  const bondData = data ?? (loaded?.data.scope === scope ? loaded.data : null)
+  const bond = bondData?.positions.find((item) => item.purchase_id === editing)
   return <section className="portfolio-section" aria-labelledby="portfolio-title">
     <div className="section-heading"><h2 id="portfolio-title">Mój portfel</h2><span>WSPÓLNE PODSUMOWANIE · PLN</span></div>
     <div className="portfolio-filters" role="group" aria-label="Filtr portfela">
@@ -98,7 +99,8 @@ export default function Portfolio() {
       <caption className="sr-only">Wszystkie aktywa wybranego portfela</caption>
       <thead><tr><th>Aktywo</th><th>Rachunek</th><th>Koszt (PLN)</th><th>Wartość (PLN)</th><th>Wynik (PLN)</th><th>Wycena</th></tr></thead>
       <tbody>{data.positions.map((item) => <tr key={item.account_id + '/' + (item.purchase_id ?? item.listing_id)}>
-        <td><strong>{item.label}</strong><br />{labels[item.asset_class]} · {formatDecimal(item.quantity)} szt.</td>
+        <td><strong>{item.label}</strong><br />{labels[item.asset_class]} · {formatDecimal(item.quantity)} szt.
+          {item.trade_date && <small>Zakup: {formatDate(item.trade_date)}</small>}</td>
         <td>{item.account_name}<br />{item.account_kind === 'STANDARD' ? 'Zwykły' : item.account_kind}</td>
         <td>{amount(item.cost_pln)}{item.currency !== 'PLN' && <small>{formatDecimal(item.native_cost, 2)} {item.currency}</small>}</td>
         <td>{amount(item.value_pln)}{item.currency !== 'PLN' && item.native_value !== null && <small>{formatDecimal(item.native_value, 2)} {item.currency}</small>}</td>
@@ -128,7 +130,12 @@ function BondMark({ position, onBusy, onSaved, onCancel }: { position: Position;
     event.preventDefault()
     if (savingRef.current) return
     const body = { purchase_revision: position.purchase_revision, value: value.trim().replace(',', '.'), paid_interest: paid.trim().replace(',', '.'), observed_on: day }
-    const fingerprint = JSON.stringify(body)
+    const canonical = (text: string) => {
+      const [whole, fraction = ''] = text.split('.')
+      const digits = fraction.replace(/0+$/, '')
+      return whole.replace(/^0+(?=[0-9])/, '') + (digits ? '.' + digits : '')
+    }
+    const fingerprint = JSON.stringify({ ...body, value: canonical(body.value), paid_interest: canonical(body.paid_interest) })
     if (submission.current?.fingerprint !== fingerprint) submission.current = { fingerprint, requestId: crypto.randomUUID() }
     savingRef.current = true; setSaving(true); onBusy(true); setError('')
     try {

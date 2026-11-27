@@ -6,7 +6,13 @@ from app.domain.portfolio import Holding, summarize
 
 
 def test_example_and_exact_allocation():
-    result = summarize([Holding("BOND", D("100000"), D("110000")), Holding("ETF", D("50000"), D("50000")), Holding("STOCK", D("25000"), D("25000"))])
+    result = summarize(
+        [
+            Holding("BOND", D("100000"), D("110000")),
+            Holding("ETF", D("50000"), D("50000")),
+            Holding("STOCK", D("25000"), D("25000")),
+        ]
+    )
     assert result["cost"] == "175000.00"
     assert result["value"] == "185000.00"
     assert result["gain"] == "10000.00"

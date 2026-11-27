@@ -1,4 +1,5 @@
 """Public NBP table A; never sends quantities, accounts or portfolio values."""
+
 import json
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -38,16 +39,27 @@ def lookup(currency: str, requested_on: date) -> FxQuote:
         data = json.loads(payload, parse_float=Decimal)
         if data["code"] != currency or data["table"] != "A":
             raise ValueError("Wrong currency or table")
-        values = [item for item in data["rates"] if start <= date.fromisoformat(item["effectiveDate"]) <= requested_on]
+        values = [
+            item
+            for item in data["rates"]
+            if start <= date.fromisoformat(item["effectiveDate"]) <= requested_on
+        ]
         chosen = max(values, key=lambda item: item["effectiveDate"])
         rate = chosen["mid"]
         if isinstance(rate, int) and not isinstance(rate, bool):
             rate = Decimal(rate)
-        if not isinstance(rate, Decimal) or not rate.is_finite() or not Decimal("0") < rate < Decimal("10000000000") or rate.as_tuple().exponent < -8:
+        if (
+            not isinstance(rate, Decimal)
+            or not rate.is_finite()
+            or not Decimal("0") < rate < Decimal("10000000000")
+            or rate.as_tuple().exponent < -8
+        ):
             raise ValueError("Invalid rate")
         number = chosen["no"]
         if not isinstance(number, str) or not 1 <= len(number) <= 40:
             raise ValueError("Invalid table number")
-        return FxQuote(currency, requested_on, date.fromisoformat(chosen["effectiveDate"]), rate, number)
+        return FxQuote(
+            currency, requested_on, date.fromisoformat(chosen["effectiveDate"]), rate, number
+        )
     except Exception as exc:
         raise FxUnavailable("Nie udało się pobrać kursu NBP.") from exc

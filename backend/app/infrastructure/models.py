@@ -240,7 +240,9 @@ class BondValuation(Base):
     value: Mapped[Decimal] = mapped_column(Numeric(22, 2))
     paid_interest: Mapped[Decimal] = mapped_column(Numeric(22, 2))
     observed_on: Mapped[date] = mapped_column(Date)
-    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.clock_timestamp())
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
 
 
 class FxRate(Base):
@@ -256,4 +258,6 @@ class FxRate(Base):
     effective_on: Mapped[date] = mapped_column(Date)
     rate: Mapped[Decimal] = mapped_column(Numeric(18, 8))
     table_number: Mapped[str] = mapped_column(String(40))
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.clock_timestamp())
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )

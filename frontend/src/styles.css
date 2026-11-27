@@ -22,4 +22,4 @@
 @media(max-width:1000px){.portfolio-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-chart-panel{grid-template-columns:1fr}.portfolio-pie{justify-self:center}.portfolio-legend li{grid-template-columns:10px minmax(60px,1fr) auto auto}.portfolio-legend li>span:last-child{grid-column:auto}}
 @media(max-width:640px){.portfolio-section{padding:20px 16px}.portfolio-cards dd{font-size:17px}.portfolio-cards>div{padding:14px 10px}.portfolio-actions{flex-wrap:wrap}.portfolio-filters button{padding:8px 10px;font-size:11px}.portfolio-legend li{grid-template-columns:10px minmax(60px,1fr) auto}.portfolio-legend li>span:last-child{grid-column:2/-1}.portfolio-pie{width:190px;height:190px}.portfolio-section>.section-heading{margin-top:0}}
 
-.portfolio-cards .portfolio-loss dd{color:#a04430}
+.portfolio-cards>div.portfolio-loss dd{color:#a04430}

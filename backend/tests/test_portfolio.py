@@ -1,7 +1,7 @@
-from datetime import date, timedelta
 from concurrent.futures import ThreadPoolExecutor
-from threading import Event
+from datetime import date, timedelta
 from decimal import Decimal
+from threading import Event
 from uuid import uuid4
 
 import pytest
@@ -9,9 +9,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.domain.purchases import business_today
 from app.application import portfolio as portfolio_service
 from app.application import purchases as purchase_service
+from app.domain.purchases import business_today
 from app.infrastructure import nbp
 from app.infrastructure.catalog import IUSQ_LISTING_ID
 from app.infrastructure.models import BondValuation, FxRate
@@ -29,22 +29,54 @@ def account(client, name, kind):
 
 
 def buy(client, account_id, listing_id, currency, quantity, price):
-    body = dict(request_id=str(uuid4()), listing_id=str(listing_id), currency=currency, quantity=quantity, unit_price=price, commission="0", trade_date="2026-11-10")
+    body = dict(
+        request_id=str(uuid4()),
+        listing_id=str(listing_id),
+        currency=currency,
+        quantity=quantity,
+        unit_price=price,
+        commission="0",
+        trade_date="2026-11-10",
+    )
     result = client.post(f"/api/accounts/{account_id}/purchases", json=body)
     assert result.status_code == 201, result.text
-    result = client.post(f"/api/accounts/{account_id}/prices", json=dict(request_id=str(uuid4()), listing_id=str(listing_id), currency=currency, price=price, observed_on="2026-11-20"))
+    result = client.post(
+        f"/api/accounts/{account_id}/prices",
+        json=dict(
+            request_id=str(uuid4()),
+            listing_id=str(listing_id),
+            currency=currency,
+            price=price,
+            observed_on="2026-11-20",
+        ),
+    )
     assert result.status_code == 201
 
 
 def bond(client, account_id):
-    body = dict(request_id=str(uuid4()), series="TOS1129", trade_date="2026-11-10", quantity=1000, unit_price="100")
+    body = dict(
+        request_id=str(uuid4()),
+        series="TOS1129",
+        trade_date="2026-11-10",
+        quantity=1000,
+        unit_price="100",
+    )
     result = client.post(f"/api/accounts/{account_id}/bonds", json=body)
     assert result.status_code == 201
     return result.json(), body
 
 
 def mark(client, account_id, purchase, **changes):
-    values = dict(request_id=str(uuid4()), purchase_revision=purchase["revision"], value="110000", paid_interest="0", observed_on="2026-11-20") | changes
+    values = (
+        dict(
+            request_id=str(uuid4()),
+            purchase_revision=purchase["revision"],
+            value="110000",
+            paid_interest="0",
+            observed_on="2026-11-20",
+        )
+        | changes
+    )
     path = f"/api/accounts/{account_id}/bonds/{purchase['id']}/valuations"
     return client.post(path, json=values), values, path
 
@@ -58,11 +90,22 @@ def portfolio_data(ledger):
     purchase, original = bond(client, standard)
     assert mark(client, standard, purchase)[0].status_code == 201
     buy(client, ike, IUSQ_LISTING_ID, "EUR", "100", "100")
-    listing = client.post("/api/stocks", json=dict(name="Syntetyczna spółka portfela", symbol="PORT", mic="XWAR", currency="PLN")).json()
+    listing = client.post(
+        "/api/stocks",
+        json=dict(name="Syntetyczna spółka portfela", symbol="PORT", mic="XWAR", currency="PLN"),
+    ).json()
     buy(client, ikze, listing["id"], "PLN", "10", "2500")
     with Session(engine) as session, session.begin():
         for day in {date(2026, 11, 10), business_today()}:
-            session.add(FxRate(currency="EUR", requested_on=day, effective_on=day, rate=Decimal("5"), table_number="SYNTHETIC/TEST"))
+            session.add(
+                FxRate(
+                    currency="EUR",
+                    requested_on=day,
+                    effective_on=day,
+                    rate=Decimal("5"),
+                    table_number="SYNTHETIC/TEST",
+                )
+            )
     return client, engine, settings, standard, ike, ikze, purchase, original
 
 
@@ -75,7 +118,12 @@ def test_user_example_filters_and_privacy(portfolio_data):
     assert result["totals"]["gain_percent"] == "5.71"
     assert result["totals"]["complete"] is True
     assert result["position_count"] == 3
-    for scope, expected in [("STANDARD", "110000.00"), ("IKE", "50000.00"), ("IKZE", "25000.00"), ("RETIREMENT", "75000.00")]:
+    for scope, expected in [
+        ("STANDARD", "110000.00"),
+        ("IKE", "50000.00"),
+        ("IKZE", "25000.00"),
+        ("RETIREMENT", "75000.00"),
+    ]:
         filtered = client.get("/api/portfolio", params={"scope": scope}).json()
         assert filtered["totals"]["value"] == expected
     stranger = settings.model_copy(update={"local_owner_id": uuid4()})
@@ -104,18 +152,45 @@ def test_paid_interest_retry_revisions_and_append_only(portfolio_data):
     assert result["value"] == "175000.00" and result["gain"] == "10000.00"
     assert result["paid_income"] == "10000.00"
     assert client.post(path, json=body | {"paid_interest": "20000"}).status_code == 409
-    correction = {key: value for key, value in original.items() if key != "request_id"} | dict(expected_revision=1, reason="Korekta partii", quantity=999)
-    assert client.put(f"/api/accounts/{account_id}/bonds/{purchase['id']}", json=correction).status_code == 200
+    correction = {key: value for key, value in original.items() if key != "request_id"} | dict(
+        expected_revision=1, reason="Korekta partii", quantity=999
+    )
+    assert (
+        client.put(
+            f"/api/accounts/{account_id}/bonds/{purchase['id']}", json=correction
+        ).status_code
+        == 200
+    )
     result = client.get("/api/portfolio").json()
     assert result["totals"]["value"] is None and result["totals"]["gain"] is None
     assert result["totals"]["allocation_value"] == []
     assert result["totals"]["allocation_cost"]
     assert client.post(path, json=body | {"request_id": str(uuid4())}).status_code == 409
     with Session(engine) as session:
-        assert len(list(session.scalars(select(BondValuation).where(BondValuation.purchase_id == purchase["id"])))) == 2
+        assert (
+            len(
+                list(
+                    session.scalars(
+                        select(BondValuation).where(BondValuation.purchase_id == purchase["id"])
+                    )
+                )
+            )
+            == 2
+        )
 
 
-@pytest.mark.parametrize(("field", "value"), [("value", "-1"), ("value", "0.001"), ("paid_interest", 100), ("value", "NaN"), ("owner_id", str(uuid4())), ("purchase_revision", True), ("observed_on", "2026-01-01")])
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("value", "-1"),
+        ("value", "0.001"),
+        ("paid_interest", 100),
+        ("value", "NaN"),
+        ("owner_id", str(uuid4())),
+        ("purchase_revision", True),
+        ("observed_on", "2026-01-01"),
+    ],
+)
 def test_invalid_bond_marks_do_not_write(ledger, field, value):
     client, _, _, _ = ledger
     account_id = account(client, "Obligacje", "STANDARD")
@@ -129,7 +204,9 @@ def test_foreign_bond_mark_is_rejected(ledger):
     client, engine, settings, _ = ledger
     account_id = account(client, "Obligacje", "STANDARD")
     purchase, _ = bond(client, account_id)
-    with TestClient(create_app(settings.model_copy(update={"local_owner_id": uuid4()}), engine)) as other:
+    with TestClient(
+        create_app(settings.model_copy(update={"local_owner_id": uuid4()}), engine)
+    ) as other:
         assert mark(other, account_id, purchase)[0].status_code == 404
 
 
@@ -139,7 +216,13 @@ def test_fx_historical_cost_and_outage_cache(ledger, monkeypatch):
     assert client.get("/api/portfolio").json()["totals"]["value"] is None
 
     def lookup(currency, day):
-        return nbp.FxQuote(currency, day, day - timedelta(days=1), Decimal("5") if day == business_today() else Decimal("4"), "SYNTHETIC/TEST")
+        return nbp.FxQuote(
+            currency,
+            day,
+            day - timedelta(days=1),
+            Decimal("5") if day == business_today() else Decimal("4"),
+            "SYNTHETIC/TEST",
+        )
 
     monkeypatch.setattr(nbp, "lookup", lookup)
     result = client.post("/api/portfolio/fx/refresh")
@@ -191,7 +274,18 @@ def test_portfolio_read_and_purchase_audit_do_not_deadlock(ledger, monkeypatch):
 
     def write():
         with TestClient(create_app(settings, engine)) as client:
-            return client.post(f"/api/accounts/{account_id}/purchases", json=dict(request_id=str(uuid4()), listing_id=str(IUSQ_LISTING_ID), currency="EUR", quantity="1", unit_price="100", commission="0", trade_date="2026-11-10"))
+            return client.post(
+                f"/api/accounts/{account_id}/purchases",
+                json=dict(
+                    request_id=str(uuid4()),
+                    listing_id=str(IUSQ_LISTING_ID),
+                    currency="EUR",
+                    quantity="1",
+                    unit_price="100",
+                    commission="0",
+                    trade_date="2026-11-10",
+                ),
+            )
 
     with ThreadPoolExecutor(max_workers=2) as pool:
         writer = pool.submit(write)

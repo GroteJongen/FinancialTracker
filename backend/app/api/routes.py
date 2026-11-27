@@ -10,8 +10,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.application.accounts import list_accounts
-from app.application.portfolio import get_portfolio, refresh_fx, save_bond_valuation
-from app.application.portfolio_contracts import BondValuationCreate
 from app.application.bond_contracts import (
     BondAccountCreate,
     BondCorrection,
@@ -25,6 +23,8 @@ from app.application.bonds import (
     get_bond_audit,
     get_bond_purchases,
 )
+from app.application.portfolio import get_portfolio, refresh_fx, save_bond_valuation
+from app.application.portfolio_contracts import BondValuationCreate
 from app.application.purchase_contracts import (
     AuditResponse,
     ListingResponse,
@@ -62,18 +62,31 @@ class AccountResponse(BaseModel):
 
 
 @router.get("/portfolio")
-def portfolio(request: Request, scope: PortfolioScope = "ALL", session: Session = Depends(get_session)):
+def portfolio(
+    request: Request, scope: PortfolioScope = "ALL", session: Session = Depends(get_session)
+):
     return get_portfolio(session, request.app.state.settings.local_owner_id, scope)
 
 
 @router.post("/portfolio/fx/refresh")
-def portfolio_fx(request: Request, scope: PortfolioScope = "ALL", session: Session = Depends(get_session)):
+def portfolio_fx(
+    request: Request, scope: PortfolioScope = "ALL", session: Session = Depends(get_session)
+):
     return refresh_fx(session, request.app.state.settings.local_owner_id, scope)
 
 
 @router.post("/accounts/{account_id}/bonds/{purchase_id}/valuations", status_code=201)
-def bond_valuation(account_id: UUID, purchase_id: UUID, data: BondValuationCreate, request: Request, response: Response, session: Session = Depends(get_session)):
-    result, created = save_bond_valuation(session, request.app.state.settings.local_owner_id, account_id, purchase_id, data)
+def bond_valuation(
+    account_id: UUID,
+    purchase_id: UUID,
+    data: BondValuationCreate,
+    request: Request,
+    response: Response,
+    session: Session = Depends(get_session),
+):
+    result, created = save_bond_valuation(
+        session, request.app.state.settings.local_owner_id, account_id, purchase_id, data
+    )
     if not created:
         response.status_code = 200
     return result

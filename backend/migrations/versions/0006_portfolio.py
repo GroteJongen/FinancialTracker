@@ -1,4 +1,5 @@
 """Append-only bond valuations and public reference FX cache."""
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -18,7 +19,12 @@ def upgrade() -> None:
         sa.Column("value", sa.Numeric(22, 2), nullable=False),
         sa.Column("paid_interest", sa.Numeric(22, 2), nullable=False),
         sa.Column("observed_on", sa.Date(), nullable=False),
-        sa.Column("recorded_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.clock_timestamp()),
+        sa.Column(
+            "recorded_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.clock_timestamp(),
+        ),
         sa.UniqueConstraint("purchase_id", "request_id", name="uq_bond_valuations_request"),
         sa.CheckConstraint("value >= 0 AND paid_interest >= 0", name="ck_bond_valuations_amounts"),
         sa.CheckConstraint("purchase_revision > 0", name="ck_bond_valuations_revision"),
@@ -31,7 +37,12 @@ def upgrade() -> None:
         sa.Column("effective_on", sa.Date(), nullable=False),
         sa.Column("rate", sa.Numeric(18, 8), nullable=False),
         sa.Column("table_number", sa.String(40), nullable=False),
-        sa.Column("fetched_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.clock_timestamp()),
+        sa.Column(
+            "fetched_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.clock_timestamp(),
+        ),
         sa.UniqueConstraint("currency", "requested_on", name="uq_fx_rates_requested"),
         sa.CheckConstraint("currency IN ('EUR', 'USD')", name="ck_fx_rates_currency"),
         sa.CheckConstraint("rate > 0 AND effective_on <= requested_on", name="ck_fx_rates_values"),

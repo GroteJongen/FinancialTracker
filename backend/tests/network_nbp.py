@@ -1,4 +1,5 @@
 """Separate read-only public-network check; excluded from pytest discovery."""
+
 from datetime import date
 
 from app.infrastructure.nbp import lookup
