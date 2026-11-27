@@ -59,7 +59,7 @@ class Instrument(Base):
             postgresql_where=text("owner_id IS NULL"),
         ),
         CheckConstraint(
-            "kind <> 'STOCK' OR owner_id IS NOT NULL", name="ck_instruments_stock_owner"
+            "kind NOT IN ('STOCK', 'REIT') OR owner_id IS NOT NULL", name="ck_instruments_stock_owner"
         ),
     )
 
@@ -82,6 +82,21 @@ class Listing(Base):
     symbol: Mapped[str] = mapped_column(String(30))
     mic: Mapped[str] = mapped_column(String(4))
     currency: Mapped[str] = mapped_column(String(3))
+
+
+class PortfolioGroup(Base):
+    __tablename__ = "portfolio_groups"
+    __table_args__ = (UniqueConstraint("owner_id", "name", name="uq_portfolio_group_name"),)
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    owner_id: Mapped[UUID] = mapped_column(ForeignKey("owners.id"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    revision: Mapped[int] = mapped_column(server_default=text("1"))
+
+
+class PortfolioAccount(Base):
+    __tablename__ = "portfolio_accounts"
+    portfolio_id: Mapped[UUID] = mapped_column(ForeignKey("portfolio_groups.id"), primary_key=True)
+    account_id: Mapped[UUID] = mapped_column(ForeignKey("accounts.id"), primary_key=True)
 
 
 class Operation(Base):

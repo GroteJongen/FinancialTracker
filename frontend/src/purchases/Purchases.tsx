@@ -34,8 +34,8 @@ export default function Purchases({ accounts }: { accounts: Account[] }) {
   const [busy, setBusy] = useState(false)
   const account = accounts.find((item) => item.id === accountId) ?? accounts[0]
   return <section className="purchases-section" aria-labelledby="purchases-title">
-    <div className="section-heading"><h2 id="purchases-title">Zakupy IUSQ</h2>
-      <span>XETRA · EUR · ACC</span></div>
+    <div className="section-heading"><h2 id="purchases-title">Operacje ETF (EUR)</h2>
+      <span>ETF · EUR</span></div>
     <div className="purchase-account-picker">
       <label htmlFor="purchase-account">Rachunek</label>
       <select id="purchase-account" value={account.id} disabled={busy}
@@ -71,7 +71,8 @@ function AccountPurchases({ account, onBusyChange }: {
       request<Purchase[]>(`/api/accounts/${account.id}/purchases`, { signal: controller.signal }),
     ]).then(([options, items]) => {
       if (!active) return
-      setListings(options)
+      options = options.filter((item) => item.currency === 'EUR')
+      setListings(options.filter((item) => item.currency === 'EUR'))
       setPurchases(sortPurchases(items.filter((item) => options.some((option) => option.id === item.listing_id))))
       setForm((previous) => ({ ...previous, listing_id: previous.listing_id || options[0]?.id || '' }))
       setLoadError('')
@@ -96,7 +97,7 @@ function AccountPurchases({ account, onBusyChange }: {
 
   function cancelEdit() {
     setEditing(null)
-    setForm({ ...emptyForm(), listing_id: listings[0]?.id || '' })
+    setForm({ ...emptyForm(), listing_id: form.listing_id || listings[0]?.id || '' })
     setMessage(null)
     submission.current = null
   }
@@ -173,7 +174,7 @@ function AccountPurchases({ account, onBusyChange }: {
   </div>
 
   return <>
-    {listings[0] && <Valuation accountId={account.id} listingId={listings[0].id}
+    {listings.some((item) => item.id === form.listing_id) && <Valuation key={form.listing_id} accountId={account.id} listingId={form.listing_id} symbol={listings.find((item) => item.id === form.listing_id)!.symbol}
       ledgerVersion={purchases.map((item) => item.id + ':' + item.revision).join('|')} />}
     <div className="purchase-panel">
     <div className="purchase-form-heading">

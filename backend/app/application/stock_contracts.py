@@ -56,3 +56,7 @@ class InvestmentAccountCreate(BaseModel):
     @classmethod
     def clean_name(cls, value: object) -> object:
         return value.strip() if isinstance(value, str) else value
+
+
+class SecurityCreate(StockCreate):
+    kind: Literal["STOCK", "ETF", "REIT"]

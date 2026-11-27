@@ -40,9 +40,9 @@ def supported_listing(session: Session, listing_id: UUID, owner_id: UUID):
     if listing is None:
         raise PurchaseError("Nie znaleziono obsługiwanego notowania.", 422)
     instrument = session.get(Instrument, listing.instrument_id)
-    if instrument.kind == "STOCK" and instrument.owner_id != owner_id:
+    if instrument.owner_id is not None and instrument.owner_id != owner_id:
         raise PurchaseError("Nie znaleziono notowania.")
-    stock = instrument.kind == "STOCK" and instrument.owner_id == owner_id
+    stock = instrument.kind in {"STOCK", "ETF", "REIT"} and instrument.owner_id == owner_id
     etf = listing.id == IUSQ_LISTING_ID and instrument.owner_id is None
     if listing.currency not in {"EUR", "PLN", "USD"} or not (stock or etf):
         raise PurchaseError("Wybierz obsługiwane notowanie akcji lub IUSQ.", 422)
@@ -59,7 +59,7 @@ def matching_currency(listing: Listing, currency: str):
 def supported_account(session: Session, account: Account, listing: Listing):
     if (
         account.kind == "IKE_BONDS"
-        and session.get(Instrument, listing.instrument_id).kind == "STOCK"
+        and session.get(Instrument, listing.instrument_id).kind in {"STOCK", "ETF", "REIT"}
     ):
         raise PurchaseError("Wybierz rachunek inwestycyjny do ewidencji akcji.", 422)
 

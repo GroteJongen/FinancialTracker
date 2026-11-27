@@ -2,6 +2,7 @@ import { expect, test } from './fixtures'
 
 async function selectAccount(page: import('@playwright/test').Page, name: string) {
   await page.goto('/')
+  await page.locator('.operations-panel > summary').click()
   await page.getByLabel('Rachunek', { exact: true }).selectOption({ label: name })
   await expect(page.getByLabel('Cena wyceny (EUR)', { exact: true })).toBeEnabled()
 }
@@ -31,14 +32,15 @@ test('manual quote values the position, survives reload, and recalculates a corr
   await buy(page, '2026-01-10')
   await expect(page.getByText('Brak wyceny — wpisz cenę jednostki.')).toBeVisible()
   await expect(card(page, 'Wartość pozycji')).toHaveText('—')
-  await expect(card(page, 'Kurs jednostki IUSQ')).toHaveText('—')
+  await expect(card(page, 'Cena jednostki')).toHaveText('—')
   await price(page, '110,00', '2026-01-20')
-  await expect(card(page, 'Kurs jednostki IUSQ')).toHaveText('110,00 EUR')
+  await expect(card(page, 'Cena jednostki')).toHaveText('110,00 EUR')
   await expect(card(page, 'Koszt zakupów')).toHaveText('1 002,00 EUR')
   await expect(card(page, 'Wartość pozycji')).toHaveText('1 100,00 EUR')
   await expect(card(page, 'Zysk / strata')).toHaveText('98,00 EUR')
   await expect(card(page, 'Wynik procentowy')).toHaveText('9,78%')
   await page.reload()
+  await page.locator('.operations-panel > summary').click()
   await page.getByLabel('Rachunek', { exact: true }).selectOption({ label: 'TEST — wycena' })
   await expect(card(page, 'Zysk / strata')).toHaveText('98,00 EUR')
   const row = page.getByRole('row').filter({ hasText: '10.01.2026' })
@@ -89,6 +91,7 @@ test('lost price response retries without adding a second history entry', async 
 test('valuation cards and form fit mobile width', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
+  await page.locator('.operations-panel > summary').click()
   await expect(page.getByRole('heading', { name: 'Wycena IUSQ', exact: true })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
 })

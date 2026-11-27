@@ -58,3 +58,7 @@ Koszt walutowy przeliczamy historycznie jako jawny szacunek NBP, a wartość akt
 ## ADR-026 - Yahoo jako wymienny adapter i trwaly cache
 
 Nieoficjalny endpoint chart, bez nowej zaleznosci, sluzy prywatnej aplikacji. Surowy JSON jest parsowany do Decimal, bez float. Tylko zweryfikowane symbol/gielda/waluta/typ trafiaja do oddzielnego cache YahooListing. Reczne ceny pozostaja niezmienne i prywatne dla rachunku; nowszy dzien/czas wyceny wygrywa, a uzytkownik moze wylaczyc Yahoo. Rezerwacja proby trwa 5 minut i jest zatwierdzana przed HTTP; token chroni przed zapisem po zmianie mapowania. Brak automatycznego zgadywania symboli akcji. Dokumentacja: yahoo.md.
+
+## ADR-028 - Portfel jako prywatna grupa rachunkow
+
+PortfolioGroup i PortfolioAccount tworza relacje wiele-do-wielu; portfel prezentacyjny nie przenosi zakupow ani historii. Suma wszystkich rachunkow nie laczy wynikow grup, wiec ich przeciecia nie duplikuja kapitalu. Rachunki/tax wrapper i instrumenty/notowania pozostaja oddzielne. Prywatny katalog dopuszcza ETF/akcje/gieldowe REIT, a obligacje zachowuja odrebna wycene. Pozycje sa rozdzielone rachunkiem, by nie mieszac prywatnych cen. Bez zgadywania regul dla przyszlych klas aktywow.

@@ -141,3 +141,7 @@ Sekcja „Akcje” pozwala dodać własne spółki i notowania, tworzyć rachunk
 ## Kursy Yahoo Finance
 
 Po otwarciu lub odswiezeniu aplikacji pobieramy ceny posiadanych ETF/akcji z Yahoo, najwyzej raz na 5 minut na notowanie. IUSQ.DE jest ustawiony automatycznie; symbole akcji przypiszesz w dashboardzie, w „Automatyczne kursy Yahoo Finance”. Wyceny moga byc opoznione (Xetra okolo 15 minut). Ostatnia poprawna cena zostaje przy awarii; nowsza reczna wycena ma pierwszenstwo. Brak klucza i platnego API. [Obsluga, pierwszenstwo i ograniczenia](docs/yahoo.md).
+
+## Wlasne portfele i katalog aktywow
+
+Wybierz lub utworz portfel grupujacy rachunki. Podsumowanie i tabela dotycza tego portfela oraz wybranego filtra IKE/IKZE. Lista pokazuje liczbe jednostek, nazwe, cene jednostki, wartosc oraz wynik kwotowo i procentowo. Operacje i katalog aktywow otwierasz ponizej lub nazwa instrumentu w tabeli. Katalog obsluguje rozne ETF-y, akcje i gieldowe REIT-y; obligacje pozostaja we wspolnym podsumowaniu. [Zasady, zgodnosc i ograniczenia](docs/portfolios.md).

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { quoteTime, refreshMarket } from './market'
 import YahooMapping from './YahooMapping'
+import PortfolioPicker from './PortfolioPicker'
+import type { Account } from '../purchases/api'
 import type { FormEvent } from 'react'
 import { formatDate, formatDecimal, request, todayWarsaw } from '../purchases/api'
 
@@ -14,16 +16,17 @@ type Position = {
   price_source?: string | null; quoted_at?: string | null; fetched_at?: string | null; stale_price?: boolean
   yahoo?: { symbol: string; failed: boolean; attempted_at: string | null; quoted_at: string | null; fetched_at: string | null } | null
   quantity: string; mark_id?: string | null; trade_date?: string; listing_id?: string
-  unit_price?: string | null
+  unit_price?: string | null; gain_percent?: string | null; symbol?: string; mic?: string; average_cost?: string | null
 }
-type Snapshot = { scope: string; as_of: string; account_count: number; position_count: number; totals: Totals; positions: Position[]; estimated_fx: boolean; missing_fx: { currency: string; requested_on: string }[]; fx_rates: { currency: string; requested_on: string; effective_on: string; rate: string; table_number: string }[] }
-const labels: Record<string, string> = { BOND: 'Obligacje', ETF: 'ETF-y', STOCK: 'Akcje' }
-const colors: Record<string, string> = { BOND: '#b58a36', ETF: '#426e42', STOCK: '#387e87' }
+type Snapshot = { portfolio_id?: string | null; scope: string; as_of: string; account_count: number; position_count: number; totals: Totals; positions: Position[]; estimated_fx: boolean; missing_fx: { currency: string; requested_on: string }[]; fx_rates: { currency: string; requested_on: string; effective_on: string; rate: string; table_number: string }[] }
+const labels: Record<string, string> = { BOND: 'Obligacje', ETF: 'ETF-y', STOCK: 'Akcje', REIT: 'REIT-y' }
+const colors: Record<string, string> = { BOND: '#b58a36', ETF: '#426e42', STOCK: '#387e87', REIT: '#8566a5' }
 const reasons: Record<string, string> = { missing_price: 'Brak ceny', outdated_price: 'Cena sprzed ostatniego zakupu', missing_fx: 'Brak kursu NBP', missing_bond_valuation: 'Uzupełnij wycenę obligacji' }
 const scopes = [['ALL', 'Wszystkie'], ['STANDARD', 'Zwykłe'], ['IKE', 'IKE'], ['IKZE', 'IKZE'], ['RETIREMENT', 'IKE + IKZE']]
 const amount = (value: string | null | undefined) => value == null ? '—' : formatDecimal(value, 2) + ' PLN'
 
-export default function Portfolio() {
+export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: Account[]; onOpenAsset?: (listingId: string, accountId: string) => void }) {
+  const [portfolioId, setPortfolioId] = useState('')
   const [scope, setScope] = useState('ALL')
   const [version, setVersion] = useState(0)
   const [loaded, setLoaded] = useState<{ key: string; data: Snapshot } | null>(null)
@@ -36,7 +39,8 @@ export default function Portfolio() {
   const [busy, setBusy] = useState(false)
   const savingRef = useRef(false)
   const [editing, setEditing] = useState<string | null>(null)
-  const key = scope + '/' + version
+  const key = scope + '/' + portfolioId + '/' + version
+  const query = 'scope=' + scope + (portfolioId ? '&portfolio_id=' + portfolioId : '')
   const data = loaded?.key === key ? loaded.data : null
 
   useEffect(() => {
@@ -47,11 +51,11 @@ export default function Portfolio() {
   useEffect(() => {
     let active = true
     const controller = new AbortController()
-    void request<Snapshot>('/api/portfolio?scope=' + scope, { signal: controller.signal })
+    void request<Snapshot>('/api/portfolio?' + query, { signal: controller.signal })
       .then((result) => { if (active) { setLoaded({ key, data: result }); setError('') } })
       .catch(() => { if (active) setError('Nie udało się pobrać podsumowania portfela.') })
     return () => { active = false; controller.abort() }
-  }, [scope, key])
+  }, [scope, key, query])
 
   async function fetchMarket() {
     if (marketLock.current) return
@@ -74,7 +78,7 @@ export default function Portfolio() {
     if (savingRef.current) return
     savingRef.current = true; setBusy(true); setMessage('')
     try {
-      const result = await request<{ updated: number; failed: number; remaining: number }>('/api/portfolio/fx/refresh?scope=' + scope, { method: 'POST' })
+      const result = await request<{ updated: number; failed: number; remaining: number }>('/api/portfolio/fx/refresh?' + query, { method: 'POST' })
       setMessage(`Kursy NBP: odświeżono ${result.updated}. Brakujących kursów: ${result.remaining}.` + (result.failed ? ' Część zapytań nie powiodła się; zachowano poprzednie dane.' : result.remaining ? ' Kliknij ponownie, aby pobrać kolejną partię.' : ''))
     } catch (failure) { setMessage(failure instanceof Error ? failure.message : 'Nie udało się pobrać kursów.') }
     finally { savingRef.current = false; setBusy(false) }
@@ -87,10 +91,11 @@ export default function Portfolio() {
     ['Wypłacone odsetki', amount(totals?.paid_income)], ['Łączny zysk / strata', amount(totals?.gain)],
     ['Wynik względem kosztu', totals?.gain_percent == null ? '—' : formatDecimal(totals.gain_percent, 2) + '%'],
   ]
-  const bondData = data ?? (loaded?.data.scope === scope ? loaded.data : null)
+  const bondData = data ?? (loaded?.data.scope === scope && (loaded.data.portfolio_id ?? '') === portfolioId ? loaded.data : null)
   const bond = bondData?.positions.find((item) => item.purchase_id === editing)
   return <section className="portfolio-section" aria-labelledby="portfolio-title">
     <div className="section-heading"><h2 id="portfolio-title">Mój portfel</h2><span>WSPÓLNE PODSUMOWANIE · PLN</span></div>
+    <PortfolioPicker accounts={accounts} value={portfolioId} onChange={(id) => { setPortfolioId(id); setEditing(null); setMessage('') }} />
     <div className="portfolio-filters" role="group" aria-label="Filtr portfela">
       {scopes.map(([value, label]) => <button key={value} type="button" aria-pressed={scope === value} disabled={busy}
         onClick={() => { setScope(value); setEditing(null); setMessage('') }}>{label}</button>)}
@@ -107,6 +112,32 @@ export default function Portfolio() {
       Podsumowanie jest niepełne. Wartość pozycji z dostępną wyceną: {amount(totals?.known_value)}.
       Uzupełnij brakujące ceny, wyceny obligacji lub kursy NBP. Braki nie są traktowane jako zero.</p>}
     {data?.estimated_fx && <p className="valuation-note">Kwoty walutowe są przeliczane na PLN. Koszt historyczny jest szacunkiem po kursie NBP z dnia zakupu lub ostatniej wcześniejszej publikacji; bieżąca wartość korzysta z ostatniego dostępnego kursu dla dnia podsumowania.</p>}
+    <p className="form-hint">Wypłacone odsetki zwiększają wynik, ale nie są dodawane do aktywów na wykresie. Gotówka i dywidendy akcji nie są jeszcze ewidencjonowane. Wynik brutto, bez podatków i kosztu przyszłej sprzedaży lub wykupu.</p>
+    {data?.position_count === 0 && <p className="empty-purchases">Brak zakupionych aktywów w wybranym filtrze.</p>}
+    {data && data.positions.length > 0 && <div className="purchase-table-scroll"><table className="purchase-table portfolio-table">
+      <caption className="sr-only">Wszystkie aktywa wybranego portfela</caption>
+      <thead><tr><th>Liczba jednostek</th><th>Nazwa</th><th>Cena jednostki</th><th>Wartość</th><th>Zysk / strata</th><th>Zysk / strata (%)</th></tr></thead>
+      <tbody>{data.positions.map((item) => <tr key={item.account_id + '/' + (item.purchase_id ?? item.listing_id)}>
+        <td>{formatDecimal(item.quantity)}</td>
+        <td>{item.listing_id && onOpenAsset ? <button type="button" className="text-button portfolio-asset-name" onClick={() => onOpenAsset(item.listing_id!, item.account_id)}>{item.label}</button> : <strong>{item.label}</strong>}
+          <small>{labels[item.asset_class]}{item.symbol ? ' · ' + item.symbol : ''}{item.mic ? ' · ' + item.mic : ''}</small>
+          <small>{item.account_name} · {item.account_kind === 'STANDARD' ? 'Zwykły' : item.account_kind}</small>
+          {item.average_cost && <small>Średni koszt jednostki: {formatDecimal(item.average_cost, 2)} {item.currency}</small>}
+          {item.observed_on && <small>Wycena: {formatDate(item.observed_on)}</small>}
+          {item.price_source && <small>{item.price_source === 'YAHOO' ? 'Yahoo Finance' : 'Cena ręczna'}</small>}
+          {item.quoted_at && <small>Notowanie: {quoteTime(item.quoted_at)}</small>}
+          {item.price_source === 'YAHOO' && item.fetched_at && <small>Pobrano: {quoteTime(item.fetched_at)}</small>}
+          {item.stale_price && <small>Cena starsza niż 4 dni</small>}
+          {item.yahoo?.failed && <small>Ostatnia próba Yahoo nieudana; poprzednia cena zachowana</small>}
+          {item.reasons.map((reason) => <small key={reason}>{reasons[reason]}</small>)}
+          {item.purchase_id && <button type="button" className="text-button" disabled={busy} onClick={() => setEditing(item.purchase_id!)}>Wycena obligacji</button>}
+        </td>
+        <td>{item.unit_price == null ? '—' : formatDecimal(item.unit_price, 2) + ' ' + item.currency}</td>
+        <td>{amount(item.value_pln)}{item.currency !== 'PLN' && item.native_value !== null && <small>{formatDecimal(item.native_value, 2)} {item.currency}</small>}</td>
+        <td className={item.gain_pln?.startsWith('-') ? 'position-loss' : item.gain_pln == null ? '' : 'position-gain'}>{amount(item.gain_pln)}</td>
+        <td className={item.gain_percent?.startsWith('-') ? 'position-loss' : item.gain_percent == null ? '' : 'position-gain'}>{item.gain_percent == null ? '—' : formatDecimal(item.gain_percent, 2) + '%'}</td>
+      </tr>)}</tbody></table></div>}
+    <p className="form-hint">Wartość i wynik są w PLN, cena jednostki w walucie notowania. Dla obligacji cena jednostki to ręcznie podana wartość partii podzielona przez liczbę sztuk. Przy nazwie widoczny jest rachunek; to samo aktywo na różnych rachunkach ma osobne wiersze.</p>
     <div className="portfolio-chart-panel"><div>
       <h3>Struktura portfela</h3>
       <div className="portfolio-filters" role="group" aria-label="Podstawa wykresu">
@@ -120,27 +151,6 @@ export default function Portfolio() {
     </div>{allocation.length > 0 && <div className="portfolio-pie" role="img"
       aria-label={'Udziały portfela: ' + allocation.map((item) => labels[item.asset_class] + ' ' + formatDecimal(item.percent, 2) + '%').join(', ')}
       style={{ background: `conic-gradient(${gradient})` }} />}</div>
-    <p className="form-hint">Wypłacone odsetki zwiększają wynik, ale nie są dodawane do aktywów na wykresie. Gotówka i dywidendy akcji nie są jeszcze ewidencjonowane. Wynik brutto, bez podatków i kosztu przyszłej sprzedaży lub wykupu.</p>
-    {data?.position_count === 0 && <p className="empty-purchases">Brak zakupionych aktywów w wybranym filtrze.</p>}
-    {data && data.positions.length > 0 && <div className="purchase-table-scroll"><table className="purchase-table portfolio-table">
-      <caption className="sr-only">Wszystkie aktywa wybranego portfela</caption>
-      <thead><tr><th>Aktywo</th><th>Rachunek</th><th>Kurs / jednostkę</th><th>Koszt (PLN)</th><th>Wartość (PLN)</th><th>Wynik (PLN)</th><th>Wycena</th></tr></thead>
-      <tbody>{data.positions.map((item) => <tr key={item.account_id + '/' + (item.purchase_id ?? item.listing_id)}>
-        <td><strong>{item.label}</strong><br />{labels[item.asset_class]} · {formatDecimal(item.quantity)} szt.
-          {item.trade_date && <small>Zakup: {formatDate(item.trade_date)}</small>}</td>
-        <td>{item.account_name}<br />{item.account_kind === 'STANDARD' ? 'Zwykły' : item.account_kind}</td>
-        <td>{item.unit_price == null ? '—' : formatDecimal(item.unit_price, 2) + ' ' + item.currency}</td>
-        <td>{amount(item.cost_pln)}{item.currency !== 'PLN' && <small>{formatDecimal(item.native_cost, 2)} {item.currency}</small>}</td>
-        <td>{amount(item.value_pln)}{item.currency !== 'PLN' && item.native_value !== null && <small>{formatDecimal(item.native_value, 2)} {item.currency}</small>}</td>
-        <td>{amount(item.gain_pln)}</td><td>{item.observed_on && <span>{formatDate(item.observed_on)}<br /></span>}
-          {item.reasons.map((reason) => <span key={reason}>{reasons[reason]}<br /></span>)}
-          {item.price_source && <small>{item.price_source === 'YAHOO' ? 'Yahoo Finance' : 'Cena ręczna'}</small>}
-          {item.quoted_at && <small>Notowanie: {quoteTime(item.quoted_at)}</small>}
-          {item.price_source === 'YAHOO' && item.fetched_at && <small>Pobrano: {quoteTime(item.fetched_at)}</small>}
-          {item.stale_price && <small>Cena starsza niż 4 dni</small>}
-          {item.yahoo?.failed && <small>Ostatnia próba Yahoo nieudana; poprzednia cena zachowana</small>}
-          {item.purchase_id && <button type="button" className="text-button" disabled={busy} onClick={() => setEditing(item.purchase_id!)}>Wycena obligacji</button>}</td>
-      </tr>)}</tbody></table></div>}
     {bond && <BondMark key={bond.purchase_id + ':' + bond.purchase_revision + ':' + bond.mark_id} position={bond} onBusy={setBusy}
       onSaved={() => { setEditing(null); setMessage('Wycena obligacji została zapisana.') }} onCancel={() => setEditing(null)} />}
     {bondData && bondData.positions.some((item) => item.listing_id) && <details className="portfolio-fx"><summary>Automatyczne kursy Yahoo Finance</summary>
