@@ -102,6 +102,6 @@ test('NBP failure is reported without inventing exchange rates', async ({ page }
   await page.goto('/')
   await page.locator('.operations-panel > summary').click()
   await portfolio(page).getByRole('button', { name: 'Pobierz kursy NBP', exact: true }).click()
-  await expect(portfolio(page).getByRole('status', { name: 'Informacja portfela' })).toContainText('nie powiodła się')
+  await expect(portfolio(page).getByRole('status', { name: 'Kursy NBP' })).toContainText('nie powiodła się')
   await expect(card(page, 'Wartość aktywów')).toHaveText('—')
 })

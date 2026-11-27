@@ -132,8 +132,11 @@ def portfolio_fx(
     scope: PortfolioScope = "ALL",
     portfolio_id: UUID | None = None,
     session: Session = Depends(get_session),
+    only_missing: bool = False,
 ):
-    return refresh_fx(session, request.app.state.settings.local_owner_id, scope, portfolio_id)
+    return refresh_fx(
+        session, request.app.state.settings.local_owner_id, scope, portfolio_id, only_missing
+    )
 
 
 @router.post("/accounts/{account_id}/bonds/{purchase_id}/valuations", status_code=201)

@@ -145,3 +145,5 @@ Po otwarciu lub odswiezeniu aplikacji pobieramy ceny posiadanych ETF/akcji z Yah
 ## Wlasne portfele i katalog aktywow
 
 Wybierz lub utworz portfel grupujacy rachunki. Podsumowanie i tabela dotycza tego portfela oraz wybranego filtra IKE/IKZE. Lista pokazuje liczbe jednostek, nazwe, cene jednostki, wartosc oraz wynik kwotowo i procentowo. Operacje i katalog aktywow otwierasz ponizej lub nazwa instrumentu w tabeli. Katalog obsluguje rozne ETF-y, akcje i gieldowe REIT-y; obligacje pozostaja we wspolnym podsumowaniu. [Zasady, zgodnosc i ograniczenia](docs/portfolios.md).
+
+Kursy NBP do podsumowania w PLN pobierają się automatycznie po otwarciu strony. Brakujące kursy historyczne uzupełniane są partiami. Przy niedostępności NBP pozostają poprzednie dane i znane kwoty w walucie instrumentu; przycisk NBP pozwala ponowić pobranie.

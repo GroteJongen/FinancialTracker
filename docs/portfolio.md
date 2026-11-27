@@ -27,7 +27,7 @@ PLN nie wymaga przeliczenia. EUR i USD używają publicznego API NBP, tabela A, 
 
 Koszt walutowy jest szacunkiem NBP, a nie rzeczywistym kosztem przewalutowania u brokera ani regułą podatkową. Wynik obejmuje różnicę kursową względem tak oszacowanego kosztu. Nie przeliczamy dawnych kosztów dzisiejszym kursem. Kurs NBP nie jest kursem wykonania transakcji.
 
-GET dashboardu nie wysyła zapytań sieciowych. Przycisk „Pobierz kursy NBP” pobiera brakujące kursy historyczne i odświeża kursy dla dzisiejszego dnia; maksymalnie 8 zapytań, 4 równocześnie, timeout klienta dostawcy 4 s. Kolejne partie można pobrać ponownie. Cache zachowuje poprzednie dane po awarii. Brak klucza API lub płatnego dostępu. Do NBP przekazujemy tylko walutę i daty, nie rachunki, wartości ani ilości aktywów.
+GET dashboardu nie wysyła zapytań sieciowych. Po otwarciu strony frontend automatycznie wywołuje POST pobierający aktualne kursy NBP i brakujące kursy historyczne dla wybranego portfela i filtra. Przycisk „Pobierz kursy NBP” umożliwia ponowienie. Serwer przetwarza maksymalnie 8 par waluta/data w partii, 4 równocześnie, z timeoutem 4 s. Frontend pobiera do 20 partii; kolejne pomijają już zapisane kursy (only_missing=true). Błąd lub brak postępu zatrzymuje cykl, bez automatycznej pętli ponowień. Cache zachowuje poprzednie dane po awarii. Do NBP przekazujemy wyłącznie walutę i daty. Znana wartość i wynik pozycji pozostają widoczne w walucie instrumentu do uzupełnienia przeliczenia na PLN; suma portfela pozostaje niepełna, bez mieszania walut.
 
 ## Technika i testy
 

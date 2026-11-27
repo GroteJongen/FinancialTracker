@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { quoteTime, refreshMarket } from './market'
+import { refreshFxRates } from './fx'
 import YahooMapping from './YahooMapping'
 import PortfolioPicker from './PortfolioPicker'
 import type { Account } from '../purchases/api'
@@ -10,7 +11,7 @@ type Allocation = { asset_class: string; amount: string; percent: string; start:
 type Totals = { cost: string | null; value: string | null; paid_income: string | null; gain: string | null; gain_percent: string | null; known_value: string; complete: boolean; allocation_value: Allocation[]; allocation_cost: Allocation[] }
 type Position = {
   account_id: string; account_name: string; account_kind: string; label: string; asset_class: string
-  currency: string; native_cost: string; native_value: string | null; cost_pln: string | null
+  currency: string; native_cost: string; native_value: string | null; native_gain?: string | null; native_gain_percent?: string | null; cost_pln: string | null
   value_pln: string | null; gain_pln: string | null; paid_income: string | null; reasons: string[]
   observed_on: string | null; purchase_id?: string; purchase_revision?: number
   price_source?: string | null; quoted_at?: string | null; fetched_at?: string | null; stale_price?: boolean
@@ -37,7 +38,10 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
   const marketLock = useRef(false)
   const [basis, setBasis] = useState<'value' | 'cost'>('value')
   const [busy, setBusy] = useState(false)
-  const savingRef = useRef(false)
+  const fxTried = useRef(new Set<string>())
+  const fxStarted = useRef(new Set<string>())
+  const fxRun = useRef(0)
+  const [fxState, setFxState] = useState<{ query: string; busy: boolean; text: string } | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
   const key = scope + '/' + portfolioId + '/' + version
   const query = 'scope=' + scope + (portfolioId ? '&portfolio_id=' + portfolioId : '')
@@ -74,15 +78,29 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
     return () => { active = false }
   }, [])
 
-  async function fetchFx() {
-    if (savingRef.current) return
-    savingRef.current = true; setBusy(true); setMessage('')
+  const fetchFx = useCallback(async (onlyMissing = false) => {
+    const run = ++fxRun.current
+    setFxState({ query, busy: true, text: 'Pobieranie kursów NBP do przeliczenia portfela na PLN…' })
     try {
-      const result = await request<{ updated: number; failed: number; remaining: number }>('/api/portfolio/fx/refresh?' + query, { method: 'POST' })
-      setMessage(`Kursy NBP: odświeżono ${result.updated}. Brakujących kursów: ${result.remaining}.` + (result.failed ? ' Część zapytań nie powiodła się; zachowano poprzednie dane.' : result.remaining ? ' Kliknij ponownie, aby pobrać kolejną partię.' : ''))
-    } catch (failure) { setMessage(failure instanceof Error ? failure.message : 'Nie udało się pobrać kursów.') }
-    finally { savingRef.current = false; setBusy(false) }
-  }
+      const result = await refreshFxRates(query, onlyMissing)
+      if (run === fxRun.current) setFxState({ query, busy: false,
+        text: 'Kursy NBP: odświeżono ' + result.updated + '. Brakujących kursów: ' + result.remaining + '.' + (result.failed ? ' Część zapytań nie powiodła się; zachowano poprzednie dane. Wartości w walucie instrumentu pozostają widoczne.' : result.remaining ? ' Kliknij Pobierz kursy NBP, aby pobrać kolejną partię.' : ''),
+      })
+    } catch {
+      if (run === fxRun.current) setFxState({ query, busy: false, text: 'Nie udało się pobrać kursów NBP. Zachowano poprzednie dane; znane wartości pokazujemy w walucie instrumentu. Ponów przyciskiem Pobierz kursy NBP.' })
+    }
+  }, [query])
+  useEffect(() => {
+    if (!data) return
+    const onOpen = data.estimated_fx && !fxStarted.current.has(query)
+    const missing = data.missing_fx.some((key) => !fxTried.current.has(query + '/' + key.currency + '/' + key.requested_on))
+    if (!onOpen && !missing) return
+    fxStarted.current.add(query)
+    for (const key of data.missing_fx) fxTried.current.add(query + '/' + key.currency + '/' + key.requested_on)
+    void fetchFx(!onOpen)
+  }, [data, query, fetchFx])
+  const currentFx = fxState?.query === query ? fxState : null
+  const fxBusy = currentFx?.busy ?? false
   const totals = data?.totals
   const allocation = (basis === 'value' ? totals?.allocation_value : totals?.allocation_cost) ?? []
   const gradient = allocation.map((item) => `${colors[item.asset_class]} ${item.start}% ${item.end}%`).join(', ')
@@ -101,16 +119,17 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
         onClick={() => { setScope(value); setEditing(null); setMessage('') }}>{label}</button>)}
     </div>
     <dl className="portfolio-cards">{cards.map(([label, value]) => <div key={label} className={label === 'Łączny zysk / strata' && totals?.gain?.startsWith('-') ? 'portfolio-loss' : ''}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-    <div className="portfolio-actions"><button type="button" className="text-button" disabled={busy || marketBusy} onClick={() => { setVersion((value) => value + 1); void fetchMarket() }}>Odśwież podsumowanie</button>
-      <button type="button" className="secondary-button" disabled={busy || !data} onClick={() => { void fetchFx() }}>{busy ? 'Pobieranie…' : 'Pobierz kursy NBP'}</button></div>
+    <div className="portfolio-actions"><button type="button" className="text-button" disabled={busy || marketBusy} onClick={() => { setVersion((value) => value + 1); void fetchMarket(); void fetchFx() }}>Odśwież podsumowanie</button>
+      <button type="button" className="secondary-button" disabled={busy || fxBusy || !data} onClick={() => { void fetchFx() }}>{fxBusy ? 'Pobieranie NBP…' : 'Pobierz kursy NBP'}</button></div>
     {!data && !error && <p role="status">Pobieranie podsumowania portfela…</p>}
     {error && <p role="alert" className="portfolio-warning">{error}</p>}
     {message && <p role="status" aria-label="Informacja portfela" className="valuation-note">{message}</p>}
+    {currentFx && <p role="status" aria-label="Kursy NBP" className="valuation-note">{currentFx.text}</p>}
     {marketMessage && <p role="status" aria-label="Stan Yahoo" className="valuation-note">{marketMessage}</p>}
-    <p className="form-hint">Yahoo Finance: notowania mogą być opóźnione; Xetra około 15 minut. Czas notowania nie jest czasem pobrania. Nowsza cena ręczna ma pierwszeństwo do pojawienia się późniejszego notowania. NBP aktualizujesz osobnym przyciskiem. Jedno odświeżenie obejmuje do 8 notowań; przy większym portfelu powtórz odświeżenie.</p>
+    <p className="form-hint">Yahoo Finance: notowania mogą być opóźnione; Xetra około 15 minut. Czas notowania nie jest czasem pobrania. Nowsza cena ręczna ma pierwszeństwo do pojawienia się późniejszego notowania. Brakujące kursy NBP pobieramy automatycznie. Jedno odświeżenie obejmuje do 8 notowań; przy większym portfelu powtórz odświeżenie.</p>
 
     {data && !totals?.complete && <p className="portfolio-warning" role="status" aria-label="Kompletność portfela">
-      Podsumowanie jest niepełne. Wartość pozycji z dostępną wyceną: {amount(totals?.known_value)}.
+      Podsumowanie jest niepełne. Wartość pozycji z dostępną wyceną w PLN: {amount(totals?.known_value)}.
       Uzupełnij brakujące ceny, wyceny obligacji lub kursy NBP. Braki nie są traktowane jako zero.</p>}
     {data?.estimated_fx && <p className="valuation-note">Kwoty walutowe są przeliczane na PLN. Koszt historyczny jest szacunkiem po kursie NBP z dnia zakupu lub ostatniej wcześniejszej publikacji; bieżąca wartość korzysta z ostatniego dostępnego kursu dla dnia podsumowania.</p>}
     <p className="form-hint">Wypłacone odsetki zwiększają wynik, ale nie są dodawane do aktywów na wykresie. Gotówka i dywidendy akcji nie są jeszcze ewidencjonowane. Wynik brutto, bez podatków i kosztu przyszłej sprzedaży lub wykupu.</p>
@@ -134,11 +153,13 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
           {item.purchase_id && <button type="button" className="text-button" disabled={busy} onClick={() => setEditing(item.purchase_id!)}>Wycena obligacji</button>}
         </td>
         <td>{item.unit_price == null ? '—' : formatDecimal(item.unit_price, 2) + ' ' + item.currency}</td>
-        <td>{amount(item.value_pln)}{item.currency !== 'PLN' && item.native_value !== null && <small>{formatDecimal(item.native_value, 2)} {item.currency}</small>}</td>
-        <td className={item.gain_pln?.startsWith('-') ? 'position-loss' : item.gain_pln == null ? '' : 'position-gain'}>{amount(item.gain_pln)}</td>
-        <td className={item.gain_percent?.startsWith('-') ? 'position-loss' : item.gain_percent == null ? '' : 'position-gain'}>{item.gain_percent == null ? '—' : formatDecimal(item.gain_percent, 2) + '%'}</td>
+        <td>{item.value_pln == null && item.native_value != null ? formatDecimal(item.native_value, 2) + ' ' + item.currency : amount(item.value_pln)}{item.currency !== 'PLN' && item.native_value !== null && item.value_pln !== null && <small>{formatDecimal(item.native_value, 2)} {item.currency}</small>}</td>
+        <td className={(item.gain_pln ?? item.native_gain)?.startsWith('-') ? 'position-loss' : (item.gain_pln ?? item.native_gain) == null ? '' : 'position-gain'}>{item.gain_pln != null ? amount(item.gain_pln) : item.native_gain == null ? '—' : formatDecimal(item.native_gain, 2) + ' ' + item.currency}
+          {item.gain_pln == null && item.native_gain != null && <small>Brak przeliczenia na PLN</small>}</td>
+        <td className={(item.gain_percent ?? item.native_gain_percent)?.startsWith('-') ? 'position-loss' : (item.gain_percent ?? item.native_gain_percent) == null ? '' : 'position-gain'}>{(item.gain_percent ?? item.native_gain_percent) == null ? '—' : formatDecimal((item.gain_percent ?? item.native_gain_percent)!, 2) + '%'}
+          {item.gain_percent == null && item.native_gain_percent != null && <small>Wynik w {item.currency}</small>}</td>
       </tr>)}</tbody></table></div>}
-    <p className="form-hint">Wartość i wynik są w PLN, cena jednostki w walucie notowania. Dla obligacji cena jednostki to ręcznie podana wartość partii podzielona przez liczbę sztuk. Przy nazwie widoczny jest rachunek; to samo aktywo na różnych rachunkach ma osobne wiersze.</p>
+    <p className="form-hint">Wartość i wynik są w PLN, cena jednostki w walucie notowania. Do uzupełnienia kursów NBP pokazujemy znane kwoty i wynik w walucie instrumentu z oznaczeniem braku przeliczenia. Dla obligacji cena jednostki to ręcznie podana wartość partii podzielona przez liczbę sztuk. Przy nazwie widoczny jest rachunek; to samo aktywo na różnych rachunkach ma osobne wiersze.</p>
     <div className="portfolio-chart-panel"><div>
       <h3>Struktura portfela</h3>
       <div className="portfolio-filters" role="group" aria-label="Podstawa wykresu">
