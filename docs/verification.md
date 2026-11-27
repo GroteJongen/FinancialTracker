@@ -81,3 +81,15 @@ Frontend: TypeScript, ESLint i build Vite zaliczone. Playwright: 21 testów, w t
 Compose: start z migracją 0005, zapis syntetycznego katalogu, zakupu, ceny i audytu, wynik 98 PLN i 9,78%, trwałość po restarcie db/backend/frontend oraz niedostępność i powrót bazy. Wszystko na izolowanych danych syntetycznych CI. Lokalnie sprawdzono git diff --check i docker compose --env-file .env.example config --quiet. Nie wykonywano operacji na lokalnym portfelu ani dodawania rzeczywistych spółek.
 
 Katalog użytkownika startuje pusty; dane i ceny są ręczne. Brak automatycznych notowań, FX, dywidend, sprzedaży, splitów i podatków. ISIN/MIC/ticker mają walidację formatu, bez weryfikacji notowania u dostawcy. Ograniczenia i aktualizacja opisane w stocks.md.
+
+## FT-011 — Dashboard portfela, 2026-11-27
+
+Pełny [przebieg CI](https://github.com/GroteJongen/FinancialTracker/actions/runs/46006000473) zakończony powodzeniem: 161 testów backendu na PostgreSQL, ruff check, ruff format --check, alembic check, TypeScript, ESLint i build Vite. Migracja 0006 od pustej i wcześniejszych wersji oraz zgodność modeli z bazą zaliczone.
+
+Testy finansowe obejmują przykład kosztu 175000 PLN, wartości 185000 PLN i wyniku 10000 PLN, wypłacone odsetki bez podwójnego liczenia, sumowanie przed zaokrągleniem, niepełne dane, ujemne i zerowe wyniki oraz udziały sumujące się do 100%. Testy API obejmują filtry zwykłe/IKE/IKZE/razem, IKE_BONDS w IKE, prywatność portfela i wycen, rewizje, niezmienne obserwacje, idempotencję, historyczny koszt FX względem bieżącego kursu, zachowanie cache po awarii i brak HTTP przy pustym portfelu. Test współbieżny wymusza jednoczesny odczyt dashboardu i zapis zakupu/audytu, bez zakleszczenia kluczy obcych.
+
+Playwright: 26 testów, w tym 5 nowych scenariuszy dashboardu. Sprawdzono filtry, kwoty przykładu, faktyczne renderowanie gradientu diagramu przy aktualnej CSP, szerokość mobilną, brak fikcyjnej wyceny przy brakach, wykres kosztu, rzeczywistą aktualizację wiersza portfela po zmianie ceny akcji bez przeładowania, zapis i trwałość wypłaconych odsetek obligacji oraz komunikat awarii NBP.
+
+Compose potwierdził trwałość dashboardu, ręcznej wyceny obligacji, odsetek i proporcji po restarcie db/backend/frontend, wraz z dotychczasowymi scenariuszami ETF, akcji i obligacji oraz kontrolowaną niedostępnością i powrotem bazy. Adapter NBP ma testy z atrapami; osobny krok rzeczywistej sieci zakończył się PASS dla EUR, publikacja 2025-01-03, tabela 002/A/NBP/2025. Nie korzysta z danych portfela i nie blokuje pozostałych testów w razie awarii dostawcy.
+
+Lokalnie zaliczono git diff --check oraz docker compose --env-file .env.example config --quiet. Nie wykonywano zapisów do lokalnego portfela użytkownika. Testy używają wyłącznie danych syntetycznych; partia TOS1129 ma ręcznie podaną wycenę i nie stanowi testu silnika naliczania odsetek z listu emisyjnego. Ograniczenia: ręczne ceny aktywów i wyceny obligacji, szacunkowy historyczny FX NBP, brak gotówki, sprzedaży, dywidend i podatków. Szczegóły w portfolio.md.

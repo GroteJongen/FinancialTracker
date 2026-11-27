@@ -45,7 +45,7 @@ Zweryfikuj pobieranie IUSQ.DE i warunki użycia. Adapter, symbol dostawcy, dzien
 
 ## FT-006 — PLN
 
-Status: Do ustalenia.
+Status: Częściowo wdrożone w FT-011: dashboard PLN i kursy NBP. Pozostaje rzeczywisty koszt FX brokera oraz ewentualne rozszerzenie indywidualnych widoków.
 
 NBP API, historyczny koszt i aktualna wycena według calculations.md. Ustal zachowanie w dni bez tabeli i oznaczenie szacunków. Nie implementuj rozliczeń podatkowych przy okazji wyceny.
 
@@ -79,6 +79,6 @@ Pusty, prywatny katalog akcji, ręczna rejestracja spółki/notowania, rachunki 
 
 ## FT-011 — Dashboard całego portfela
 
-Status: W trakcie weryfikacji. Priorytet użytkownika.
+Status: Ukończone — 161 testów backendu, 26 testów przeglądarkowych, migracje i trwałość Compose potwierdzone w CI. Priorytet użytkownika.
 
 Agregacja obligacji, ETF i akcji w PLN, koszt i wynik, ręczne wyceny obligacji i wypłacone odsetki, filtry zwykłe/IKE/IKZE/razem, wykres wartości lub kosztu, kursy NBP bieżące i historyczne, ochrona przed brakami i podwójnym liczeniem. Migracja 0006 i testy. Nie wdraża automatycznego naliczania odsetek z listów emisyjnych ani gotówki. Patrz portfolio.md.
