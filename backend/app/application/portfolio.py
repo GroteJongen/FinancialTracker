@@ -168,6 +168,11 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 if value_pln is not None and cost_pln is not None and paid is not None
                 else None
             )
+            native_gain = (
+                native_value + paid - native_cost
+                if native_value is not None and paid is not None
+                else None
+            )
             holdings.append(Holding(asset_class, cost_pln, value_pln, paid))
             items.append(
                 dict(
@@ -179,6 +184,12 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                     currency=currency,
                     native_cost=money(native_cost),
                     native_value=money(native_value),
+                    native_gain=money(native_gain),
+                    native_gain_percent=(
+                        money(native_gain / native_cost * 100)
+                        if native_gain is not None and native_cost
+                        else None
+                    ),
                     paid_income=money(paid),
                     cost_pln=money(cost_pln),
                     value_pln=money(value_pln),
@@ -337,14 +348,14 @@ def save_bond_valuation(
         return dict(id=str(mark.id)), True
 
 
-def refresh_fx(session: Session, owner_id: UUID, scope="ALL", portfolio_id=None):
+def refresh_fx(session: Session, owner_id: UUID, scope="ALL", portfolio_id=None, only_missing=False):
     today = business_today()
     with session.begin():
         _, securities, _ = records(session, owner_id, scope, portfolio_id=portfolio_id)
         keys = fx_keys(securities)
         cached = cached_rates(session, keys)
     selected = sorted(
-        (key for key in keys if key not in cached or key[1] == today),
+        (key for key in keys if key not in cached or (not only_missing and key[1] == today)),
         key=lambda key: (key[1] != today, key),
     )[:8]
 
