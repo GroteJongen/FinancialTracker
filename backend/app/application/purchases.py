@@ -18,9 +18,10 @@ from app.infrastructure.models import (
 
 
 class PurchaseError(Exception):
-    def __init__(self, message: str, status_code: int = 404):
+    def __init__(self, message: str, status_code: int = 404, *, field: str | None = None):
         self.message = message
         self.status_code = status_code
+        self.field = field
         super().__init__(message)
 
 
@@ -50,7 +51,9 @@ def supported_listing(session: Session, listing_id: UUID, owner_id: UUID):
 
 def matching_currency(listing: Listing, currency: str):
     if listing.currency != currency:
-        raise PurchaseError("Waluta operacji musi być zgodna z walutą notowania.", 422)
+        raise PurchaseError(
+            "Waluta operacji musi być zgodna z walutą notowania.", 422, field="currency"
+        )
 
 
 def supported_account(session: Session, account: Account, listing: Listing):
