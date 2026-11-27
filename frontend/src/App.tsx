@@ -103,7 +103,7 @@ export default function App() {
                 ? <div className="empty-state"><div className="empty-icon" aria-hidden="true">＋</div>
                   <h3>Jeszcze nie masz rachunków</h3>
                   <p>Po przygotowaniu rachunku pojawi się on w tym miejscu.</p>
-                  <span className="muted-note">Dodawanie własnych rachunków pojawi się w kolejnym etapie.</span>
+                  <a className="text-button" href="#security-operations" onClick={() => setOperationsOpen(true)}>Dodaj pierwszy rachunek w sekcji Instrumenty</a>
                 </div>
                 : <div className="account-grid">{connection.accounts.map((account) =>
                   <article className="account-card" key={account.id}>

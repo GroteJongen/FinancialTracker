@@ -16,7 +16,7 @@ def test_groups_scope_overlap_retry_revision_and_privacy(ledger):
     security = client.post(
         "/api/securities",
         json=dict(
-            kind="ETF", name="Synthetic diversified ETF", symbol="FUND", mic="XETR", currency="PLN"
+            account_id=standard, kind="ETF", name="Synthetic diversified ETF", symbol="FUND", mic="XETR", currency="PLN"
         ),
     ).json()
     buy(client, standard, security["id"], "PLN", "10", "100")
@@ -68,7 +68,7 @@ def test_groups_scope_overlap_retry_revision_and_privacy(ledger):
 @pytest.mark.parametrize("kind", ["ETF", "REIT"])
 def test_private_securities_multiple_etfs_and_reit_allocation(ledger, kind):
     client, engine, settings, account_id = ledger
-    payload = dict(kind=kind, name="Synthetic " + kind, symbol="SYN", mic="XNYS", currency="USD")
+    payload = dict(account_id=str(account_id), kind=kind, name="Synthetic " + kind, symbol="SYN", mic="XNYS", currency="USD")
     result = client.post("/api/securities", json=payload)
     assert result.status_code == 201
     listing = result.json()

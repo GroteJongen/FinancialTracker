@@ -74,6 +74,7 @@ class AuditResponse(BaseModel):
 
 
 class ListingResponse(BaseModel):
+    account_ids: list[UUID] = Field(default_factory=list)
     id: UUID
     name: str
     symbol: str

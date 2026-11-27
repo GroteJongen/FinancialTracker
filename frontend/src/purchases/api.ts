@@ -1,7 +1,7 @@
 export type Account = { id: string; name: string; kind: string; currency: string }
 export type Listing = {
   id: string; name: string; symbol: string; isin: string | null; mic: string; currency: string
-  kind: string
+  kind: string; account_ids?: string[]
 }
 export type Purchase = {
   id: string; account_id: string; listing_id: string; symbol: string; isin: string | null
@@ -16,7 +16,7 @@ export type Audit = {
 const labels: Record<string, string> = {
   trade_date: 'Data zakupu', quantity: 'Liczba jednostek', unit_price: 'Cena jednostki',
   commission: 'Prowizja', currency: 'Waluta', reason: 'Powód korekty',
-  listing_id: 'Instrument', expected_revision: 'Wersja zakupu',
+  account_id: 'Rachunek instrumentu', listing_id: 'Instrument', expected_revision: 'Wersja zakupu',
   price: 'Cena wyceny', observed_on: 'Data wyceny',
   series: 'Seria obligacji', annual_rate: 'Oprocentowanie', margin: 'Marża',
   source_url: 'Dokument emisji', name: 'Nazwa rachunku', kind: 'Typ rachunku',

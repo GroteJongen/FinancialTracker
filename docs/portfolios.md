@@ -45,3 +45,9 @@ zmiany skladu i odczyt, a kwoty sa Decimal/NUMERIC i tekstem w JSON.
 
 Migracja 0008 dodaje grupy i czlonkostwa oraz rozszerza prywatnosc REIT. Nie zmienia
 zakupow, cen ani ich historii. Downgrade odmawia usuniecia zapisanych grup.
+
+## Instrument przypisany do rachunku
+
+Dodaj instrument wymaga wyboru istniejącego rachunku inwestycyjnego (zwykły, IKE albo IKZE). Jeśli brak zgodnego rachunku, formularz pokazuje prośbę i pola utworzenia rachunku, a pola instrumentu są niedostępne. Obligacje korzystają z wyboru zgodnego rachunku w swoim formularzu. Nieistniejący, cudzy lub niezgodny rachunek jest odrzucany przez serwer; szkic formularza pozostaje do poprawy.
+
+POST /api/securities wymaga account_id. Migracja 0009 dodaje account_listings: unikalne przypisania rachunek/notowanie. Powtórny zapis tego samego instrumentu na tym samym rachunku nie duplikuje wpisu; można przypisać go do kolejnego własnego rachunku. GET katalogu zwraca account_ids wyłącznie dla właściciela, uwzględniając także istniejące zakupy. Wybór instrumentu przywraca przypisany rachunek. Sam wpis katalogowy nie dodaje jednostek, kosztu ani wartości do portfela. Dotychczasowe zakupy pozostają bez zmian. Starszy endpoint katalogowy /api/stocks pozostaje zgodny; formularz aplikacji korzysta z /api/securities.

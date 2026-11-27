@@ -1,5 +1,6 @@
 import re
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -59,4 +60,5 @@ class InvestmentAccountCreate(BaseModel):
 
 
 class SecurityCreate(StockCreate):
+    account_id: UUID
     kind: Literal["STOCK", "ETF", "REIT"]

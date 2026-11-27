@@ -42,7 +42,7 @@ export default function Bonds({ accounts, onAccountsChanged, onBusyChange }: {
   const [saving, setSaving] = useState(false)
   const savingRef = useRef(false)
   const [error, setError] = useState('')
-  const account = options.find((item) => item.id === selected) ?? options[0]
+  const account = selected ? options.find((item) => item.id === selected) : options[0]
 
   async function createAccount(event: FormEvent) {
     event.preventDefault()
@@ -62,10 +62,13 @@ export default function Bonds({ accounts, onAccountsChanged, onBusyChange }: {
     <div className="section-heading"><h2 id="bonds-title">Obligacje skarbowe</h2><span>COI · TOS · EDO · PLN</span></div>
     <p className="valuation-note">Zapisuj zakupy i warunki konkretnej serii. Koszt zakupu nie jest bieżącą wyceną.
       Odsetki i wynik pojawią się po wdrożeniu zasad z listów emisyjnych.</p>
+    {selected && !account && <p role="alert">Wybrany rachunek nie istnieje lub nie obsługuje obligacji. Wybierz istniejący rachunek.</p>}
+    {!options.length && <p role="status" aria-label="Wymagany rachunek obligacji">Najpierw dodaj rachunek obligacji. Dopiero potem możesz zapisać zakup.</p>}
     <div className="purchase-account-picker">
-      {account && <><label htmlFor="bond-account">Rachunek obligacji</label>
-        <select id="bond-account" value={account.id} disabled={busy || saving}
+      {options.length > 0 && <><label htmlFor="bond-account">Rachunek obligacji</label>
+        <select id="bond-account" value={account?.id ?? selected} disabled={busy || saving}
           onChange={(event) => setSelected(event.target.value)}>
+          {!account && <option value={selected}>Wybierz istniejący rachunek</option>}
           {options.map((item) => <option key={item.id} value={item.id}>{item.name} · {accountKinds[item.kind]}</option>)}
         </select></>}
       <button type="button" className="secondary-button" disabled={busy || saving}
