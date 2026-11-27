@@ -126,3 +126,14 @@ Sekcja „Akcje” pozwala dodać własne spółki i notowania, tworzyć rachunk
 ## Dashboard portfela
 
 „Mój portfel” pokazuje koszt, wartość aktywów i wynik w PLN, filtry zwykłe/IKE/IKZE/wszystkie oraz wykres udziałów. Wyceny giełdowe są ręczne; dla obligacji można zapisać bieżącą wartość i skumulowane wypłacone odsetki brutto. Waluty wymagają pobrania referencyjnych kursów NBP. Braki nie są traktowane jako zero. [Zasady i ograniczenia](docs/portfolio.md).
+
+## Gotowe obrazy GHCR
+
+Po merge do main i zaliczeniu CI publikowane sa obrazy frontendu i backendu ze wspolnym tagiem commita. Pobierasz je recznie, bez harmonogramu:
+
+```powershell
+.\scripts\update.ps1 -PullOnly
+```
+
+Pobranie i uruchomienie nowego wydania z migracjami: `.\scripts\update.ps1`.
+Nowe pakiety sa domyslnie prywatne; pierwsze pobranie moze wymagac `docker login ghcr.io -u GroteJongen` z tokenem classic read:packages. Obrazy pojawia sie po pierwszym udanym publish-images na main. Zachowaj dotychczasowy .env i wolumen bazy. [Pelna instrukcja i reczne polecenia Compose](docs/ghcr.md).

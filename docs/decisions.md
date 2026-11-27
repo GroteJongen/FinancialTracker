@@ -53,3 +53,7 @@ Akcje używają istniejących Instrument/Listing, Operation/PurchaseDetails, Aud
 ## ADR-025 — Wspólny dashboard w PLN
 
 Koszt walutowy przeliczamy historycznie jako jawny szacunek NBP, a wartość aktualnym dostępnym kursem referencyjnym. Wypłacone odsetki są skumulowanym dochodem, nie kolejnym aktywem ani kolejnymi wpłatami. Brak pełnej wyceny daje null i blokuje pełny wykres wartości. Ręczna wycena partii obligacji nie udaje automatycznego silnika reguł emisji. Konto IKE_BONDS należy do filtra IKE. Blokadę właściciela zmieniono na FOR NO KEY UPDATE, aby umożliwić równoczesne kontrole klucza obcego podczas zapisu zakupów/audytu; test wymusza tę kolejność współbieżną.
+
+## ADR-027 - GHCR i reczny wybor kompletnego wydania
+
+CI publikuje obrazy tylko dla push main po wszystkich kontrolach. Reczny aktualizator wybiera tylko udany CI z udanym publish-images, a oba obrazy i migracje uzywaja wspolnego tagu SHA oraz etykiety rewizji. Nie przesuwamy niezaleznych tagow latest. Osobny compose.ghcr.yaml nie zawiera build i zachowuje projekt/wolumen/porty wersji lokalnej. -PullOnly nie uruchamia kontenerow, pelna reczna aktualizacja zatrzymuje sie po bledzie migracji. Brak harmonogramu, publicznego hostingu i automatycznego downgrade bazy. Pakiety zachowuja domyslna prywatnosc GHCR; uprawnienie write:packages ma tylko glowny job publikacji. Szczegoly: ghcr.md.

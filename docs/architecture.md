@@ -86,3 +86,7 @@ Migracja 0005 wprowadza prywatny katalog Instrument.owner_id oraz obsługę PLN/
 ## Portfel FT-011
 
 Agregacja jest odrębnym przypadkiem użycia application/portfolio.py, z czystym sumowaniem domain/portfolio.py i osobnym adapterem infrastructure/nbp.py. BondValuation przechowuje niezmienne, ręczne obserwacje dla rewizji zakupu. FxRate przechowuje publiczne kursy NBP dla dat wymaganych przez portfel. GET nie wykonuje HTTP do dostawcy. Kontrakt, spójność odczytu i zasady niepełnych danych: portfolio.md.
+
+## Dystrybucja GHCR - FT-012
+
+compose.yaml pozostaje srodowiskiem budowanym ze zrodel. compose.ghcr.yaml jest samodzielnym srodowiskiem z obrazow, z tym samym wolumenem PostgreSQL i lokalnymi portami. CI posiada osobny job publish-images zależny od testow, a scripts/update.ps1 obsluguje wyłącznie reczne pobieranie i uruchamianie. Nie zmienia modelu finansowego, schematu bazy ani obslugi wlascicieli. Szczegoly: ghcr.md.
