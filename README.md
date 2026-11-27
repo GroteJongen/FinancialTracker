@@ -4,23 +4,11 @@ Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja o
 
 Dodawanie instrumentu w sekcji „Instrumenty” wymaga wyboru istniejącego rachunku. Jeśli nie masz zgodnego rachunku, najpierw utwórz go w pokazanym formularzu. Nieistniejący lub niedostępny rachunek powoduje komunikat błędu, a wpisane dane instrumentu pozostają zachowane.
 
-## Zakupy instrumentów
+## Historia zakupów instrumentu
 
-Po utworzeniu rachunku demonstracyjnego wybierz go w sekcji „Instrumenty”, a następnie wybierz IUSQ z listy instrumentów. Wpisz datę, liczbę jednostek, cenę i prowizję w EUR. Jednostki ułamkowe oraz kwoty obsługują do 8 miejsc po przecinku. Formularz przyjmuje przecinek lub kropkę; backend zapisuje dokładne wartości dziesiętne, odrzuca wartości ujemne, zerową ilość/cenę oraz przyszłe daty według Europe/Warsaw.
+W sekcji „Instrumenty” wybierz instrument i rachunek. Poniżej znajduje się wyłącznie historia zakupów z datą, liczbą jednostek, ceną i prowizją. „Popraw instrument” otwiera korektę wybranego zakupu, wymagającą powodu; „Zmiany instrumentu” pokazuje audyt. Formularz korekty jest domyślnie ukryty.
 
-„Popraw” otwiera korektę wymagającą powodu. „Zmiany” pokazuje poprzednie i nowe wartości oraz czas korekty. Zapis zakupu i audytu jest atomowy. Ponowienie zapisu po utracie odpowiedzi nie tworzy drugiego zakupu; równoczesne korekty tej samej wersji powodują konflikt, który wymaga odświeżenia historii. Audyt nie ma endpointu edycji ani usuwania; administrator bazy nadal ma techniczny dostęp do danych.
-
-Migracja 0002 dodaje katalog IUSQ (ISIN IE00B6R52259, Xetra/XETR, EUR), nie dodaje żadnych transakcji i zachowuje wcześniejsze rachunki. Rzeczywiste zakupy dodaje użytkownik. Dane demonstracyjne są opcjonalne. Lista zakupów pokazuje dane transakcyjne, nie aktualną wycenę ani wynik inwestycji.
-
-## Ręczna wycena instrumentu
-
-W sekcji „Instrumenty” wybierz rachunek i instrument, a następnie wpisz cenę jednostki w jego walucie i datę wyceny. Aplikacja pokaże ilość jednostek, łączny koszt z prowizjami, średni koszt, wartość pozycji i niezrealizowany wynik kwotowo oraz procentowo. Przykład: 10 jednostek po 100 EUR i 2 EUR prowizji, wycenionych po 110 EUR, daje wartość 1100 EUR i wynik 98 EUR (9,78%).
-
-Data ceny musi mieścić się pomiędzy ostatnim zakupem a dniem bieżącym według Europe/Warsaw. Późniejszy zakup lub korekta daty mogą sprawić, że cena będzie zbyt stara. Wtedy zobaczysz prośbę o aktualizację, a wartość pozycji i wynik będą niedostępne. Ilość i koszt zakupów pozostaną widoczne. Brak ceny także oznacza brak wyceny, nie wynik zerowy.
-
-Ceny są prywatne dla rachunku i notowania. Każdy zapis zachowuje cenę, datę, źródło ręczne i czas zapisu; historię rozwiniesz pod formularzem. Najnowsza data ceny ma pierwszeństwo, a w obrębie tej samej daty wybierany jest ostatni zapis. Starsza data dodana później nie zastępuje nowszej. Ponowienie po utracie odpowiedzi nie dopisuje duplikatu. Wynik aktualizuje się po zakupie lub korekcie, bez ręcznego odświeżania strony.
-
-Obliczenia używają Decimal i co najmniej 38 cyfr precyzji; prezentacja EUR i procentu stosuje ROUND_HALF_UP do 2 miejsc. Wynik nie obejmuje podatku ani przyszłych kosztów sprzedaży. Bieżące ceny mogą także pochodzić z Yahoo Finance; zasady pierwszeństwa i ograniczenia opisuje docs/yahoo.md.
+Panel Pozycja, kafelki wyceny, formularze ręcznej ceny i nowego zakupu oraz historia cen zostały usunięte z tego widoku. Wartości aktywów i wynik są prezentowane w dashboardzie. Istniejące zakupy, ceny i audyt pozostają w bazie; wspólne API finansowe i integracje nadal działają. Bez migracji i usuwania danych.
 
 ## Uruchomienie na Windows
 

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { request } from '../shared/api'
 import type { Account, Listing } from '../shared/api'
-import InstrumentPosition from './InstrumentPosition'
+import PurchaseHistory from './PurchaseHistory'
 import Bonds from '../bonds/Bonds'
 
 const initial = () => ({ name: '', symbol: '', mic: '', currency: 'PLN', isin: '', kind: 'STOCK' })
@@ -129,7 +129,7 @@ export default function Instruments({ accounts, onAccountsChanged, focus }: { ac
         <select id="stock-account" value={account.id} disabled={blocked} onChange={(event) => { setAccountId(event.target.value); setMessage(null) }}>
           {eligible.map((item) => <option key={item.id} value={item.id}>{item.name} · {kinds[item.kind]}</option>)}
         </select></div>
-        <InstrumentPosition key={account.id + '/' + listing.id} accountId={account.id} listing={listing} onBusy={setLedgerBusy}
+        <PurchaseHistory key={account.id + '/' + listing.id} accountId={account.id} listing={listing} onBusy={setLedgerBusy}
           disabled={saving || (!!accountId && !eligible.some((item) => item.id === accountId))} /></>}
     </>}
   </section>
