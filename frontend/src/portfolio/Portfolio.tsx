@@ -14,6 +14,7 @@ type Position = {
   price_source?: string | null; quoted_at?: string | null; fetched_at?: string | null; stale_price?: boolean
   yahoo?: { symbol: string; failed: boolean; attempted_at: string | null; quoted_at: string | null; fetched_at: string | null } | null
   quantity: string; mark_id?: string | null; trade_date?: string; listing_id?: string
+  unit_price?: string | null
 }
 type Snapshot = { scope: string; as_of: string; account_count: number; position_count: number; totals: Totals; positions: Position[]; estimated_fx: boolean; missing_fx: { currency: string; requested_on: string }[]; fx_rates: { currency: string; requested_on: string; effective_on: string; rate: string; table_number: string }[] }
 const labels: Record<string, string> = { BOND: 'Obligacje', ETF: 'ETF-y', STOCK: 'Akcje' }
@@ -123,11 +124,12 @@ export default function Portfolio() {
     {data?.position_count === 0 && <p className="empty-purchases">Brak zakupionych aktywów w wybranym filtrze.</p>}
     {data && data.positions.length > 0 && <div className="purchase-table-scroll"><table className="purchase-table portfolio-table">
       <caption className="sr-only">Wszystkie aktywa wybranego portfela</caption>
-      <thead><tr><th>Aktywo</th><th>Rachunek</th><th>Koszt (PLN)</th><th>Wartość (PLN)</th><th>Wynik (PLN)</th><th>Wycena</th></tr></thead>
+      <thead><tr><th>Aktywo</th><th>Rachunek</th><th>Kurs / jednostkę</th><th>Koszt (PLN)</th><th>Wartość (PLN)</th><th>Wynik (PLN)</th><th>Wycena</th></tr></thead>
       <tbody>{data.positions.map((item) => <tr key={item.account_id + '/' + (item.purchase_id ?? item.listing_id)}>
         <td><strong>{item.label}</strong><br />{labels[item.asset_class]} · {formatDecimal(item.quantity)} szt.
           {item.trade_date && <small>Zakup: {formatDate(item.trade_date)}</small>}</td>
         <td>{item.account_name}<br />{item.account_kind === 'STANDARD' ? 'Zwykły' : item.account_kind}</td>
+        <td>{item.unit_price == null ? '—' : formatDecimal(item.unit_price, 2) + ' ' + item.currency}</td>
         <td>{amount(item.cost_pln)}{item.currency !== 'PLN' && <small>{formatDecimal(item.native_cost, 2)} {item.currency}</small>}</td>
         <td>{amount(item.value_pln)}{item.currency !== 'PLN' && item.native_value !== null && <small>{formatDecimal(item.native_value, 2)} {item.currency}</small>}</td>
         <td>{amount(item.gain_pln)}</td><td>{item.observed_on && <span>{formatDate(item.observed_on)}<br /></span>}

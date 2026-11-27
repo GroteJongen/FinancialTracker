@@ -219,6 +219,7 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL"):
                 price.observed_on if price else None,
                 listing_id=str(listing_id),
                 quantity=format(position.quantity, "f"),
+                unit_price=format(price.price, "f") if price else None,
                 price_source=price.source if price else None,
                 quoted_at=price.quoted_at.isoformat() if price and price.quoted_at else None,
                 fetched_at=price.recorded_at.isoformat() if price else None,
