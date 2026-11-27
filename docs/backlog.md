@@ -107,4 +107,4 @@ Status: Ukończone - 202 testy backendu i 35 przeglądarkowych zaliczone w CI. W
 
 ## FT-017 - Rachunek wymagany przy dodaniu instrumentu
 
-Status: Weryfikacja w CI. Wybór istniejącego rachunku, walidacja właściciela i typu na serwerze, trwałe przypisania katalogu bez fikcyjnych zakupów. Brak rachunków prowadzi do utworzenia rachunku przed wprowadzeniem instrumentu. Migracja 0009 zachowuje operacje i odczytuje ich dotychczasowe przypisania.
+Status: Ukończone - 207 testów backendu i 38 przeglądarkowych zaliczone w CI. Wybór istniejącego rachunku, walidacja właściciela i typu na serwerze, trwałe przypisania katalogu bez fikcyjnych zakupów. Brak rachunków prowadzi do utworzenia rachunku przed wprowadzeniem instrumentu. Migracja 0009 zachowuje operacje i odczytuje ich dotychczasowe przypisania.

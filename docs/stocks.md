@@ -1,6 +1,6 @@
 # Akcje — FT-010
 
-Sekcja „Akcje” ma początkowo pusty katalog. Użytkownik sam dodaje spółkę: nazwę, ticker, giełdę (czteroznakowy MIC), walutę PLN/EUR/USD i opcjonalny ISIN. Nazwy, identyfikatory i ceny są wpisywane ręcznie; aplikacja nie sprawdza istnienia spółki ani notowania u dostawcy danych i nie pobiera kursów automatycznie. Sprawdzany jest format identyfikatorów, bez sumy kontrolnej ISIN. Seed nie dopisuje przykładowych spółek, zakupów ani cen.
+W sekcji „Instrumenty” wybierz „Dodaj instrument”, a następnie istniejący rachunek. Jeśli brak zgodnego rachunku, najpierw utwórz rachunek — pola instrumentu pojawią się po jego zapisaniu. Użytkownik wpisuje nazwę, ticker, giełdę (MIC), walutę PLN/EUR/USD i opcjonalny ISIN. Wybór rachunku jest zapisywany trwale, a serwer sprawdza jego istnienie, właściciela i typ. Nie tworzy to zakupu ani pozycji finansowej; jednostki i cenę zakupu podaje się osobno. Identyfikatory mają walidację formatu, bez sumy kontrolnej ISIN. Seed nie dopisuje przykładowych spółek, zakupów ani cen.
 
 ## Podgląd i operacje
 
