@@ -3,4 +3,14 @@ dist
 playwright-report
 test-results
 .env
+.env.*
+**/.env
+**/.env.*
+*.pem
+*.key
+data/
+backups/
+imports/
+*.dump
+*.sqlite*
 

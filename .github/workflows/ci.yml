@@ -106,6 +106,23 @@ jobs:
           node scripts/smoke.mjs unavailable
           docker compose start db
           node scripts/smoke.mjs
+      - name: Check prebuilt-image deployment on the existing data volume
+        env:
+          APP_VERSION: sha-${{ github.sha }}
+          IMAGE_PREFIX: ghcr.io/grotejongen/financialtracker
+        run: |
+          bash scripts/build-images.sh
+          node scripts/check-ghcr.mjs
+          docker compose --env-file .env -f compose.ghcr.yaml up --no-build --pull never -d --wait --wait-timeout 180
+          node scripts/smoke.mjs
+          node scripts/smoke-purchases.mjs verify
+          node scripts/smoke-valuation.mjs verify
+          node scripts/smoke-bonds.mjs verify
+          node scripts/smoke-stocks.mjs verify
+          node scripts/smoke-portfolio.mjs verify
+      - name: Check manual updater failure handling without Docker or user data
+        shell: pwsh
+        run: ./scripts/tests/update.tests.ps1
       - name: Check actual browser connection and mobile layout
         run: docker compose exec -T backend python -m tests.seed_browser
       - name: Run browser tests
@@ -120,3 +137,57 @@ jobs:
       - name: Stop services, preserve data volume
         if: always()
         run: docker compose --profile test down
+
+  publish-images:
+    name: publish-images
+    needs: [backend, frontend, compose]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    env:
+      COMPOSE_PROJECT_NAME: financialtracker-release-ci
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Select one release for both images
+        shell: bash
+        run: |
+          printf 'APP_VERSION=sha-%s\nIMAGE_PREFIX=ghcr.io/%s\n' "$GITHUB_SHA" "${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+      - name: Build the images that will be published
+        run: bash scripts/build-images.sh
+      - name: Verify the exact images before uploading
+        run: |
+          docker compose --env-file .env.example -f compose.ghcr.yaml pull db
+          docker compose --env-file .env.example -f compose.ghcr.yaml up --no-build --pull never -d --wait --wait-timeout 180
+          docker compose --env-file .env.example -f compose.ghcr.yaml exec -T backend python -m app.seed
+          node scripts/smoke.mjs
+      - name: Log in to GHCR using the job token
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Publish both images
+        run: |
+          docker push "$IMAGE_PREFIX-backend:$APP_VERSION"
+          docker push "$IMAGE_PREFIX-frontend:$APP_VERSION"
+      - name: Show the published release
+        run: |
+          {
+            printf '## GHCR release `%s`\n\n' "$APP_VERSION"
+            printf -- '- Backend: `%s-backend:%s`\n' "$IMAGE_PREFIX" "$APP_VERSION"
+            printf -- '- Frontend: `%s-frontend:%s`\n\n' "$IMAGE_PREFIX" "$APP_VERSION"
+            printf 'Manual download: `./scripts/update.ps1 -Version %s -PullOnly`\n\n' "$APP_VERSION"
+            printf 'Manual update: `./scripts/update.ps1 -Version %s`\n' "$APP_VERSION"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Stop isolated verification services
+        if: always()
+        run: docker compose --env-file .env.example -f compose.ghcr.yaml down
+      - name: Log out of GHCR
+        if: always()
+        run: docker logout ghcr.io

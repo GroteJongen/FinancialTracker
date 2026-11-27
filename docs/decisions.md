@@ -26,6 +26,7 @@ Stan: uzgodniony kierunek z rozmowy; szczegóły implementacji potwierdzamy podc
 | ADR-020 | Cena co najmniej z dnia ostatniego zakupu | Późniejszy zakup lub korekta daty unieważnia użycie wcześniejszej ceny; koszt i ilość nadal są widoczne |
 | ADR-021 | Obliczenia Decimal, prezentacja HALF_UP do 2 miejsc | Nie zaokrąglamy średniego kosztu przed obliczeniem wyniku; kwoty w API są tekstem |
 | ADR-022 | Frontend i backend pozostają w jednym repozytorium | Oddzielne moduły, obrazy i zadania CI; wspólne zmiany kontraktu są atomowe. Podział repo rozważymy przy niezależnych cyklach wydań lub zespołach |
+| ADR-027 | GHCR po zielonym main, reczne pobranie wspolnego wydania SHA | Osobny Compose bez build; pakiety domyslnie prywatne, packages:write tylko dla publikatora, zachowany wolumen i lokalne porty. Brak harmonogramu; zasady migracji i pierwszego pobrania w ghcr.md |
 
 ## Źródła identyfikacji i integracji
 

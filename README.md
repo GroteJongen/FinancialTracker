@@ -63,6 +63,17 @@ Po aktualizacji kodu powtórz start z --build. Migracje wykonuje serwis migrate.
 docker compose run --rm migrate alembic current
 ```
 
+## Gotowe obrazy GHCR
+
+Po merge do main i zaliczeniu CI publikowane sa obrazy frontendu i backendu ze wspolnym tagiem commita. Pobierasz je recznie, bez harmonogramu:
+
+```powershell
+.\scripts\update.ps1 -PullOnly
+```
+
+Pobranie i uruchomienie nowego wydania z migracjami: `.\scripts\update.ps1`.
+Nowe pakiety sa domyslnie prywatne; pierwsze pobranie moze wymagac `docker login ghcr.io -u GroteJongen` z tokenem classic read:packages. Obrazy pojawia sie po pierwszym udanym publish-images na main. Zachowaj dotychczasowy .env i wolumen bazy. [Pelna instrukcja i reczne polecenia Compose](docs/ghcr.md).
+
 ## Sprawdzenia
 
 Testy przeglądarkowe wykonuj wyłącznie na oddzielnej instancji z syntetycznymi danymi. Dodają zakupy, korekty i ceny do rachunków testowych. Przed ich uruchomieniem przygotuj demonstrację oraz puste rachunki testowe:

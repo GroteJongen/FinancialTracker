@@ -82,3 +82,9 @@ Pusty, prywatny katalog akcji, ręczna rejestracja spółki/notowania, rachunki 
 Status: Ukończone — 161 testów backendu, 26 testów przeglądarkowych, migracje i trwałość Compose potwierdzone w CI. Priorytet użytkownika.
 
 Agregacja obligacji, ETF i akcji w PLN, koszt i wynik, ręczne wyceny obligacji i wypłacone odsetki, filtry zwykłe/IKE/IKZE/razem, wykres wartości lub kosztu, kursy NBP bieżące i historyczne, ochrona przed brakami i podwójnym liczeniem. Migracja 0006 i testy. Nie wdraża automatycznego naliczania odsetek z listów emisyjnych ani gotówki. Patrz portfolio.md.
+
+## FT-012 - Publikacja obrazow GHCR i reczne aktualizacje
+
+Status: Ukonczone - konfiguracja i skrypt zweryfikowane w CI, 161 testow backendu i 26 przegladarkowych. Sprawdzone lokalnie PowerShell 5.1 i 7. Pierwsza publikacja GHCR po merge do main; nie wykonano jej z galezi. Bez harmonogramu lokalnego.
+
+Publikacja po zielonym CI main, ograniczone packages:write tylko dla publikatora, wspolny tag SHA frontend/backend/migracje, osobny Compose bez build, zachowanie lokalnych portow i wolumenu. Reczne pobranie/uruchomienie z walidacja wersji i przerwaniem po nieudanej migracji. PR-y sprawdzaja obrazy bez publikowania. Dokumentacja, kontrola Compose, PowerShell 5.1/7 i sprawdzenie przejscia z lokalnych obrazow na prebuilt na danych syntetycznych. Pierwszy rzeczywisty push GHCR wymaga scalenia do main. Szczegoly: ghcr.md.
