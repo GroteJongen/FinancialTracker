@@ -42,7 +42,7 @@ def buy(client, account_id, **values):
 
 
 def summary(client, account_id):
-    response = client.get(f"/api/accounts/{account_id}/valuation")
+    response = client.get(f"/api/accounts/{account_id}/valuation?listing_id=00000000-0000-4000-8000-000000000004")
     assert response.status_code == 200
     return response.json()
 
@@ -177,7 +177,7 @@ def test_prices_are_private_and_isolated_between_accounts(ledger):
     assert client.post(f"/api/accounts/{account}/prices", json=price_body()).status_code == 201
     stranger_settings = settings.model_copy(update={"local_owner_id": uuid4()})
     with TestClient(create_app(stranger_settings, engine)) as stranger:
-        assert stranger.get(f"/api/accounts/{account}/valuation").status_code == 404
+        assert stranger.get(f"/api/accounts/{account}/valuation?listing_id=00000000-0000-4000-8000-000000000004").status_code == 404
         assert (
             stranger.post(f"/api/accounts/{account}/prices", json=price_body()).status_code == 404
         )

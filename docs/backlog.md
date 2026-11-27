@@ -108,3 +108,7 @@ Status: Ukończone - 202 testy backendu i 35 przeglądarkowych zaliczone w CI. W
 ## FT-017 - Rachunek wymagany przy dodaniu instrumentu
 
 Status: Ukończone - 207 testów backendu i 38 przeglądarkowych zaliczone w CI. Wybór istniejącego rachunku, walidacja właściciela i typu na serwerze, trwałe przypisania katalogu bez fikcyjnych zakupów. Brak rachunków prowadzi do utworzenia rachunku przed wprowadzeniem instrumentu. Migracja 0009 zachowuje operacje i odczytuje ich dotychczasowe przypisania.
+
+## FT-018 - Usunięcie osobnych operacji ETF EUR
+
+Status: Weryfikacja w CI. Jeden widok Instrumenty dla ETF, akcji i REIT, z historią cen i zakupów oraz korektami. Usunięte komponenty Purchases i Valuation ograniczone do EUR, wspólne API i audyt w shared. Wycena backendu wymaga jawnego listing_id, bez domyślnego IUSQ. Bez zmian schematu i usuwania danych.

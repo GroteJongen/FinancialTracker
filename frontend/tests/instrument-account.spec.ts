@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures'
-import type { Account } from '../src/purchases/api'
+import type { Account } from '../src/shared/api'
 
 test('instrument registration selects and remembers an existing account', async ({ page }) => {
   const tag = Date.now().toString()

@@ -4,17 +4,17 @@ Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja o
 
 Dodawanie instrumentu w sekcji „Instrumenty” wymaga wyboru istniejącego rachunku. Jeśli nie masz zgodnego rachunku, najpierw utwórz go w pokazanym formularzu. Nieistniejący lub niedostępny rachunek powoduje komunikat błędu, a wpisane dane instrumentu pozostają zachowane.
 
-## Zakupy IUSQ
+## Zakupy instrumentów
 
-Po utworzeniu rachunku demonstracyjnego wybierz go w sekcji „Zakupy IUSQ”. Wpisz datę, liczbę jednostek, cenę i prowizję w EUR. Jednostki ułamkowe oraz kwoty obsługują do 8 miejsc po przecinku. Formularz przyjmuje przecinek lub kropkę; backend zapisuje dokładne wartości dziesiętne, odrzuca wartości ujemne, zerową ilość/cenę oraz przyszłe daty według Europe/Warsaw.
+Po utworzeniu rachunku demonstracyjnego wybierz go w sekcji „Instrumenty”, a następnie wybierz IUSQ z listy instrumentów. Wpisz datę, liczbę jednostek, cenę i prowizję w EUR. Jednostki ułamkowe oraz kwoty obsługują do 8 miejsc po przecinku. Formularz przyjmuje przecinek lub kropkę; backend zapisuje dokładne wartości dziesiętne, odrzuca wartości ujemne, zerową ilość/cenę oraz przyszłe daty według Europe/Warsaw.
 
 „Popraw” otwiera korektę wymagającą powodu. „Zmiany” pokazuje poprzednie i nowe wartości oraz czas korekty. Zapis zakupu i audytu jest atomowy. Ponowienie zapisu po utracie odpowiedzi nie tworzy drugiego zakupu; równoczesne korekty tej samej wersji powodują konflikt, który wymaga odświeżenia historii. Audyt nie ma endpointu edycji ani usuwania; administrator bazy nadal ma techniczny dostęp do danych.
 
 Migracja 0002 dodaje katalog IUSQ (ISIN IE00B6R52259, Xetra/XETR, EUR), nie dodaje żadnych transakcji i zachowuje wcześniejsze rachunki. Rzeczywiste zakupy dodaje użytkownik. Dane demonstracyjne są opcjonalne. Lista zakupów pokazuje dane transakcyjne, nie aktualną wycenę ani wynik inwestycji.
 
-## Ręczna wycena IUSQ
+## Ręczna wycena instrumentu
 
-W sekcji „Wycena IUSQ” wpisz cenę jednostki w EUR i datę. Aplikacja pokaże ilość jednostek, łączny koszt z prowizjami, średni koszt, wartość pozycji i niezrealizowany wynik kwotowo oraz procentowo. Przykład: 10 jednostek po 100 EUR i 2 EUR prowizji, wycenionych po 110 EUR, daje wartość 1100 EUR i wynik 98 EUR (9,78%).
+W sekcji „Instrumenty” wybierz rachunek i instrument, a następnie wpisz cenę jednostki w jego walucie i datę wyceny. Aplikacja pokaże ilość jednostek, łączny koszt z prowizjami, średni koszt, wartość pozycji i niezrealizowany wynik kwotowo oraz procentowo. Przykład: 10 jednostek po 100 EUR i 2 EUR prowizji, wycenionych po 110 EUR, daje wartość 1100 EUR i wynik 98 EUR (9,78%).
 
 Data ceny musi mieścić się pomiędzy ostatnim zakupem a dniem bieżącym według Europe/Warsaw. Późniejszy zakup lub korekta daty mogą sprawić, że cena będzie zbyt stara. Wtedy zobaczysz prośbę o aktualizację, a wartość pozycji i wynik będą niedostępne. Ilość i koszt zakupów pozostaną widoczne. Brak ceny także oznacza brak wyceny, nie wynik zerowy.
 

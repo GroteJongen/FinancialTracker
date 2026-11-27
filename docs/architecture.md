@@ -98,3 +98,5 @@ Migracja 0007 dodaje YahooListing: jawny symbol i ostatni poprawny kurs z czasem
 ## Portfele mieszane FT-014
 
 PortfolioGroup/PortfolioAccount grupuja rachunki wlasciciela bez przenoszenia operacji; API czyta konto/rodzaj rachunku niezaleznie od klasy aktywow. Prywatne ETF/REIT korzystaja ze wspolnego rejestru papierow i walidacji metadanych dostawcy; obligacje zachowuja osobny model wyceny. Definicje, zgodnosc i ograniczenia: portfolios.md.
+
+FT-018 usuwa frontendowe operacje ETF EUR: moduł instruments zawiera wspólny katalog i pozycję, shared zawiera klienta API/formatowanie i audyt. Backend zachowuje wspólne przypadki użycia purchases/valuations, ponieważ obsługują wszystkie instrumenty; GET valuation wymaga listing_id. Seed IUSQ i jego mapowanie Yahoo pozostają danymi katalogu, a nie osobnym przepływem UI.

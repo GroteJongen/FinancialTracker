@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { request } from '../purchases/api'
-import type { Account } from '../purchases/api'
+import { request } from '../shared/api'
+import type { Account } from '../shared/api'
 
 type Group = { id: string; name: string; revision: number; account_ids: string[] }
 export default function PortfolioPicker({ accounts, value, onChange, disabled = false }: {

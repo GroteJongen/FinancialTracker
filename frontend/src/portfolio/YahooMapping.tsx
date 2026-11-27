@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { request } from '../purchases/api'
+import { request } from '../shared/api'
 import { refreshMarket } from './market'
 
 export default function YahooMapping({ listingId, label, current }: {

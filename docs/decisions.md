@@ -66,3 +66,7 @@ PortfolioGroup i PortfolioAccount tworza relacje wiele-do-wielu; portfel prezent
 ## ADR-029 - Rejestracja instrumentu na rachunku
 
 Przypisanie notowania do rachunku jest osobną relacją account_listings, bez tworzenia zerowych lub fikcyjnych zakupów. Walidacja rachunku i zapis instrumentu oraz przypisania odbywają się w jednej transakcji, pod istniejącą blokadą właściciela. Katalog odczytuje także rachunki z rzeczywistych operacji; nie przenosimy historii ani nie zmieniamy wycen. Właściciela ustala serwer. Usunięcie rachunku/notowania usuwa jedynie metadata przypisania przez FK CASCADE; operacje finansowe nadal mają dotychczasowe ograniczenia.
+
+## ADR-030 - Wspólne operacje zamiast osobnego ETF EUR
+
+Usuwamy zduplikowany interfejs ograniczony do EUR i domyślną wycenę IUSQ w API. Instrument jest zawsze wskazany jawnie. Logika finansowa, historia i integracje pozostają wspólne. Nie usuwamy seedów, notowań ani danych IUSQ, ponieważ jest pełnoprawnym instrumentem w katalogu. Testy dotychczasowego widoku przechodzą przez wspólną pozycję instrumentu.

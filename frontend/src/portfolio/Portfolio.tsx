@@ -3,9 +3,9 @@ import { quoteTime, refreshMarket } from './market'
 import { refreshFxRates } from './fx'
 import YahooMapping from './YahooMapping'
 import PortfolioPicker from './PortfolioPicker'
-import type { Account } from '../purchases/api'
+import type { Account } from '../shared/api'
 import type { FormEvent } from 'react'
-import { formatDate, formatDecimal, request, todayWarsaw } from '../purchases/api'
+import { formatDate, formatDecimal, request, todayWarsaw } from '../shared/api'
 
 type Allocation = { asset_class: string; amount: string; percent: string; start: string; end: string }
 type Totals = { cost: string | null; value: string | null; paid_income: string | null; gain: string | null; gain_percent: string | null; known_value: string; complete: boolean; allocation_value: Allocation[]; allocation_cost: Allocation[] }

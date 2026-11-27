@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, formatDate, formatDecimal, request, todayWarsaw } from '../purchases/api'
-import type { Account, Audit } from '../purchases/api'
+import { ApiError, formatDate, formatDecimal, request, todayWarsaw } from '../shared/api'
+import type { Account, Audit } from '../shared/api'
 
 type BondType = 'TOS' | 'COI' | 'EDO'
 type Bond = {

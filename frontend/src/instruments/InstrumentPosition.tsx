@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { quoteTime } from '../portfolio/market'
 import type { FormEvent } from 'react'
-import { ApiError, formatDate, formatDecimal, request, todayWarsaw } from '../purchases/api'
-import type { Listing, Purchase } from '../purchases/api'
-import AuditHistory from '../purchases/AuditHistory'
+import { ApiError, formatDate, formatDecimal, request, todayWarsaw } from '../shared/api'
+import type { Listing, Purchase } from '../shared/api'
+import AuditHistory from '../shared/AuditHistory'
 
 type Summary = {
   status: 'empty' | 'unpriced' | 'outdated' | 'priced'; quantity: string
+  history: { id: string; price: string; observed_on: string; recorded_at: string }[]
   latest_trade_date: string | null
   price: { price: string; observed_on: string; source?: string; quoted_at?: string | null; recorded_at: string } | null
   display: { cost: string; average_cost: string | null; market_value: string | null; gain: string | null; gain_percent: string | null }
@@ -20,7 +21,7 @@ const canonical = (value: string) => {
   return whole.replace(/^0+(?=[0-9])/, '') + (digits ? '.' + digits : '')
 }
 
-export default function StockPosition({ accountId, listing, onBusy, disabled }: {
+export default function InstrumentPosition({ accountId, listing, onBusy, disabled }: {
   accountId: string; listing: Listing; onBusy: (value: boolean) => void; disabled: boolean
 }) {
   const [refresh, setRefresh] = useState(0)
@@ -103,6 +104,7 @@ export default function StockPosition({ accountId, listing, onBusy, disabled }: 
   const summary = current?.summary
   const amount = (value: string | null | undefined) => value == null ? '—' : formatDecimal(value, 2) + ' ' + listing.currency
   const cards = [
+    ['Cena jednostki instrumentu', amount(summary?.price?.price)],
     ['Liczba jednostek instrumentu', summary ? formatDecimal(summary.quantity) : '—'], ['Koszt instrumentu', amount(summary?.display.cost)],
     ['Średni koszt instrumentu', amount(summary?.display.average_cost)], ['Wartość instrumentu', amount(summary?.display.market_value)],
     ['Zysk / strata instrumentu', amount(summary?.display.gain)], ['Wynik instrumentu (%)', summary?.display.gain_percent == null ? '—' : formatDecimal(summary.display.gain_percent, 2) + '%'],
@@ -111,8 +113,8 @@ export default function StockPosition({ accountId, listing, onBusy, disabled }: 
     <h3>Pozycja: {listing.symbol} · {listing.mic}</h3>
     {!current && !loadError && <p role="status">Pobieranie pozycji instrumentu…</p>}
     {loadError && <div role="alert"><p>{loadError}</p><button onClick={() => setRefresh((value) => value + 1)}>Ponów odczyt instrumentu</button></div>}
-    <dl className="stock-position-cards">{cards.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-    {summary?.status === 'empty' && <p className="valuation-note">Nie zapisano zakupów tej instrumentu na wybranym rachunku.</p>}
+    <dl className="instrument-position-cards">{cards.map(([label, value]) => <div key={label} className={label === 'Cena jednostki instrumentu' ? 'unit-quote' : undefined}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+    {summary?.status === 'empty' && <p className="valuation-note">Nie zapisano zakupów tego instrumentu na wybranym rachunku.</p>}
     {summary?.status === 'unpriced' && <p className="valuation-note">Brak wyceny instrumentu — wpisz cenę poniżej.</p>}
     {summary?.status === 'outdated' && <p className="valuation-warning">Cena instrumentu wymaga aktualizacji po ostatnim zakupie. Wynik pozostaje niedostępny do podania nowszej ceny.</p>}
     {summary?.price && <p className="price-reference">{summary.price.source === 'YAHOO' ? 'Yahoo Finance' : 'Cena ręczna'}: <strong>{amount(summary.price.price)}</strong> · {formatDate(summary.price.observed_on)}{summary.price.quoted_at && <> · Notowanie: {quoteTime(summary.price.quoted_at)} · Pobrano: {quoteTime(summary.price.recorded_at)}</>}</p>}
@@ -126,6 +128,15 @@ export default function StockPosition({ accountId, listing, onBusy, disabled }: 
         <button className="primary-button" type="submit">Zapisz cenę instrumentu</button>
       </div></fieldset>
     </form>
+    {summary && summary.history.length > 0 && <details className="price-history">
+      <summary>Historia cen ręcznych ({summary.history.length})</summary>
+      <div className="purchase-table-scroll"><table className="purchase-table"><caption className="sr-only">Historia cen wyceny</caption>
+        <thead><tr><th>Data ceny</th><th>Cena ({listing.currency})</th><th>Źródło</th><th>Zapisano</th></tr></thead>
+        <tbody>{summary.history.map((item) => <tr key={item.id}>
+          <td>{formatDate(item.observed_on)}</td><td>{formatDecimal(item.price, 2)}</td><td>Ręczne</td>
+          <td>{quoteTime(item.recorded_at)}</td>
+        </tr>)}</tbody></table></div>
+    </details>}
     <div className="history-heading"><h3>{editing ? 'Popraw zakup instrumentu' : 'Dodaj zakup instrumentu'}</h3></div>
     <form aria-label={editing ? 'Korekta zakupu instrumentu' : 'Nowy zakup instrumentu'} noValidate onSubmit={(event) => { void save(event, 'trade') }}>
       <fieldset disabled={blocked}><div className="purchase-form-grid">
@@ -141,10 +152,10 @@ export default function StockPosition({ accountId, listing, onBusy, disabled }: 
     {message && <p role={message.error ? 'alert' : 'status'} aria-label="Wynik zapisu instrumentu" className={'purchase-message ' + (message.error ? 'message-error' : 'message-success')}>{message.text}</p>}
     <div className="history-heading"><h3>Historia zakupów instrumentu</h3></div>
     <div className="purchase-table-scroll"><table className="purchase-table"><caption className="sr-only">Zakupy instrumentu {listing.symbol}</caption>
-      <thead><tr><th>Data</th><th>Instrumenty giełdowe</th><th>Cena ({listing.currency})</th><th>Prowizja ({listing.currency})</th><th>Działania</th></tr></thead>
+      <thead><tr><th>Data</th><th>Liczba jednostek</th><th>Cena ({listing.currency})</th><th>Prowizja ({listing.currency})</th><th>Działania</th></tr></thead>
       <tbody>{current?.purchases.map((item) => <tr key={item.id}><td>{formatDate(item.trade_date)}</td><td>{formatDecimal(item.quantity)}</td>
         <td>{formatDecimal(item.unit_price, 2)}</td><td>{formatDecimal(item.commission, 2)}</td><td className="row-actions">
-          <button className="text-button" type="button" disabled={blocked} onClick={() => edit(item)}>Popraw instrumenty</button>
+          <button className="text-button" type="button" disabled={blocked} onClick={() => edit(item)}>Popraw instrument</button>
           <button className="text-button" type="button" disabled={blocked} aria-expanded={auditId === item.id} onClick={() => setAuditId((previous) => previous === item.id ? null : item.id)}>Zmiany instrumentu</button>
         </td></tr>)}</tbody></table></div>
     {auditId && <AuditHistory key={auditId + ':' + current?.purchases.find((item) => item.id === auditId)?.revision} accountId={accountId} purchaseId={auditId} currency={listing.currency} />}

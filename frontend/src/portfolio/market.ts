@@ -1,4 +1,4 @@
-import { request } from '../purchases/api'
+import { request } from '../shared/api'
 
 type Refresh = { updated: number; failed: number; cooldown_seconds: number }
 let pending: Promise<Refresh> | null = null
