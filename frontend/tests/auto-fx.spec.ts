@@ -11,16 +11,16 @@ for (const cached of [false, true]) {
     } }))
     await page.route('**/api/portfolio/fx/refresh?*', async (route) => {
       calls++
-      expect(new URL(route.request().url()).searchParams.get('only_missing')).toBe('false')
-      ready = true
-      await route.fulfill({ json: { updated: 1, failed: 0, remaining: 0 } })
+      expect(new URL(route.request().url()).searchParams.get('only_missing')).toBe(calls > 1 ? 'true' : 'false')
+      ready = cached || calls > 1
+      await route.fulfill({ json: { updated: 1, failed: 0, remaining: ready ? 0 : 1 } })
     })
     await page.goto('/')
     const section = page.getByRole('region', { name: 'Mój portfel', exact: true })
-    await expect(section.getByRole('status', { name: 'Kursy NBP' })).toContainText('odświeżono 1')
+    await expect(section.getByRole('status', { name: 'Kursy NBP' })).toContainText('odświeżono ' + (cached ? 1 : 2))
     const card = section.locator('.portfolio-cards > div').filter({ has: page.getByText('Wartość aktywów', { exact: true }) }).locator('dd')
     await expect(card).toHaveText('5\u00a0500,00 PLN')
-    expect(calls).toBe(1)
+    expect(calls).toBe(cached ? 1 : 2)
   })
 }
 

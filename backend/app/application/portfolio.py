@@ -348,7 +348,9 @@ def save_bond_valuation(
         return dict(id=str(mark.id)), True
 
 
-def refresh_fx(session: Session, owner_id: UUID, scope="ALL", portfolio_id=None, only_missing=False):
+def refresh_fx(
+    session: Session, owner_id: UUID, scope="ALL", portfolio_id=None, only_missing=False
+):
     today = business_today()
     with session.begin():
         _, securities, _ = records(session, owner_id, scope, portfolio_id=portfolio_id)
