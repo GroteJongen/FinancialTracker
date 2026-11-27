@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { request } from '../purchases/api'
-import type { Account, Listing } from '../purchases/api'
-import StockPosition from './StockPosition'
+import { request } from '../shared/api'
+import type { Account, Listing } from '../shared/api'
+import InstrumentPosition from './InstrumentPosition'
 import Bonds from '../bonds/Bonds'
 
 const initial = () => ({ name: '', symbol: '', mic: '', currency: 'PLN', isin: '', kind: 'STOCK' })
 const kinds: Record<string, string> = { STANDARD: 'Zwykły', IKE: 'IKE', IKZE: 'IKZE' }
 
-export default function Stocks({ accounts, onAccountsChanged, focus }: { accounts: Account[]; onAccountsChanged: () => void; focus?: { listingId: string; accountId: string } | null }) {
+export default function Instruments({ accounts, onAccountsChanged, focus }: { accounts: Account[]; onAccountsChanged: () => void; focus?: { listingId: string; accountId: string } | null }) {
   const [refresh, setRefresh] = useState(0)
   const [catalogue, setCatalogue] = useState<{ version: number; items: Listing[] } | null>(null)
   const [loadError, setLoadError] = useState('')
@@ -129,7 +129,7 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
         <select id="stock-account" value={account.id} disabled={blocked} onChange={(event) => { setAccountId(event.target.value); setMessage(null) }}>
           {eligible.map((item) => <option key={item.id} value={item.id}>{item.name} · {kinds[item.kind]}</option>)}
         </select></div>
-        <StockPosition key={account.id + '/' + listing.id} accountId={account.id} listing={listing} onBusy={setLedgerBusy}
+        <InstrumentPosition key={account.id + '/' + listing.id} accountId={account.id} listing={listing} onBusy={setLedgerBusy}
           disabled={saving || (!!accountId && !eligible.some((item) => item.id === accountId))} /></>}
     </>}
   </section>

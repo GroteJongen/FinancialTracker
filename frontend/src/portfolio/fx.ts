@@ -1,4 +1,4 @@
-import { request } from '../purchases/api'
+import { request } from '../shared/api'
 
 type Result = { updated: number; failed: number; remaining: number }
 const pending = new Map<string, Promise<Result>>()

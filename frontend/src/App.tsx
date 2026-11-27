@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import Purchases from './purchases/Purchases'
-import Stocks from './stocks/Stocks'
+import Instruments from './instruments/Instruments'
 import Portfolio from './portfolio/Portfolio'
 
 type Account = { id: string; name: string; kind: string; currency: string }
@@ -116,10 +115,7 @@ export default function App() {
             </>}
           </section>
           <details className="operations-panel" open={operationsOpen} onToggle={(event) => setOperationsOpen(event.currentTarget.open)}><summary>Operacje i katalog aktywów</summary>
-          {connection.status === 'ready' && <Stocks key={selectedAsset?.listingId + '/' + selectedAsset?.accountId} accounts={connection.accounts} onAccountsChanged={refresh} focus={selectedAsset} />}
-          {connection.status === 'ready' && connection.accounts.some((account) => account.currency === 'EUR') && <details className="etf-operations"><summary>Operacje ETF w EUR</summary>
-            <Purchases accounts={connection.accounts.filter((account) => account.currency === 'EUR')} />
-          </details>}
+          {connection.status === 'ready' && <Instruments key={selectedAsset?.listingId + '/' + selectedAsset?.accountId} accounts={connection.accounts} onAccountsChanged={refresh} focus={selectedAsset} />}
           </details>
           <footer>FinancialTracker <span>Przejrzystość na każdym etapie.</span></footer>
         </div>

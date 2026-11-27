@@ -45,7 +45,6 @@ from app.application.stock_contracts import InvestmentAccountCreate, SecurityCre
 from app.application.stocks import catalogue, create_investment_account, create_stock
 from app.application.valuation_contracts import PriceCreate, PriceResponse, ValuationResponse
 from app.application.valuations import create_price, get_valuation
-from app.infrastructure.catalog import IUSQ_LISTING_ID
 
 router = APIRouter(prefix="/api")
 PortfolioScope = Literal["ALL", "STANDARD", "IKE", "IKZE", "RETIREMENT"]
@@ -265,7 +264,7 @@ def purchase_audit(
 def valuation(
     account_id: UUID,
     request: Request,
-    listing_id: UUID = IUSQ_LISTING_ID,
+    listing_id: UUID,
     session: Session = Depends(get_session),
 ):
     return get_valuation(session, request.app.state.settings.local_owner_id, account_id, listing_id)

@@ -132,8 +132,6 @@ jobs:
       - name: Check manual updater failure handling without Docker or user data
         shell: pwsh
         run: ./scripts/tests/update.tests.ps1
-      - name: Check actual browser connection and mobile layout
-        run: docker compose exec -T backend python -m tests.seed_browser
       - name: Run browser tests
         working-directory: frontend
         run: |

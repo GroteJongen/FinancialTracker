@@ -19,7 +19,7 @@ if (process.argv[2] === 'create') {
   const again = await json('/prices', { method: 'POST', body: JSON.stringify(data) })
   assert.equal(first.id, again.id)
 }
-const summary = await json('/valuation')
+const summary = await json('/valuation?listing_id=00000000-0000-4000-8000-000000000004')
 assert.equal(summary.status, 'priced')
 assert.equal(summary.history.length, 1)
 assert.equal(summary.price.source, 'MANUAL')

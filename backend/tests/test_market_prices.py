@@ -55,7 +55,9 @@ def test_automatic_quote_updates_valuation_and_portfolio_with_cache(ledger, monk
 
     monkeypatch.setattr(yahoo, "lookup", lookup)
     assert client.post("/api/market-prices/refresh").json()["updated"] == 1
-    price = client.get(f"/api/accounts/{account}/valuation").json()
+    price = client.get(
+        f"/api/accounts/{account}/valuation?listing_id=00000000-0000-4000-8000-000000000004"
+    ).json()
     assert price["price"]["source"] == "YAHOO"
     assert price["display"]["market_value"] == "1101.20"
     assert price["display"]["gain"] == "99.20"
@@ -86,7 +88,9 @@ def test_failed_refresh_preserves_quote_and_cools_down(ledger, monkeypatch):
     monkeypatch.setattr(yahoo, "lookup", fail)
     assert client.post("/api/market-prices/refresh").json()["failed"] == 1
     assert client.post("/api/market-prices/refresh").json()["failed"] == 0
-    result = client.get(f"/api/accounts/{account}/valuation").json()
+    result = client.get(
+        f"/api/accounts/{account}/valuation?listing_id=00000000-0000-4000-8000-000000000004"
+    ).json()
     assert result["display"]["market_value"] == "1101.20"
     assert client.get("/api/portfolio").json()["positions"][0]["yahoo"]["failed"]
     assert len(calls) == 1
@@ -109,13 +113,28 @@ def test_newer_manual_wins_until_later_market_quote_and_disable_is_explicit(ledg
         ),
     )
     assert saved.status_code == 201
-    assert client.get(f"/api/accounts/{account}/valuation").json()["price"]["source"] == "MANUAL"
+    assert (
+        client.get(
+            f"/api/accounts/{account}/valuation?listing_id=00000000-0000-4000-8000-000000000004"
+        ).json()["price"]["source"]
+        == "MANUAL"
+    )
     with Session(engine) as session, session.begin():
         row = session.get(YahooListing, IUSQ_LISTING_ID)
         row.quoted_at = datetime.now(UTC) + timedelta(seconds=1)
-    assert client.get(f"/api/accounts/{account}/valuation").json()["price"]["source"] == "YAHOO"
+    assert (
+        client.get(
+            f"/api/accounts/{account}/valuation?listing_id=00000000-0000-4000-8000-000000000004"
+        ).json()["price"]["source"]
+        == "YAHOO"
+    )
     assert client.delete(f"/api/listings/{IUSQ_LISTING_ID}/yahoo").status_code == 200
-    assert client.get(f"/api/accounts/{account}/valuation").json()["price"]["source"] == "MANUAL"
+    assert (
+        client.get(
+            f"/api/accounts/{account}/valuation?listing_id=00000000-0000-4000-8000-000000000004"
+        ).json()["price"]["source"]
+        == "MANUAL"
+    )
 
 
 def test_foreign_holdings_and_empty_portfolio_do_not_make_requests(ledger, monkeypatch):
@@ -204,11 +223,16 @@ def test_old_replica_cannot_replace_newer_quote_and_pre_purchase_is_unpriced(led
     expire(engine)
     monkeypatch.setattr(yahoo, "lookup", lambda *args: quote(at=datetime(2026, 10, 1, tzinfo=UTC)))
     assert client.post("/api/market-prices/refresh").json()["updated"] == 0
-    assert client.get(f"/api/accounts/{account}/valuation").json()["price"][
-        "quoted_at"
-    ] == good.quoted_at.isoformat().replace("+00:00", "Z")
+    assert client.get(
+        f"/api/accounts/{account}/valuation?listing_id=00000000-0000-4000-8000-000000000004"
+    ).json()["price"]["quoted_at"] == good.quoted_at.isoformat().replace("+00:00", "Z")
     with Session(engine) as session, session.begin():
         row = session.get(YahooListing, IUSQ_LISTING_ID)
         row.quoted_at = datetime(2026, 10, 1, tzinfo=UTC)
-    assert client.get(f"/api/accounts/{account}/valuation").json()["status"] == "outdated"
+    assert (
+        client.get(
+            f"/api/accounts/{account}/valuation?listing_id=00000000-0000-4000-8000-000000000004"
+        ).json()["status"]
+        == "outdated"
+    )
     assert client.get("/api/portfolio").json()["positions"][0]["native_value"] is None

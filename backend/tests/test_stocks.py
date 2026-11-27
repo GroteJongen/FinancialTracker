@@ -147,7 +147,12 @@ def test_currency_and_position_isolation(ledger):
     assert first_view["quantity"] == "10.00000000"
     assert second_view["quantity"] == "0.12500000"
     assert first_view["currency"] == "PLN" and second_view["currency"] == "USD"
-    assert client.get(root + "/valuation").json()["status"] == "empty"
+    assert (
+        client.get(root + "/valuation?listing_id=00000000-0000-4000-8000-000000000004").json()[
+            "status"
+        ]
+        == "empty"
+    )
     assert len(client.get(root + "/purchases").json()) == 2
 
 
