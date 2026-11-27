@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures'
+import type { Account } from '../src/purchases/api'
 
 test('instrument registration selects and remembers an existing account', async ({ page }) => {
   const tag = Date.now().toString()
@@ -23,7 +24,13 @@ test('instrument registration selects and remembers an existing account', async 
 })
 
 test('without accounts the user must create an account before entering an instrument', async ({ page }) => {
-  await page.route('**/api/accounts', (route) => route.fulfill({ json: [] }))
+  let accounts: Account[] = []
+  await page.route('**/api/accounts', (route) => route.fulfill({ json: accounts }))
+  await page.route('**/api/investment-accounts', async (route) => {
+    const response = await route.fetch()
+    accounts = [await response.json() as Account]
+    await route.fulfill({ response })
+  })
   await page.goto('/')
   await page.getByRole('link', { name: 'Dodaj pierwszy rachunek w sekcji Instrumenty' }).click()
   const section = page.getByRole('region', { name: 'Instrumenty', exact: true })
@@ -34,6 +41,11 @@ test('without accounts the user must create an account before entering an instru
   await section.getByLabel('Rodzaj aktywa', { exact: true }).selectOption('BOND')
   await expect(section.getByRole('status', { name: 'Wymagany rachunek obligacji', exact: true })).toBeVisible()
   await expect(section.getByRole('form', { name: 'Nowy zakup obligacji', exact: true })).toHaveCount(0)
+  await section.getByLabel('Rodzaj aktywa', { exact: true }).selectOption('STOCK')
+  await section.getByLabel('Nazwa rachunku instrumentu', { exact: true }).fill('TEST pierwszy rachunek ' + Date.now())
+  await section.getByRole('button', { name: 'Zapisz rachunek instrumentu', exact: true }).click()
+  await expect(section.getByRole('form', { name: 'Nowy instrument', exact: true })).toBeVisible()
+  await expect(section.getByLabel('Rachunek dla nowego instrumentu', { exact: true })).toHaveValue(accounts[0].id)
 })
 
 test('a stale account reported by the server displays an error and preserves the instrument draft', async ({ page }) => {

@@ -12,8 +12,18 @@ depends_on = None
 def upgrade():
     op.create_table(
         "account_listings",
-        sa.Column("account_id", sa.Uuid(), sa.ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True),
-        sa.Column("listing_id", sa.Uuid(), sa.ForeignKey("listings.id", ondelete="CASCADE"), primary_key=True),
+        sa.Column(
+            "account_id",
+            sa.Uuid(),
+            sa.ForeignKey("accounts.id", ondelete="CASCADE"),
+            primary_key=True,
+        ),
+        sa.Column(
+            "listing_id",
+            sa.Uuid(),
+            sa.ForeignKey("listings.id", ondelete="CASCADE"),
+            primary_key=True,
+        ),
     )
 
 

@@ -36,13 +36,23 @@ def catalogue(session: Session, owner_id: UUID, kind: str):
     bindings = account_bindings(session, owner_id)
     return [
         listing_response(listing, instrument, bindings.get(listing.id, []))
-        for listing, instrument in session.execute(query.order_by(Instrument.name, Listing.mic, Listing.currency))
+        for listing, instrument in session.execute(
+            query.order_by(Instrument.name, Listing.mic, Listing.currency)
+        )
     ]
 
 
 def account_bindings(session: Session, owner_id: UUID):
-    registered = select(AccountListing.listing_id, AccountListing.account_id).join(Account).where(Account.owner_id == owner_id)
-    purchased = select(Operation.listing_id, Operation.account_id).join(Account).where(Account.owner_id == owner_id)
+    registered = (
+        select(AccountListing.listing_id, AccountListing.account_id)
+        .join(Account)
+        .where(Account.owner_id == owner_id)
+    )
+    purchased = (
+        select(Operation.listing_id, Operation.account_id)
+        .join(Account)
+        .where(Account.owner_id == owner_id)
+    )
     result = {}
     for listing_id, account_id in session.execute(registered.union(purchased)):
         result.setdefault(listing_id, []).append(account_id)
@@ -51,9 +61,14 @@ def account_bindings(session: Session, owner_id: UUID):
 
 def registered_response(session, owner_id, listing, instrument, account_id):
     if account_id is not None:
-        session.execute(insert(AccountListing).values(account_id=account_id, listing_id=listing.id).on_conflict_do_nothing())
-    return listing_response(listing, instrument, account_bindings(session, owner_id).get(listing.id, []))
-
+        session.execute(
+            insert(AccountListing)
+            .values(account_id=account_id, listing_id=listing.id)
+            .on_conflict_do_nothing()
+        )
+    return listing_response(
+        listing, instrument, account_bindings(session, owner_id).get(listing.id, [])
+    )
 
 
 def ensure_owner(session: Session, owner_id: UUID):
@@ -71,11 +86,22 @@ def create_stock(session: Session, owner_id: UUID, data: StockCreate):
     with session.begin():
         ensure_owner(session, owner_id)
         if account_id is not None:
-            account = session.scalar(select(Account).where(Account.id == account_id, Account.owner_id == owner_id).with_for_update())
+            account = session.scalar(
+                select(Account)
+                .where(Account.id == account_id, Account.owner_id == owner_id)
+                .with_for_update()
+            )
             if account is None:
-                raise PurchaseError("Wybrany rachunek nie istnieje lub jest niedostępny. Wybierz istniejący rachunek.", 404)
+                raise PurchaseError(
+                    "Wybrany rachunek nie istnieje lub jest niedostępny. "
+                    "Wybierz istniejący rachunek.",
+                    404,
+                )
             if account.kind not in {"STANDARD", "IKE", "IKZE"}:
-                raise PurchaseError("Ten rachunek nie obsługuje instrumentów giełdowych. Wybierz inny rachunek.", 422)
+                raise PurchaseError(
+                    "Ten rachunek nie obsługuje instrumentów giełdowych. Wybierz inny rachunek.",
+                    422,
+                )
         existing = session.execute(
             select(Listing, Instrument)
             .join(Instrument)
