@@ -73,6 +73,6 @@ Zakres: tworzenie rachunków PLN zwykły/IKE/IKZE, zakupy TOS/COI/EDO, niezmienn
 
 ## FT-010 — Dodawanie i podgląd akcji
 
-Status: W trakcie weryfikacji. Priorytet nadany przez użytkownika.
+Status: Ukończone — 127 testów backendu, 21 testów przeglądarkowych oraz migracje i trwałość Compose potwierdzone w CI. Priorytet nadany przez użytkownika.
 
 Pusty, prywatny katalog akcji, ręczna rejestracja spółki/notowania, rachunki zwykłe/IKE/IKZE, zakupy i korekty, ręczna wycena, koszt i wynik w walucie notowania PLN/EUR/USD. Migracja 0005, izolacja właścicieli, idempotencja oraz regresja ETF i obligacji. Automatyczne kursy, FX, dywidendy i sprzedaż pozostają osobnymi zadaniami. Patrz stocks.md.

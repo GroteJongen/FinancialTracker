@@ -71,3 +71,13 @@ Nowe scenariusze obejmują TOS/COI/EDO na rachunkach zwykły/IKE/IKZE, koszt PLN
 Compose: start z migracją 0004, syntetyczny zakup obligacji i audyt, ich trwałość po restarcie db/backend/frontend oraz kontrolowana niedostępność i powrót bazy. Wszystkie sprawdzenia wykonano na danych syntetycznych w CI. Lokalnie sprawdzono konfigurację Compose z .env.example i git diff --check; środowisko agenta nie ma dostępu do lokalnego silnika Docker (odmowa dostępu do named pipe), więc nie wykonano testów na lokalnej bazie użytkownika.
 
 Zakres nie obejmuje odsetek, podatków, wykupu, importu i potwierdzania istnienia emisji. Parametry są ręczne i niezweryfikowane. FT-007/FT-008 nadal wymagają listów emisyjnych i tabel konkretnych serii. Użytkownik potwierdził zwykły rachunek jako podstawowy oraz potrzebę typów IKE/IKZE; typ nie zastępuje zasad podatkowych.
+
+## FT-010 — Dodawanie i podgląd akcji, 2026-11-27
+
+Pełny [przebieg CI](https://github.com/GroteJongen/FinancialTracker/actions/runs/46001066830) zakończony powodzeniem. Backend: 127 testów PostgreSQL, ruff check, ruff format --check i alembic check. Obejmuje migracje od pustej i wcześniejszych wersji, zachowanie rachunków i zakupów, prywatność katalogu, różne giełdy i waluty, identyczne ponowienia, konflikty, równoczesną rejestrację, wyceny PLN/EUR/USD oraz odmowę zmiany notowania podczas korekty. Dotychczasowy kontrakt walidacji błędów pozostał zgodny.
+
+Frontend: TypeScript, ESLint i build Vite zaliczone. Playwright: 21 testów, w tym 5 nowych scenariuszy akcji i 16 dotychczasowych. Nowe scenariusze sprawdzają dodanie spółki i rachunku zwykłego/IKE/IKZE, pozycję i wynik w trzech walutach, korektę z audytem, odświeżenie, utratę odpowiedzi katalogu i zakupu, brak duplikatów po ponowieniu i odświeżeniu, pusty katalog oraz szerokość mobilną.
+
+Compose: start z migracją 0005, zapis syntetycznego katalogu, zakupu, ceny i audytu, wynik 98 PLN i 9,78%, trwałość po restarcie db/backend/frontend oraz niedostępność i powrót bazy. Wszystko na izolowanych danych syntetycznych CI. Lokalnie sprawdzono git diff --check i docker compose --env-file .env.example config --quiet. Nie wykonywano operacji na lokalnym portfelu ani dodawania rzeczywistych spółek.
+
+Katalog użytkownika startuje pusty; dane i ceny są ręczne. Brak automatycznych notowań, FX, dywidend, sprzedaży, splitów i podatków. ISIN/MIC/ticker mają walidację formatu, bez weryfikacji notowania u dostawcy. Ograniczenia i aktualizacja opisane w stocks.md.
