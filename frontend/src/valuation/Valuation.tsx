@@ -24,8 +24,8 @@ function canonical(value: string) {
   return whole.replace(/^0+(?=[0-9])/, '') + (digits ? '.' + digits : '')
 }
 
-export default function Valuation({ accountId, listingId, ledgerVersion }: {
-  accountId: string; listingId: string; ledgerVersion: string
+export default function Valuation({ accountId, listingId, ledgerVersion, symbol }: {
+  accountId: string; listingId: string; ledgerVersion: string; symbol: string
 }) {
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [refresh, setRefresh] = useState(0)
@@ -100,7 +100,7 @@ export default function Valuation({ accountId, listingId, ledgerVersion }: {
   const amount = (value: string | null | undefined) =>
     value === null || value === undefined ? '—' : formatDecimal(value, 2) + ' EUR'
   const cards = [
-    ['Kurs jednostki IUSQ', amount(summary?.price?.price)],
+    ['Cena jednostki', amount(summary?.price?.price)],
     ['Liczba jednostek', summary ? formatDecimal(summary.quantity) : '—'],
     ['Koszt zakupów', amount(summary?.display.cost)],
     ['Średni koszt jednostki', amount(summary?.display.average_cost)],
@@ -111,13 +111,13 @@ export default function Valuation({ accountId, listingId, ledgerVersion }: {
   ]
   const negative = summary?.display.gain?.startsWith('-')
   return <section className="valuation-section" aria-labelledby="valuation-title">
-    <div className="valuation-heading"><h3 id="valuation-title">Wycena IUSQ</h3><span>EUR · {summary?.price?.source === 'YAHOO' ? 'YAHOO FINANCE' : 'CENA RĘCZNA'}</span></div>
+    <div className="valuation-heading"><h3 id="valuation-title">Wycena {symbol}</h3><span>EUR · {summary?.price?.source === 'YAHOO' ? 'YAHOO FINANCE' : 'CENA RĘCZNA'}</span></div>
     {!current && <p role="status" aria-label="Stan wyceny">Przeliczanie pozycji…</p>}
     {error && <div role="alert"><p>{error}</p>
       <button type="button" className="text-button" onClick={() => setRefresh((value) => value + 1)}>Ponów odczyt wyceny</button>
     </div>}
     <dl className="valuation-cards">{cards.map(([label, value]) =>
-      <div key={label} className={label === 'Kurs jednostki IUSQ' ? 'unit-quote' : ['Zysk / strata', 'Wynik procentowy'].includes(label) && summary?.status === 'priced' ? (negative ? 'loss' : 'profit') : ''}>
+      <div key={label} className={label === 'Cena jednostki' ? 'unit-quote' : ['Zysk / strata', 'Wynik procentowy'].includes(label) && summary?.status === 'priced' ? (negative ? 'loss' : 'profit') : ''}>
         <dt>{label}</dt><dd>{value}</dd>
       </div>,
     )}</dl>

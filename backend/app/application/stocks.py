@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,7 @@ from app.application.bonds import lock_owner
 from app.application.purchase_contracts import ListingResponse
 from app.application.purchases import PurchaseError
 from app.application.stock_contracts import InvestmentAccountCreate, StockCreate
+from app.infrastructure.catalog import IUSQ_LISTING_ID
 from app.infrastructure.models import Account, Instrument, Listing, Owner
 
 
@@ -24,11 +25,13 @@ def listing_response(listing: Listing, instrument: Instrument):
 
 
 def catalogue(session: Session, owner_id: UUID, kind: str):
-    query = select(Listing, Instrument).join(Instrument).where(Instrument.kind == kind)
-    if kind == "STOCK":
-        query = query.where(Instrument.owner_id == owner_id)
-    else:
-        query = query.where(Instrument.owner_id.is_(None))
+    query = (
+        select(Listing, Instrument)
+        .join(Instrument)
+        .where(or_(Instrument.owner_id == owner_id, Listing.id == IUSQ_LISTING_ID))
+    )
+    if kind != "ALL":
+        query = query.where(Instrument.kind == kind)
     return [
         listing_response(*row)
         for row in session.execute(query.order_by(Instrument.name, Listing.mic, Listing.currency))
@@ -45,6 +48,7 @@ def ensure_owner(session: Session, owner_id: UUID):
 
 
 def create_stock(session: Session, owner_id: UUID, data: StockCreate):
+    kind = getattr(data, "kind", "STOCK")
     with session.begin():
         ensure_owner(session, owner_id)
         existing = session.execute(
@@ -52,7 +56,7 @@ def create_stock(session: Session, owner_id: UUID, data: StockCreate):
             .join(Instrument)
             .where(
                 Instrument.owner_id == owner_id,
-                Instrument.kind == "STOCK",
+                Instrument.kind == kind,
                 Listing.symbol == data.symbol,
                 Listing.mic == data.mic,
                 Listing.currency == data.currency,
@@ -73,7 +77,7 @@ def create_stock(session: Session, owner_id: UUID, data: StockCreate):
             else None
         )
         if instrument is not None:
-            if instrument.kind != "STOCK" or instrument.name != data.name:
+            if instrument.kind != kind or instrument.name != data.name:
                 raise PurchaseError(
                     "Ten ISIN jest już przypisany do innych danych instrumentu.", 409
                 )
@@ -90,7 +94,7 @@ def create_stock(session: Session, owner_id: UUID, data: StockCreate):
                 )
         else:
             instrument = Instrument(
-                owner_id=owner_id, name=data.name, isin=data.isin, kind="STOCK", distribution=None
+                owner_id=owner_id, name=data.name, isin=data.isin, kind=kind, distribution=None
             )
             session.add(instrument)
             session.flush()

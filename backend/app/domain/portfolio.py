@@ -17,7 +17,7 @@ class Holding:
 def allocation(rows: list[Holding], basis: str):
     amounts = {
         key: sum((getattr(row, basis) for row in rows if row.asset_class == key), Decimal("0"))
-        for key in ("BOND", "ETF", "STOCK")
+        for key in ("BOND", "ETF", "STOCK", "REIT")
     }
     total = sum(amounts.values(), Decimal("0"))
     if total <= 0:
@@ -47,7 +47,7 @@ def allocation(rows: list[Holding], basis: str):
 
 def summarize(rows: list[Holding]):
     for row in rows:
-        if row.asset_class not in {"BOND", "ETF", "STOCK"}:
+        if row.asset_class not in {"BOND", "ETF", "STOCK", "REIT"}:
             raise ValueError("Unknown asset class")
         for value in (row.cost, row.value, row.paid_income):
             if value is not None and (

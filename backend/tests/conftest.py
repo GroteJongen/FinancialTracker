@@ -24,6 +24,8 @@ from app.infrastructure.models import (
     Listing,
     Operation,
     Owner,
+    PortfolioAccount,
+    PortfolioGroup,
     PriceObservation,
     PurchaseDetails,
     YahooListing,
@@ -94,6 +96,14 @@ def ledger(test_database):
     with TestClient(create_app(settings, engine)) as client:
         yield client, engine, settings, account_id
     with Session(engine) as session, session.begin():
+        session.execute(
+            delete(PortfolioAccount).where(
+                PortfolioAccount.portfolio_id.in_(
+                    select(PortfolioGroup.id).where(PortfolioGroup.owner_id == owner_id)
+                )
+            )
+        )
+        session.execute(delete(PortfolioGroup).where(PortfolioGroup.owner_id == owner_id))
         account_ids = select(Account.id).where(Account.owner_id == owner_id)
         ids = select(Operation.id).where(Operation.account_id.in_(account_ids))
         bond_ids = select(BondPurchase.id).where(BondPurchase.account_id.in_(account_ids))

@@ -24,6 +24,8 @@ function isAccount(value: unknown): value is Account {
 
 export default function App() {
   const [connection, setConnection] = useState<Connection>({ status: 'loading' })
+  const [selectedAsset, setSelectedAsset] = useState<{ listingId: string; accountId: string } | null>(null)
+  const [operationsOpen, setOperationsOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const refresh = useCallback(() => setRefreshKey((value) => value + 1), [])
 
@@ -79,26 +81,15 @@ export default function App() {
         <div className="content">
           <div className="page-heading">
             <div><p className="eyebrow">FINANCIALTRACKER / START</p>
-              <h1>Wszystko zaczyna się<br />od dobrego przeglądu.</h1>
+              <h1>Portfele inwestycyjne</h1>
               <p className="subtitle">Twoje rachunki i aktywa. W jednym, uporządkowanym miejscu.</p>
             </div>
             <span className="version">WERSJA ROZWOJOWA · 0.1</span>
           </div>
-          {connection.status === 'ready' && <Portfolio />}
-          <section className="welcome-card" aria-labelledby="welcome-title">
-            <div className="welcome-copy">
-              <span className="small-label">TWÓJ PORTFEL</span>
-              <h2 id="welcome-title">Miejsce na Twoje inwestycje.</h2>
-              <p>Zapisuj kolejne zakupy IUSQ i porządkuj historię inwestycji.
-                Wpisz cenę wyceny i sprawdź wynik pozycji w EUR.</p>
-              <div className="asset-tags"><span>ETF-y</span><span>Akcje</span><span>Obligacje</span></div>
-            </div>
-            <div className="welcome-art" aria-hidden="true">
-              <div className="art-ring ring-one" /><div className="art-ring ring-two" />
-              <div className="art-bar bar-one" /><div className="art-bar bar-two" />
-              <div className="art-bar bar-three" /><span className="art-arrow">↗</span>
-            </div>
-          </section>
+          {connection.status === 'ready' && <Portfolio accounts={connection.accounts} onOpenAsset={(listingId, accountId) => {
+            setSelectedAsset({ listingId, accountId }); setOperationsOpen(true)
+            window.setTimeout(() => document.getElementById('security-operations')?.scrollIntoView({ behavior: 'smooth' }), 0)
+          }} />}
           <div className="section-heading"><h2>Twoje rachunki</h2><span>POŁĄCZENIE Z APLIKACJĄ</span></div>
           <section className="accounts-panel" aria-label="Rachunki" aria-busy={connection.status === 'loading'}>
             {connection.status === 'loading' && <p role="status">Łączenie z aplikacją…</p>}
@@ -125,16 +116,13 @@ export default function App() {
                 )}</div>}
             </>}
           </section>
-          {connection.status === 'ready' && connection.accounts.some((account) => account.currency === 'EUR') &&
-            <Purchases accounts={connection.accounts.filter((account) => account.currency === 'EUR')} />}
+          <details className="operations-panel" open={operationsOpen} onToggle={(event) => setOperationsOpen(event.currentTarget.open)}><summary>Operacje i katalog aktywów</summary>
+          {connection.status === 'ready' && <Stocks key={selectedAsset?.listingId + '/' + selectedAsset?.accountId} accounts={connection.accounts} onAccountsChanged={refresh} focus={selectedAsset} />}
           {connection.status === 'ready' && <Bonds accounts={connection.accounts} onAccountsChanged={refresh} />}
-          {connection.status === 'ready' && <Stocks accounts={connection.accounts} onAccountsChanged={refresh} />}
-          <section className="next-step">
-            <span className="step-number">01</span>
-            <div><h3>Następny krok: automatyczne ceny</h3>
-              <p>Na razie wpisujesz ceny ręcznie. Kolejne etapy dodadzą notowania i naliczanie odsetek obligacji.</p></div>
-            <span className="step-arrow" aria-hidden="true">↗</span>
-          </section>
+          {connection.status === 'ready' && connection.accounts.some((account) => account.currency === 'EUR') && <details className="etf-operations"><summary>Operacje ETF w EUR</summary>
+            <Purchases accounts={connection.accounts.filter((account) => account.currency === 'EUR')} />
+          </details>}
+          </details>
           <footer>FinancialTracker <span>Przejrzystość na każdym etapie.</span></footer>
         </div>
       </main>

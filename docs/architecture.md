@@ -94,3 +94,7 @@ Agregacja jest odrębnym przypadkiem użycia application/portfolio.py, z czystym
 ## Automatyczne ceny FT-005
 
 Migracja 0007 dodaje YahooListing: jawny symbol i ostatni poprawny kurs z czasem notowania, pobrania, proby i tokenem. application/market_prices.py wybiera cene wspolnie dla dashboardu i pojedynczych pozycji. infrastructure/yahoo.py izoluje nieoficjalne API. Domenowe wzory sie nie zmieniaja. Szczegoly: yahoo.md.
+
+## Portfele mieszane FT-014
+
+PortfolioGroup/PortfolioAccount grupuja rachunki wlasciciela bez przenoszenia operacji; API czyta konto/rodzaj rachunku niezaleznie od klasy aktywow. Prywatne ETF/REIT korzystaja ze wspolnego rejestru papierow i walidacji metadanych dostawcy; obligacje zachowuja osobny model wyceny. Definicje, zgodnosc i ograniczenia: portfolios.md.

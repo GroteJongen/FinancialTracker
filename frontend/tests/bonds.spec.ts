@@ -5,6 +5,7 @@ test.use({ actionTimeout: 10000 })
 
 async function createAccount(page: Page, name: string, kind = 'STANDARD') {
   await page.goto('/')
+  await page.locator('.operations-panel > summary').click()
   const section = page.getByRole('region', { name: 'Obligacje skarbowe', exact: true })
   await section.getByRole('button', { name: 'Dodaj rachunek obligacji', exact: true }).click()
   await section.getByLabel('Nazwa rachunku', { exact: true }).fill(name)
@@ -41,6 +42,7 @@ for (const [type, series, kind] of [['TOS', 'TOS1129', 'STANDARD'], ['COI', 'COI
     await expect(history).toContainText('10 → 12')
     const accountId = await section.getByLabel('Rachunek obligacji', { exact: true }).inputValue()
     await page.reload()
+  await page.locator('.operations-panel > summary').click()
     await section.getByLabel('Rachunek obligacji', { exact: true }).selectOption(accountId)
     row = section.getByRole('row').filter({ hasText: series })
     await expect(row).toContainText('1\u00a0198,80')
@@ -73,6 +75,7 @@ test('bond retry after lost response does not duplicate purchase; invalid quanti
   await expect(section.getByRole('row').filter({ hasText: 'TOS1129' })).toHaveCount(1)
   const accountId = await section.getByLabel('Rachunek obligacji', { exact: true }).inputValue()
   await page.reload()
+  await page.locator('.operations-panel > summary').click()
   await section.getByLabel('Rachunek obligacji', { exact: true }).selectOption(accountId)
   await expect(section.getByRole('row').filter({ hasText: 'TOS1129' })).toHaveCount(1)
   await page.setViewportSize({ width: 390, height: 844 })

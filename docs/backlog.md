@@ -92,3 +92,7 @@ Publikacja po zielonym CI main, ograniczone packages:write tylko dla publikatora
 ## FT-013 - Widoczny kurs jednostki IUSQ
 
 Status: Ukonczone - 196 testow backendu i 29 testow przegladarkowych zaliczone w CI. Osobny kafelek w wycenie ETF i kolumna w dashboardzie, cena z wybranego zrodla w EUR, zachowane daty i oznaczenia braku/nieaktualnosci. Cena jednostkowa rozdzielona od kosztu sredniego i wartosci pakietu. Bez zmiany obliczen, pobierania kursow i schematu bazy.
+
+## FT-014 - Wlasne portfele i rozne aktywa
+
+Status: Ukonczone - 200 testow backendu i 31 przegladarkowych zaliczone w CI. Grupy rachunkow z filtrami IKE/IKZE, wspolna tabela o szesciu kolumnach, prywatny katalog roznych ETF/akcji/REIT oraz istniejace obligacje. Podsumowanie wybranego portfela u gory, operacje i katalog w rozwijanej sekcji, wycena zalezy od wybranego instrumentu. Migracja 0008 zachowuje stare dane. Szczegoly: portfolios.md.
