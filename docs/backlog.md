@@ -99,4 +99,4 @@ Status: Ukonczone - 200 testow backendu i 31 przegladarkowych zaliczone w CI. Gr
 
 ## FT-015 - Automatyczne kursy NBP przy otwarciu
 
-Status: Weryfikacja w CI. Pobranie aktualnych i brakujących historycznych kursów po otwarciu strony, partie bez ponownego pobierania wypełnionych dat, zachowanie znanych kwot i wyniku w walucie instrumentu przy awarii. Bez migracji bazy.
+Status: Ukończone - 202 testy backendu i 34 przeglądarkowe zaliczone w CI. Pobranie aktualnych i brakujących historycznych kursów po otwarciu strony, partie bez ponownego pobierania wypełnionych dat, zachowanie znanych kwot i wyniku w walucie instrumentu przy awarii. Bez migracji bazy.
