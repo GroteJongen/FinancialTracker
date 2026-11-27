@@ -91,4 +91,4 @@ Publikacja po zielonym CI main, ograniczone packages:write tylko dla publikatora
 
 ## FT-013 - Widoczny kurs jednostki IUSQ
 
-Status: W trakcie. Osobny kafelek w wycenie ETF i kolumna w dashboardzie, cena z wybranego zrodla w EUR, zachowane daty i oznaczenia braku/nieaktualnosci. Cena jednostkowa rozdzielona od kosztu sredniego i wartosci pakietu. Bez zmiany obliczen, pobierania kursow i schematu bazy.
+Status: Ukonczone - 196 testow backendu i 29 testow przegladarkowych zaliczone w CI. Osobny kafelek w wycenie ETF i kolumna w dashboardzie, cena z wybranego zrodla w EUR, zachowane daty i oznaczenia braku/nieaktualnosci. Cena jednostkowa rozdzielona od kosztu sredniego i wartosci pakietu. Bez zmiany obliczen, pobierania kursow i schematu bazy.
