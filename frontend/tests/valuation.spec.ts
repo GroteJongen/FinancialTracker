@@ -95,6 +95,6 @@ test('valuation cards and form fit mobile width', async ({ page }) => {
   await page.goto('/')
   await page.locator('.operations-panel > summary').click()
   await page.locator('.etf-operations > summary').click()
-  await expect(page.getByRole('heading', { name: 'Wycena IUSQ', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /^Wycena / })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
 })

@@ -267,7 +267,7 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 quantity=str(purchase.quantity),
                 mark_id=str(mark.id) if mark else None,
                 trade_date=purchase.trade_date.isoformat(),
-                unit_price=format(value / purchase.quantity, "f") if value is not None else None,
+                unit_price=money(value / purchase.quantity) if value is not None else None,
                 average_cost=format(purchase.unit_price, "f"),
             )
         missing = sorted(fx_keys(securities) - rates.keys())

@@ -4,8 +4,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app.application.purchases import PurchaseError
 from app.application.bonds import lock_owner
+from app.application.purchases import PurchaseError
 from app.application.stocks import ensure_owner
 from app.infrastructure.models import Account, PortfolioAccount, PortfolioGroup
 

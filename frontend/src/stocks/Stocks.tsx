@@ -72,9 +72,9 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
     {(createStock || (current && listings.length === 0)) && <form className="purchase-panel stock-catalogue-form" aria-label="Nowy instrument"
       noValidate onSubmit={(event) => { void save(event, 'stock') }}>
       <fieldset disabled={blocked}><div className="purchase-form-grid">
-        <label htmlFor="security-kind">Rodzaj aktywa<select id="security-kind" value={stockForm.kind} onChange={(event) => setStockForm({ ...stockForm, kind: event.target.value })}>
+        <div className="bond-select-field"><label htmlFor="security-kind">Rodzaj aktywa</label><select id="security-kind" value={stockForm.kind} onChange={(event) => setStockForm({ ...stockForm, kind: event.target.value })}>
           <option value="STOCK">Akcje</option><option value="ETF">ETF</option><option value="REIT">REIT giełdowy</option>
-        </select></label>
+        </select></div>
         <label className="instrument-field" htmlFor="stock-company-name">Nazwa instrumentu<input id="stock-company-name" required maxLength={200} value={stockForm.name} onChange={(event) => setStockForm((previous) => ({ ...previous, name: event.target.value }))} /></label>
         <label htmlFor="stock-symbol">Ticker instrumentu<input id="stock-symbol" required maxLength={30} value={stockForm.symbol} onChange={(event) => setStockForm((previous) => ({ ...previous, symbol: event.target.value }))} /></label>
         <label htmlFor="stock-mic">Giełda instrumentu (MIC)<input id="stock-mic" required maxLength={4} placeholder="np. XWAR" value={stockForm.mic} onChange={(event) => setStockForm((previous) => ({ ...previous, mic: event.target.value }))} /></label>
@@ -83,7 +83,7 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
             {['PLN', 'EUR', 'USD'].map((currency) => <option key={currency} value={currency}>{currency}</option>)}
           </select></div>
         <label htmlFor="stock-isin">ISIN instrumentu — opcjonalnie<input id="stock-isin" maxLength={12} value={stockForm.isin} onChange={(event) => setStockForm((previous) => ({ ...previous, isin: event.target.value }))} /></label>
-      </div><p className="form-hint">Ticker nie wystarcza do identyfikacji. Podaj giełdę i walutę z potwierdzenia transinstrumentu.</p>
+      </div><p className="form-hint">Ticker nie wystarcza do identyfikacji. Podaj giełdę i walutę z potwierdzenia transakcji.</p>
       <button className="primary-button" type="submit">Zapisz instrument</button></fieldset>
     </form>}
     {(createAccount || !account) && <form className="purchase-panel stock-catalogue-form" aria-label="Nowy rachunek instrumentu" noValidate onSubmit={(event) => { void save(event, 'account') }}>

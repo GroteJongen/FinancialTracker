@@ -16,7 +16,7 @@ brakiem, nigdy zerem. Wynik procentowy = wynik / koszt x 100, bez annualizacji.
 
 Obligacje pozostaja oddzielnymi partiami z reczna wycena i wyplaconymi odsetkami.
 Cena jednej sztuki to wartosc partii / liczba sztuk; nie jest notowaniem gieldowym
-ani nominalem. Odsetki wyplacone wchodza do wyniku, ale nie sa dopisywane do aktywow.
+ani nominalem; prezentacja ceny sztuki w PLN jest zaokraglona do 2 miejsc. Odsetki wyplacone wchodza do wyniku, ale nie sa dopisywane do aktywow.
 Nie rozszerzamy silnika regul emisji ani przepisow podatkowych.
 
 Katalog obsluguje akcje, rozne ETF-y i gieldowe REIT-y w PLN/EUR/USD. Wpis wymaga

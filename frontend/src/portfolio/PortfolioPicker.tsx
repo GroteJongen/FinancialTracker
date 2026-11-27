@@ -35,10 +35,10 @@ export default function PortfolioPicker({ accounts, value, onChange, disabled = 
   }
   const selected = groups.find((row) => row.id === value)
   return <div className="portfolio-picker">
-    <div className="portfolio-picker-bar"><label htmlFor="portfolio-select">Portfel
+    <div className="portfolio-picker-bar"><div><label htmlFor="portfolio-select">Portfel</label>
       <select id="portfolio-select" value={value} disabled={busy || disabled} onChange={(event) => { onChange(event.target.value); setDraft(null) }}>
         <option value="">Wszystkie rachunki</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
-      </select></label>
+      </select></div>
       <button type="button" className="secondary-button" disabled={busy || disabled} onClick={() => { setDraft({ group: null, name: '', ids: [] }); setError('') }}>Nowy portfel</button>
       {selected && <button type="button" className="text-button" disabled={busy || disabled} onClick={() => { setDraft({ group: selected, name: selected.name, ids: [...selected.account_ids] }); setError('') }}>Edytuj portfel</button>}
     </div>

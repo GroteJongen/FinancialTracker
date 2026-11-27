@@ -99,6 +99,7 @@ jobs:
           node scripts/smoke-bonds.mjs create
           node scripts/smoke-stocks.mjs create
           node scripts/smoke-portfolio.mjs create
+          node scripts/smoke-groups.mjs create
           docker compose exec -T -e YAHOO_SYNTHETIC_SMOKE=1 backend python -m tests.seed_yahoo_smoke
           node scripts/smoke-yahoo.mjs
       - name: Check persistence after restart
@@ -110,6 +111,7 @@ jobs:
           node scripts/smoke-bonds.mjs verify
           node scripts/smoke-stocks.mjs verify
           node scripts/smoke-portfolio.mjs verify
+          node scripts/smoke-groups.mjs verify
           node scripts/smoke-yahoo.mjs
       - name: Check database outage and recovery
         run: |
@@ -131,6 +133,7 @@ jobs:
           node scripts/smoke-bonds.mjs verify
           node scripts/smoke-stocks.mjs verify
           node scripts/smoke-portfolio.mjs verify
+          node scripts/smoke-groups.mjs verify
       - name: Check manual updater failure handling without Docker or user data
         shell: pwsh
         run: ./scripts/tests/update.tests.ps1

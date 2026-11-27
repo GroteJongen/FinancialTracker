@@ -35,7 +35,12 @@ def upgrade():
 
 
 def downgrade():
-    if op.get_bind().scalar(sa.text("SELECT EXISTS (SELECT 1 FROM instruments WHERE kind = 'REIT' OR (kind = 'ETF' AND owner_id IS NOT NULL))")):
+    if op.get_bind().scalar(
+        sa.text(
+            "SELECT EXISTS (SELECT 1 FROM instruments WHERE kind = 'REIT' "
+            "OR (kind = 'ETF' AND owner_id IS NOT NULL))"
+        )
+    ):
         raise RuntimeError("Resolve private ETF/REIT holdings before reverting their support.")
     if op.get_bind().scalar(sa.text("SELECT EXISTS (SELECT 1 FROM portfolio_groups)")):
         raise RuntimeError("Export and resolve saved portfolios before reverting.")
