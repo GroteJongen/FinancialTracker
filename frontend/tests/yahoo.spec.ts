@@ -7,7 +7,7 @@ function snapshot(updated: boolean, failed = false) {
     totals: { cost: '1000.00', value: updated ? '1100.00' : null, paid_income: '0.00', gain: updated ? '100.00' : null,
       gain_percent: updated ? '10.00' : null, known_value: updated ? '1100.00' : '0.00', complete: updated, allocation_value: [], allocation_cost: [] },
     positions: [{ account_id: account, account_name: 'Synthetic Yahoo', account_kind: 'IKE', label: 'IUSQ · XETR', asset_class: 'ETF', currency: 'EUR',
-      native_cost: '200.00', native_value: updated ? '220.00' : null, cost_pln: '1000.00', value_pln: updated ? '1100.00' : null,
+      unit_price: updated ? '110.00' : null, native_cost: '200.00', native_value: updated ? '220.00' : null, cost_pln: '1000.00', value_pln: updated ? '1100.00' : null,
       gain_pln: updated ? '100.00' : null, paid_income: '0.00', reasons: updated ? [] : ['missing_price'], quantity: '2', listing_id: listing,
       observed_on: updated ? '2026-11-27' : null, price_source: updated ? 'YAHOO' : null, quoted_at: updated ? '2026-11-27T12:00:00Z' : null,
       fetched_at: updated ? '2026-11-27T12:16:00Z' : null, yahoo: { symbol: 'IUSQ.DE', failed, attempted_at: null, fetched_at: null, quoted_at: null } }],
@@ -28,6 +28,7 @@ test('Yahoo fetch on load and reload updates dashboard and displays both timesta
   await expect(portfolio.locator('.portfolio-cards')).toContainText('1\u00a0100,00 PLN')
   const row = portfolio.getByRole('row').filter({ hasText: 'Synthetic Yahoo' })
   await expect(row).toContainText('Yahoo Finance')
+  await expect(row.getByRole('cell', { name: '110,00 EUR', exact: true })).toBeVisible()
   await expect(row).toContainText('Notowanie:')
   await expect(row).toContainText('Pobrano:')
   await page.reload()

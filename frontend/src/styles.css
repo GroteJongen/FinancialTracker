@@ -27,3 +27,4 @@
 .yahoo-mapping { margin: 1rem 0; max-width: 42rem; }
 .yahoo-mapping input { display: block; max-width: 100%; width: 22rem; padding: .7rem; margin-top: .4rem; }
 .yahoo-mapping fieldset { min-width: 0; }
+.valuation-cards>.unit-quote{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:#f0f5ea}.valuation-cards>.unit-quote dt{margin-bottom:0}

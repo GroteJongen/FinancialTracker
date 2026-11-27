@@ -88,3 +88,7 @@ Agregacja obligacji, ETF i akcji w PLN, koszt i wynik, ręczne wyceny obligacji 
 Status: Ukonczone - konfiguracja i skrypt zweryfikowane w CI, 161 testow backendu i 26 przegladarkowych. Sprawdzone lokalnie PowerShell 5.1 i 7. Pierwsza publikacja GHCR po merge do main; nie wykonano jej z galezi. Bez harmonogramu lokalnego.
 
 Publikacja po zielonym CI main, ograniczone packages:write tylko dla publikatora, wspolny tag SHA frontend/backend/migracje, osobny Compose bez build, zachowanie lokalnych portow i wolumenu. Reczne pobranie/uruchomienie z walidacja wersji i przerwaniem po nieudanej migracji. PR-y sprawdzaja obrazy bez publikowania. Dokumentacja, kontrola Compose, PowerShell 5.1/7 i sprawdzenie przejscia z lokalnych obrazow na prebuilt na danych syntetycznych. Pierwszy rzeczywisty push GHCR wymaga scalenia do main. Szczegoly: ghcr.md.
+
+## FT-013 - Widoczny kurs jednostki IUSQ
+
+Status: W trakcie. Osobny kafelek w wycenie ETF i kolumna w dashboardzie, cena z wybranego zrodla w EUR, zachowane daty i oznaczenia braku/nieaktualnosci. Cena jednostkowa rozdzielona od kosztu sredniego i wartosci pakietu. Bez zmiany obliczen, pobierania kursow i schematu bazy.

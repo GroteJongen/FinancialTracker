@@ -62,6 +62,8 @@ def test_automatic_quote_updates_valuation_and_portfolio_with_cache(ledger, monk
     assert price["history"] == []
     position = client.get("/api/portfolio").json()["positions"][0]
     assert position["native_value"] == "1101.20"
+    assert isinstance(position["unit_price"], str)
+    assert Decimal(position["unit_price"]) == Decimal("110.12")
     assert position["quoted_at"] and position["fetched_at"]
     assert client.post("/api/market-prices/refresh").json()["updated"] == 0
     assert len(calls) == 1

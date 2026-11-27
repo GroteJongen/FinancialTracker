@@ -100,6 +100,7 @@ export default function Valuation({ accountId, listingId, ledgerVersion }: {
   const amount = (value: string | null | undefined) =>
     value === null || value === undefined ? '—' : formatDecimal(value, 2) + ' EUR'
   const cards = [
+    ['Kurs jednostki IUSQ', amount(summary?.price?.price)],
     ['Liczba jednostek', summary ? formatDecimal(summary.quantity) : '—'],
     ['Koszt zakupów', amount(summary?.display.cost)],
     ['Średni koszt jednostki', amount(summary?.display.average_cost)],
@@ -115,8 +116,8 @@ export default function Valuation({ accountId, listingId, ledgerVersion }: {
     {error && <div role="alert"><p>{error}</p>
       <button type="button" className="text-button" onClick={() => setRefresh((value) => value + 1)}>Ponów odczyt wyceny</button>
     </div>}
-    <dl className="valuation-cards">{cards.map(([label, value], index) =>
-      <div key={label} className={index >= 4 && summary?.status === 'priced' ? (negative ? 'loss' : 'profit') : ''}>
+    <dl className="valuation-cards">{cards.map(([label, value]) =>
+      <div key={label} className={label === 'Kurs jednostki IUSQ' ? 'unit-quote' : ['Zysk / strata', 'Wynik procentowy'].includes(label) && summary?.status === 'priced' ? (negative ? 'loss' : 'profit') : ''}>
         <dt>{label}</dt><dd>{value}</dd>
       </div>,
     )}</dl>
