@@ -45,3 +45,7 @@ Broker, serie i rachunek obligacji; dopuszczalna precyzja wejścia; nazwa i walu
 ## ADR-023 — Zakupy obligacji przed wyceną
 
 Na prośbę użytkownika FT-009 wdraża samą ewidencję COI/TOS/EDO przed FT-007/FT-008. BondPurchase jest osobną encją bez fikcyjnego giełdowego Listing. BondIssue przechowuje prywatny, niezmienny snapshot parametrów ręcznych i referencję do dokumentu; wersja jest skrótem kanonicznych pól. Nie jest zweryfikowanym modelem reguł. Brak stopy to null, nie 0%. Cena zakupu PLN ma NUMERIC(12,2), stopy NUMERIC(11,8), sztuki są całkowite. Typ rachunku zwykły/IKE/IKZE jest metadanymi i nie wdraża zasad podatkowych ani nie potwierdza dostępności produktu u brokera.
+
+## ADR-024 — Prywatny katalog akcji i wspólny rejestr papierów
+
+Akcje używają istniejących Instrument/Listing, Operation/PurchaseDetails, AuditEvent i PriceObservation. Instrument.owner_id izoluje prywatne dane katalogu; publiczny IUSQ ma owner_id null. ISIN jest unikalny w katalogu właściciela, a publiczny katalog zachowuje własną unikalność. Identyczne rejestracje są rozpoznawane po tickerze/MIC/walucie pod blokadą właściciela, bez automatycznego pobierania danych. Zakupy i wyceny są w walucie notowania; rachunek bazowy nie uruchamia przeliczenia FX. Korekta nie zmienia notowania zakupu.

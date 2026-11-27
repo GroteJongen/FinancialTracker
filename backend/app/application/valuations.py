@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.application.purchases import PurchaseError, owned_account, supported_listing
+from app.application.purchases import PurchaseError, matching_currency, owned_account, supported_account, supported_listing
 from app.application.valuation_contracts import (
     DisplayPosition,
     PriceCreate,
@@ -26,8 +26,10 @@ def latest_trade_date(session: Session, account_id: UUID, listing_id: UUID):
 
 def create_price(session: Session, owner_id: UUID, account_id: UUID, data: PriceCreate):
     with session.begin():
-        owned_account(session, account_id, owner_id, lock=True)
-        supported_listing(session, data.listing_id)
+        account = owned_account(session, account_id, owner_id, lock=True)
+        listing = supported_listing(session, data.listing_id, owner_id)
+        matching_currency(listing, data.currency)
+        supported_account(session, account, listing)
         existing = session.scalar(
             select(PriceObservation).where(
                 PriceObservation.account_id == account_id,
@@ -69,8 +71,9 @@ def create_price(session: Session, owner_id: UUID, account_id: UUID, data: Price
 def get_valuation(session: Session, owner_id: UUID, account_id: UUID, listing_id: UUID):
     # All writes on this ledger lock its account first, so these reads form a coherent view.
     with session.begin():
-        owned_account(session, account_id, owner_id, lock=True)
-        listing = supported_listing(session, listing_id)
+        account = owned_account(session, account_id, owner_id, lock=True)
+        listing = supported_listing(session, listing_id, owner_id)
+        supported_account(session, account, listing)
         purchases = list(
             session.execute(
                 select(

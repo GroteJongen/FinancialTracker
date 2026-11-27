@@ -14,7 +14,7 @@ class PriceCreate(BaseModel):
     request_id: UUID
     price: Decimal
     observed_on: date
-    currency: Literal["EUR"]
+    currency: Literal["EUR", "PLN", "USD"]
 
     @field_validator("price", mode="before", json_schema_input_type=str)
     @classmethod

@@ -1,6 +1,7 @@
 export type Account = { id: string; name: string; kind: string; currency: string }
 export type Listing = {
   id: string; name: string; symbol: string; isin: string | null; mic: string; currency: string
+  kind: string
 }
 export type Purchase = {
   id: string; account_id: string; listing_id: string; symbol: string; isin: string | null
@@ -19,6 +20,7 @@ const labels: Record<string, string> = {
   price: 'Cena wyceny', observed_on: 'Data wyceny',
   series: 'Seria obligacji', annual_rate: 'Oprocentowanie', margin: 'Marża',
   source_url: 'Dokument emisji', name: 'Nazwa rachunku', kind: 'Typ rachunku',
+  symbol: 'Ticker', mic: 'Giełda (MIC)', isin: 'ISIN',
 }
 
 export class ApiError extends Error {

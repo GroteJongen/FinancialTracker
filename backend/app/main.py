@@ -48,7 +48,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
             if error["type"] == "value_error":
                 message = error["msg"].removeprefix("Value error, ")
             elif field == "currency":
-                message = "Wybierz walutę EUR."
+                message = "Wybierz walutę PLN, EUR lub USD."
             elif error["type"] == "extra_forbidden":
                 message = "To pole nie jest obsługiwane."
             elif error["type"] == "missing":

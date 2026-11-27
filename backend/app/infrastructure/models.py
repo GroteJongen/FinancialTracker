@@ -50,9 +50,15 @@ class Account(Base):
 
 class Instrument(Base):
     __tablename__ = "instruments"
+    __table_args__ = (
+        UniqueConstraint("owner_id", "isin", name="uq_instruments_owner_isin"),
+        Index("uq_instruments_public_isin", "isin", unique=True, postgresql_where=text("owner_id IS NULL")),
+        CheckConstraint("kind <> 'STOCK' OR owner_id IS NOT NULL", name="ck_instruments_stock_owner"),
+    )
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    isin: Mapped[str | None] = mapped_column(String(12), unique=True)
+    owner_id: Mapped[UUID | None] = mapped_column(ForeignKey("owners.id"))
+    isin: Mapped[str | None] = mapped_column(String(12))
     name: Mapped[str] = mapped_column(String(200))
     kind: Mapped[str] = mapped_column(String(20))
     distribution: Mapped[str | None] = mapped_column(String(20))
@@ -100,7 +106,7 @@ class PurchaseDetails(Base):
         CheckConstraint("quantity > 0", name="ck_purchase_quantity"),
         CheckConstraint("unit_price > 0", name="ck_purchase_price"),
         CheckConstraint("commission >= 0", name="ck_purchase_commission"),
-        CheckConstraint("currency = 'EUR'", name="ck_purchase_currency"),
+        CheckConstraint("currency IN ('EUR', 'PLN', 'USD')", name="ck_purchase_currency"),
     )
 
     operation_id: Mapped[UUID] = mapped_column(ForeignKey("operations.id"), primary_key=True)
@@ -133,7 +139,7 @@ class PriceObservation(Base):
     __table_args__ = (
         UniqueConstraint("account_id", "request_id", name="uq_prices_request"),
         CheckConstraint("price > 0", name="ck_prices_positive"),
-        CheckConstraint("currency = 'EUR'", name="ck_prices_currency"),
+        CheckConstraint("currency IN ('EUR', 'PLN', 'USD')", name="ck_prices_currency"),
         CheckConstraint("source = 'MANUAL'", name="ck_prices_source"),
         Index("ix_prices_account_listing_date", "account_id", "listing_id", "observed_on"),
     )

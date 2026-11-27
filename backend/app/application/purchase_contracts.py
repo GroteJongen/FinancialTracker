@@ -15,7 +15,7 @@ class PurchaseFields(BaseModel):
     quantity: Decimal
     unit_price: Decimal
     commission: Decimal
-    currency: Literal["EUR"]
+    currency: Literal["EUR", "PLN", "USD"]
 
     @field_validator("quantity", "unit_price", "commission", mode="before")
     @classmethod
@@ -80,3 +80,4 @@ class ListingResponse(BaseModel):
     isin: str | None
     mic: str
     currency: str
+    kind: str
