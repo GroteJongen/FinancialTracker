@@ -13,6 +13,7 @@ test('instrument operations show only purchase history without position or creat
   await expect(history.getByRole('row').filter({ hasText: '10.11.2026' })).toContainText('100,00')
   await expect(section.getByRole('heading', { name: /^Pozycja:/ })).toHaveCount(0)
   await expect(section.locator('.instrument-position-cards')).toHaveCount(0)
+  await expect(section.getByText(/^Historia cen ręcznych/)).toHaveCount(0)
   await expect(section.getByRole('form', { name: 'Cena wyceny instrumentu', exact: true })).toHaveCount(0)
   await expect(section.getByRole('form', { name: 'Nowy zakup instrumentu', exact: true })).toHaveCount(0)
   await expect(section.getByRole('button', { name: 'Zapisz cenę instrumentu', exact: true })).toHaveCount(0)
