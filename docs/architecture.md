@@ -75,6 +75,10 @@ Domyślnie porty związane z aplikacją i bazą wiążemy z 127.0.0.1. Identyfik
 
 IUSQ.DE jest kandydatem do pobierania dziennych cen. Dostępność i format wymagają testu integracji. Zapisuj walutę i źródło; nie zastępuj braku notowania ceną innej giełdy bez jawnej decyzji. Odświeżanie ma timeout, ograniczone ponowienia i ochronę przed duplikatami. Brak sieci nie kasuje ostatniej ceny. Licencje komercyjne pozostają osobną decyzją przed ewentualnym udostępnieniem produktu.
 
+## Dystrybucja GHCR - FT-012
+
+compose.yaml pozostaje srodowiskiem budowanym ze zrodel. compose.ghcr.yaml jest samodzielnym srodowiskiem z obrazow, z tym samym wolumenem PostgreSQL i lokalnymi portami. CI posiada osobny job publish-images zależny od testow, a scripts/update.ps1 obsluguje wyłącznie reczne pobieranie i uruchamianie. Nie zmienia modelu finansowego, schematu bazy ani obslugi wlascicieli. Szczegoly: ghcr.md.
+
 ## Zakupy obligacji FT-009
 
 BondIssue, BondPurchase i BondAuditEvent dodaje migracja 0004. Warstwa domain/bonds.py nie zależy od HTTP ani ORM. Endpointy, prywatność, wersjonowanie i semantykę ponowień opisuje [bonds.md](bonds.md). Wszystkie zapisy obligacji blokują wiersz właściciela, następnie rachunku, co serializuje dobór wersji parametrów i równoczesne korekty. Dane ręczne nie służą jeszcze do wyliczania odsetek.
@@ -86,7 +90,3 @@ Migracja 0005 wprowadza prywatny katalog Instrument.owner_id oraz obsługę PLN/
 ## Portfel FT-011
 
 Agregacja jest odrębnym przypadkiem użycia application/portfolio.py, z czystym sumowaniem domain/portfolio.py i osobnym adapterem infrastructure/nbp.py. BondValuation przechowuje niezmienne, ręczne obserwacje dla rewizji zakupu. FxRate przechowuje publiczne kursy NBP dla dat wymaganych przez portfel. GET nie wykonuje HTTP do dostawcy. Kontrakt, spójność odczytu i zasady niepełnych danych: portfolio.md.
-
-## Dystrybucja GHCR - FT-012
-
-compose.yaml pozostaje srodowiskiem budowanym ze zrodel. compose.ghcr.yaml jest samodzielnym srodowiskiem z obrazow, z tym samym wolumenem PostgreSQL i lokalnymi portami. CI posiada osobny job publish-images zależny od testow, a scripts/update.ps1 obsluguje wyłącznie reczne pobieranie i uruchamianie. Nie zmienia modelu finansowego, schematu bazy ani obslugi wlascicieli. Szczegoly: ghcr.md.

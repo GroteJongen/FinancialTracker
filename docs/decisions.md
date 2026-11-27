@@ -26,6 +26,7 @@ Stan: uzgodniony kierunek z rozmowy; szczegóły implementacji potwierdzamy podc
 | ADR-020 | Cena co najmniej z dnia ostatniego zakupu | Późniejszy zakup lub korekta daty unieważnia użycie wcześniejszej ceny; koszt i ilość nadal są widoczne |
 | ADR-021 | Obliczenia Decimal, prezentacja HALF_UP do 2 miejsc | Nie zaokrąglamy średniego kosztu przed obliczeniem wyniku; kwoty w API są tekstem |
 | ADR-022 | Frontend i backend pozostają w jednym repozytorium | Oddzielne moduły, obrazy i zadania CI; wspólne zmiany kontraktu są atomowe. Podział repo rozważymy przy niezależnych cyklach wydań lub zespołach |
+| ADR-027 | GHCR po zielonym main, reczne pobranie wspolnego wydania SHA | Osobny Compose bez build; pakiety domyslnie prywatne, packages:write tylko dla publikatora, zachowany wolumen i lokalne porty. Brak harmonogramu; zasady migracji i pierwszego pobrania w ghcr.md |
 
 ## Źródła identyfikacji i integracji
 
@@ -53,7 +54,3 @@ Akcje używają istniejących Instrument/Listing, Operation/PurchaseDetails, Aud
 ## ADR-025 — Wspólny dashboard w PLN
 
 Koszt walutowy przeliczamy historycznie jako jawny szacunek NBP, a wartość aktualnym dostępnym kursem referencyjnym. Wypłacone odsetki są skumulowanym dochodem, nie kolejnym aktywem ani kolejnymi wpłatami. Brak pełnej wyceny daje null i blokuje pełny wykres wartości. Ręczna wycena partii obligacji nie udaje automatycznego silnika reguł emisji. Konto IKE_BONDS należy do filtra IKE. Blokadę właściciela zmieniono na FOR NO KEY UPDATE, aby umożliwić równoczesne kontrole klucza obcego podczas zapisu zakupów/audytu; test wymusza tę kolejność współbieżną.
-
-## ADR-027 - GHCR i reczny wybor kompletnego wydania
-
-CI publikuje obrazy tylko dla push main po wszystkich kontrolach. Reczny aktualizator wybiera tylko udany CI z udanym publish-images, a oba obrazy i migracje uzywaja wspolnego tagu SHA oraz etykiety rewizji. Nie przesuwamy niezaleznych tagow latest. Osobny compose.ghcr.yaml nie zawiera build i zachowuje projekt/wolumen/porty wersji lokalnej. -PullOnly nie uruchamia kontenerow, pelna reczna aktualizacja zatrzymuje sie po bledzie migracji. Brak harmonogramu, publicznego hostingu i automatycznego downgrade bazy. Pakiety zachowuja domyslna prywatnosc GHCR; uprawnienie write:packages ma tylko glowny job publikacji. Szczegoly: ghcr.md.

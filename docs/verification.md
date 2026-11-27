@@ -1,5 +1,14 @@
 # Weryfikacja FT-001
 
+## FT-012 - GHCR i reczne aktualizacje, 2026-11-27
+
+CI https://github.com/GroteJongen/FinancialTracker/actions/runs/46015621011 zaliczony dla kodu konfiguracji: 161 testow backendu, 26 Playwright, ruff/format, TypeScript/ESLint/build, Alembic oraz pelny Compose. Wspolny scripts/build-images.sh zbudowal obrazy z etykietami commita; compose.ghcr.yaml uruchomil je bez build i bez pobierania z rejestru, na istniejacym syntetycznym wolumenie. Odczyty zakupow, cen, audytu, obligacji, akcji i sumy portfela po przelaczeniu zaliczone.
+
+Kontrola scripts/check-ghcr.mjs potwierdza brak build, wspolna wersje backend/migrate, wymagany APP_VERSION, zachowanie nazwy wolumenu oraz brak publicznego portu bazy i lokalne porty aplikacji. Skrypt update.ps1 zaliczyl izolowane scenariusze: odrzucenie CI bez publikatora, wybor ostatniego kompletnego wydania, PullOnly bez startu, jawne SHA bez API, kolejnosc migracji/startu, bledy pobierania/migracji/gotowosci backendu, niezgodna rewizja obrazu, zachowanie pliku wybranego wydania i przywrocenie zmiennych sesji. Testy PowerShell lokalnie na Windows PowerShell 5.1 i pwsh 7 oraz w CI pwsh; bez rzeczywistego Dockera/rejestru/bazy. Lokalne git diff --check i kontrola Compose zaliczone.
+
+Job publish-images jest celowo skipped na galezi PR. Logowanie/push do GHCR i pobranie rzeczywistych opublikowanych obrazow nie byly jeszcze wykonane: pierwsza publikacja nastapi po scaleniu na main, przy uzyciu GITHUB_TOKEN z packages:write. Nie scalano PR, nie zmieniano widocznosci pakietow, nie uruchamiano aktualizatora na bazie uzytkownika ani nie konfigurowano harmonogramu. Konfiguracja GHCR jest osobnym PR od oczekujacej integracji Yahoo.
+
+
 Windows: Git, Node 16.1.0 i npm 7.11.2. Brak Dockera i zainstalowanego Pythona. DNS GitHub i npm niedostępny z lokalnego procesu; zapis kodu przez autoryzowaną integrację GitHub.
 
 Lokalnie: node --check scripts/smoke.mjs i git diff --check poprawne. To nie zastępuje testów aplikacji.
