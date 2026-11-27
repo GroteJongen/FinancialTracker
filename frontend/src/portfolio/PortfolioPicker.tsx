@@ -4,8 +4,8 @@ import { request } from '../purchases/api'
 import type { Account } from '../purchases/api'
 
 type Group = { id: string; name: string; revision: number; account_ids: string[] }
-export default function PortfolioPicker({ accounts, value, onChange }: {
-  accounts: Account[]; value: string; onChange: (value: string) => void
+export default function PortfolioPicker({ accounts, value, onChange, disabled = false }: {
+  accounts: Account[]; value: string; disabled?: boolean; onChange: (value: string) => void
 }) {
   const [groups, setGroups] = useState<Group[]>([])
   const [version, setVersion] = useState(0)
@@ -36,14 +36,14 @@ export default function PortfolioPicker({ accounts, value, onChange }: {
   const selected = groups.find((row) => row.id === value)
   return <div className="portfolio-picker">
     <div className="portfolio-picker-bar"><label htmlFor="portfolio-select">Portfel
-      <select id="portfolio-select" value={value} disabled={busy} onChange={(event) => { onChange(event.target.value); setDraft(null) }}>
+      <select id="portfolio-select" value={value} disabled={busy || disabled} onChange={(event) => { onChange(event.target.value); setDraft(null) }}>
         <option value="">Wszystkie rachunki</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
       </select></label>
-      <button type="button" className="secondary-button" disabled={busy} onClick={() => { setDraft({ group: null, name: '', ids: [] }); setError('') }}>Nowy portfel</button>
-      {selected && <button type="button" className="text-button" disabled={busy} onClick={() => { setDraft({ group: selected, name: selected.name, ids: [...selected.account_ids] }); setError('') }}>Edytuj portfel</button>}
+      <button type="button" className="secondary-button" disabled={busy || disabled} onClick={() => { setDraft({ group: null, name: '', ids: [] }); setError('') }}>Nowy portfel</button>
+      {selected && <button type="button" className="text-button" disabled={busy || disabled} onClick={() => { setDraft({ group: selected, name: selected.name, ids: [...selected.account_ids] }); setError('') }}>Edytuj portfel</button>}
     </div>
     {draft && <form aria-label={draft.group ? 'Edycja portfela' : 'Nowy portfel'} className="portfolio-group-form" onSubmit={(event) => { void save(event) }}>
-      <fieldset disabled={busy}><label>Nazwa portfela<input value={draft.name} required maxLength={120} onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
+      <fieldset disabled={busy || disabled}><label>Nazwa portfela<input value={draft.name} required maxLength={120} onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
         <legend>Rachunki w portfelu</legend>
         {accounts.length === 0 && <p>Dodaj rachunek w sekcji operacji, a następnie przypisz go do portfela.</p>}
         {accounts.map((account) => <label key={account.id} className="portfolio-account-check"><input type="checkbox" checked={draft.ids.includes(account.id)} onChange={(event) => setDraft({ ...draft, ids: event.target.checked ? [...draft.ids, account.id] : draft.ids.filter((id) => id !== account.id) })} />{account.name} · {account.kind === 'IKE_BONDS' ? 'IKE' : account.kind === 'STANDARD' ? 'Zwykły' : account.kind}</label>)}

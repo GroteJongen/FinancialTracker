@@ -59,7 +59,8 @@ class Instrument(Base):
             postgresql_where=text("owner_id IS NULL"),
         ),
         CheckConstraint(
-            "kind NOT IN ('STOCK', 'REIT') OR owner_id IS NOT NULL", name="ck_instruments_stock_owner"
+            "kind NOT IN ('STOCK', 'REIT') OR owner_id IS NOT NULL",
+            name="ck_instruments_stock_owner",
         ),
     )
 

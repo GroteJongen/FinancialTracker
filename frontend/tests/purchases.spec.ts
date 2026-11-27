@@ -3,6 +3,7 @@ import { expect, test } from './fixtures'
 test('adds fractional purchases, corrects with audit, and survives reload', async ({ page }) => {
   await page.goto('/')
   await page.locator('.operations-panel > summary').click()
+  await page.locator('.etf-operations > summary').click()
   await page.getByLabel('Liczba jednostek', { exact: true }).fill('0,125')
   await page.getByLabel('Cena jednostki (EUR)', { exact: true }).fill('100,12345678')
   await page.getByLabel('Prowizja (EUR)', { exact: true }).fill('0,10')
@@ -25,6 +26,7 @@ test('adds fractional purchases, corrects with audit, and survives reload', asyn
   await expect(history).toContainText('0,25')
   await page.reload()
   await page.locator('.operations-panel > summary').click()
+  await page.locator('.etf-operations > summary').click()
   row = page.getByRole('row').filter({ hasText: '08.01.2026' })
   await expect(row).toContainText('0,25')
   await page.getByLabel('Liczba jednostek', { exact: true }).fill('2')
@@ -37,6 +39,7 @@ test('adds fractional purchases, corrects with audit, and survives reload', asyn
 test('rejects excess precision and missing correction reason without losing input', async ({ page }) => {
   await page.goto('/')
   await page.locator('.operations-panel > summary').click()
+  await page.locator('.etf-operations > summary').click()
   await page.getByLabel('Liczba jednostek', { exact: true }).fill('0,123456789')
   await page.getByLabel('Cena jednostki (EUR)', { exact: true }).fill('100')
   await page.getByRole('button', { name: 'Zapisz zakup', exact: true }).click()
@@ -64,6 +67,7 @@ test('lost create response can be retried without a duplicate purchase', async (
   })
   await page.goto('/')
   await page.locator('.operations-panel > summary').click()
+  await page.locator('.etf-operations > summary').click()
   await page.getByLabel('Liczba jednostek', { exact: true }).fill('0,333')
   await page.getByLabel('Cena jednostki (EUR)', { exact: true }).fill('98')
   await page.getByLabel('Data zakupu', { exact: true }).fill('2026-01-07')
@@ -73,6 +77,7 @@ test('lost create response can be retried without a duplicate purchase', async (
   await expect(page.getByRole('status', { name: 'Wynik zapisu' })).toContainText('Zakup został zapisany')
   await page.reload()
   await page.locator('.operations-panel > summary').click()
+  await page.locator('.etf-operations > summary').click()
   await expect(page.getByRole('row').filter({ hasText: '07.01.2026' })).toHaveCount(1)
 })
 
@@ -80,6 +85,7 @@ test('purchase form and table fit a mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   await page.locator('.operations-panel > summary').click()
+  await page.locator('.etf-operations > summary').click()
   await expect(page.getByLabel('Liczba jednostek', { exact: true })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
 })

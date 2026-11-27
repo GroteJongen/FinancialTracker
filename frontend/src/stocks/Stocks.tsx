@@ -59,7 +59,7 @@ export default function Stocks({ accounts, onAccountsChanged, focus }: { account
     } finally { savingRef.current = false; setSaving(false) }
   }
 
-  return <section className="purchases-section stocks-section" aria-labelledby="stocks-title">
+  return <section id="security-operations" className="purchases-section stocks-section" aria-labelledby="stocks-title">
     <div className="section-heading"><h2 id="stocks-title">Instrumenty giełdowe</h2><span>KATALOG I POZYCJE</span></div>
     <p className="valuation-note">Dodaj instrument z giełdą i walutą notowania, a potem zapisz zakupy i cenę wyceny.
       Dane instrumentu i ceny wpisujesz ręcznie.</p>

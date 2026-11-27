@@ -95,7 +95,7 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
   const bond = bondData?.positions.find((item) => item.purchase_id === editing)
   return <section className="portfolio-section" aria-labelledby="portfolio-title">
     <div className="section-heading"><h2 id="portfolio-title">Mój portfel</h2><span>WSPÓLNE PODSUMOWANIE · PLN</span></div>
-    <PortfolioPicker accounts={accounts} value={portfolioId} onChange={(id) => { setPortfolioId(id); setEditing(null); setMessage('') }} />
+    <PortfolioPicker disabled={busy} accounts={accounts} value={portfolioId} onChange={(id) => { setPortfolioId(id); setEditing(null); setMessage('') }} />
     <div className="portfolio-filters" role="group" aria-label="Filtr portfela">
       {scopes.map(([value, label]) => <button key={value} type="button" aria-pressed={scope === value} disabled={busy}
         onClick={() => { setScope(value); setEditing(null); setMessage('') }}>{label}</button>)}

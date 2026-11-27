@@ -49,7 +49,13 @@ def records(session: Session, owner_id: UUID, scope: str, *, lock=False, portfol
         query = query.with_for_update()
     if portfolio_id is not None:
         owned_group(session, owner_id, portfolio_id)
-        query = query.where(Account.id.in_(select(PortfolioAccount.account_id).where(PortfolioAccount.portfolio_id == portfolio_id)))
+        query = query.where(
+            Account.id.in_(
+                select(PortfolioAccount.account_id).where(
+                    PortfolioAccount.portfolio_id == portfolio_id
+                )
+            )
+        )
     accounts = {account.id: account for account in session.scalars(query)}
     ids = list(accounts)
     securities = list(
@@ -97,7 +103,9 @@ def cached_rates(session: Session, keys):
 def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=None):
     today = business_today()
     with session.begin(), localcontext(prec=80):
-        accounts, securities, bonds = records(session, owner_id, scope, lock=True, portfolio_id=portfolio_id)
+        accounts, securities, bonds = records(
+            session, owner_id, scope, lock=True, portfolio_id=portfolio_id
+        )
         rates = cached_rates(session, fx_keys(securities))
         prices = {}
         for row in session.scalars(
@@ -175,7 +183,9 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                     cost_pln=money(cost_pln),
                     value_pln=money(value_pln),
                     gain_pln=money(gain),
-                    gain_percent=money(gain / cost_pln * 100) if gain is not None and cost_pln else None,
+                    gain_percent=money(gain / cost_pln * 100)
+                    if gain is not None and cost_pln
+                    else None,
                     reasons=reasons,
                     observed_on=observed_on.isoformat() if observed_on else None,
                     **extra,
@@ -224,7 +234,8 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 reasons,
                 price.observed_on if price else None,
                 listing_id=str(listing_id),
-                symbol=listing.symbol, mic=listing.mic,
+                symbol=listing.symbol,
+                mic=listing.mic,
                 average_cost=money(position.average_cost),
                 quantity=format(position.quantity, "f"),
                 unit_price=format(price.price, "f") if price else None,
@@ -326,7 +337,7 @@ def save_bond_valuation(
         return dict(id=str(mark.id)), True
 
 
-def refresh_fx(session: Session, owner_id: UUID, scope="ALL"):
+def refresh_fx(session: Session, owner_id: UUID, scope="ALL", portfolio_id=None):
     today = business_today()
     with session.begin():
         _, securities, _ = records(session, owner_id, scope, portfolio_id=portfolio_id)

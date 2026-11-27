@@ -10,7 +10,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.application.accounts import list_accounts
-from app.application.portfolio_groups import GroupCreate, GroupUpdate, list_groups, save_group
 from app.application.bond_contracts import (
     BondAccountCreate,
     BondCorrection,
@@ -28,6 +27,7 @@ from app.application.market_prices import MappingCreate, configure
 from app.application.market_prices import refresh as refresh_yahoo
 from app.application.portfolio import get_portfolio, refresh_fx, save_bond_valuation
 from app.application.portfolio_contracts import BondValuationCreate
+from app.application.portfolio_groups import GroupCreate, GroupUpdate, list_groups, save_group
 from app.application.purchase_contracts import (
     AuditResponse,
     ListingResponse,
@@ -41,7 +41,7 @@ from app.application.purchases import (
     get_audit,
     get_purchases,
 )
-from app.application.stock_contracts import InvestmentAccountCreate, StockCreate, SecurityCreate
+from app.application.stock_contracts import InvestmentAccountCreate, SecurityCreate, StockCreate
 from app.application.stocks import catalogue, create_investment_account, create_stock
 from app.application.valuation_contracts import PriceCreate, PriceResponse, ValuationResponse
 from app.application.valuations import create_price, get_valuation
@@ -87,7 +87,9 @@ def portfolios(request: Request, session: Session = Depends(get_session)):
 
 
 @router.post("/portfolios", status_code=201)
-def add_portfolio(data: GroupCreate, request: Request, response: Response, session: Session = Depends(get_session)):
+def add_portfolio(
+    data: GroupCreate, request: Request, response: Response, session: Session = Depends(get_session)
+):
     result, created = save_group(session, request.app.state.settings.local_owner_id, data)
     if not created:
         response.status_code = 200
@@ -95,12 +97,19 @@ def add_portfolio(data: GroupCreate, request: Request, response: Response, sessi
 
 
 @router.put("/portfolios/{portfolio_id}")
-def edit_portfolio(portfolio_id: UUID, data: GroupUpdate, request: Request, session: Session = Depends(get_session)):
+def edit_portfolio(
+    portfolio_id: UUID, data: GroupUpdate, request: Request, session: Session = Depends(get_session)
+):
     return save_group(session, request.app.state.settings.local_owner_id, data, portfolio_id)[0]
 
 
 @router.post("/securities", response_model=ListingResponse, status_code=201)
-def add_security(data: SecurityCreate, request: Request, response: Response, session: Session = Depends(get_session)):
+def add_security(
+    data: SecurityCreate,
+    request: Request,
+    response: Response,
+    session: Session = Depends(get_session),
+):
     result, created = create_stock(session, request.app.state.settings.local_owner_id, data)
     if not created:
         response.status_code = 200
@@ -109,14 +118,20 @@ def add_security(data: SecurityCreate, request: Request, response: Response, ses
 
 @router.get("/portfolio")
 def portfolio(
-    request: Request, scope: PortfolioScope = "ALL", portfolio_id: UUID | None = None, session: Session = Depends(get_session)
+    request: Request,
+    scope: PortfolioScope = "ALL",
+    portfolio_id: UUID | None = None,
+    session: Session = Depends(get_session),
 ):
     return get_portfolio(session, request.app.state.settings.local_owner_id, scope, portfolio_id)
 
 
 @router.post("/portfolio/fx/refresh")
 def portfolio_fx(
-    request: Request, scope: PortfolioScope = "ALL", portfolio_id: UUID | None = None, session: Session = Depends(get_session)
+    request: Request,
+    scope: PortfolioScope = "ALL",
+    portfolio_id: UUID | None = None,
+    session: Session = Depends(get_session),
 ):
     return refresh_fx(session, request.app.state.settings.local_owner_id, scope, portfolio_id)
 
@@ -165,7 +180,9 @@ def accounts(request: Request, session: Session = Depends(get_session)):
 
 @router.get("/listings", response_model=list[ListingResponse])
 def listings(
-    request: Request, kind: Literal["ETF", "STOCK", "REIT", "ALL"] = "ETF", session: Session = Depends(get_session)
+    request: Request,
+    kind: Literal["ETF", "STOCK", "REIT", "ALL"] = "ETF",
+    session: Session = Depends(get_session),
 ):
     return catalogue(session, request.app.state.settings.local_owner_id, kind)
 

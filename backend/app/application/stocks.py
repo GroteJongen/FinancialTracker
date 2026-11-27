@@ -25,8 +25,10 @@ def listing_response(listing: Listing, instrument: Instrument):
 
 
 def catalogue(session: Session, owner_id: UUID, kind: str):
-    query = select(Listing, Instrument).join(Instrument).where(
-        or_(Instrument.owner_id == owner_id, Listing.id == IUSQ_LISTING_ID)
+    query = (
+        select(Listing, Instrument)
+        .join(Instrument)
+        .where(or_(Instrument.owner_id == owner_id, Listing.id == IUSQ_LISTING_ID))
     )
     if kind != "ALL":
         query = query.where(Instrument.kind == kind)
