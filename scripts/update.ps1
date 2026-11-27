@@ -73,7 +73,8 @@ try {
         Invoke-Docker -DockerArgs ($compose + @('up', '-d', '--no-build', '--pull', 'never', '--wait', '--wait-timeout', '300', 'db'))
         Invoke-Docker -DockerArgs ($compose + @('run', '--rm', '--no-deps', '--pull', 'never', 'migrate'))
         # Run app containers only after a successful migration of this exact backend image.
-        Invoke-Docker -DockerArgs ($compose + @('up', '-d', '--no-deps', '--no-build', '--pull', 'never', '--wait', '--wait-timeout', '300', 'backend', 'frontend'))
+        Invoke-Docker -DockerArgs ($compose + @('up', '-d', '--no-deps', '--no-build', '--pull', 'never', '--wait', '--wait-timeout', '300', 'backend'))
+        Invoke-Docker -DockerArgs ($compose + @('up', '-d', '--no-deps', '--no-build', '--pull', 'never', '--wait', '--wait-timeout', '300', 'frontend'))
     }
     [IO.File]::WriteAllText($releaseEnv, $releaseText, [Text.UTF8Encoding]::new($false))
     Write-Host ('Zapisano wybrane wydanie w .env.ghcr: ' + $Version)

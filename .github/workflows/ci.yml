@@ -111,8 +111,7 @@ jobs:
           APP_VERSION: sha-${{ github.sha }}
           IMAGE_PREFIX: ghcr.io/grotejongen/financialtracker
         run: |
-          docker tag financialtracker-backend "$IMAGE_PREFIX-backend:$APP_VERSION"
-          docker tag financialtracker-frontend "$IMAGE_PREFIX-frontend:$APP_VERSION"
+          bash scripts/build-images.sh
           node scripts/check-ghcr.mjs
           docker compose --env-file .env -f compose.ghcr.yaml up --no-build --pull never -d --wait --wait-timeout 180
           node scripts/smoke.mjs
@@ -162,11 +161,7 @@ jobs:
         run: |
           printf 'APP_VERSION=sha-%s\nIMAGE_PREFIX=ghcr.io/%s\n' "$GITHUB_SHA" "${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - name: Build the images that will be published
-        shell: bash
-        run: |
-          source_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
-          docker build --platform linux/amd64 --label "org.opencontainers.image.source=$source_url" --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.version=$APP_VERSION" --tag "$IMAGE_PREFIX-backend:$APP_VERSION" backend
-          docker build --platform linux/amd64 --label "org.opencontainers.image.source=$source_url" --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.version=$APP_VERSION" --tag "$IMAGE_PREFIX-frontend:$APP_VERSION" frontend
+        run: bash scripts/build-images.sh
       - name: Verify the exact images before uploading
         run: |
           docker compose --env-file .env.example -f compose.ghcr.yaml pull db

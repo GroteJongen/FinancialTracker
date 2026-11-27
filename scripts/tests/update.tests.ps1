@@ -78,6 +78,13 @@ try {
     }
     Write-Host 'PASS: failed pull and migration stop deployment and preserve pin'
 
+    Reset-Case; $global:FtGhcrTestfailure = 'up -d --no-deps'
+    [IO.File]::WriteAllText($pin, 'previous-release')
+    Expect-Failure { & $updater -Version $global:FtGhcrTestversion }
+    Assert-True (($global:FtGhcrTestcommands | Where-Object { $_ -match 'up -d --no-deps.* frontend$' }).Count -eq 0) 'Failed backend readiness must not start frontend'
+    Assert-True ((Get-Content -Raw -LiteralPath $pin) -eq 'previous-release') 'Startup failure must preserve pin'
+    Write-Host 'PASS: backend startup failure stops frontend and preserves pin'
+
     Reset-Case; $global:FtGhcrTestwrongLabel = $true
     Expect-Failure { & $updater -Version $global:FtGhcrTestversion }
     Assert-True (($global:FtGhcrTestcommands | Where-Object { $_ -match ' (up|run) ' }).Count -eq 0) 'Wrong image revision must stop before database changes'
