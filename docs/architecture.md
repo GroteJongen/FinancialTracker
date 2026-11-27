@@ -78,3 +78,7 @@ IUSQ.DE jest kandydatem do pobierania dziennych cen. Dostępność i format wyma
 ## Zakupy obligacji FT-009
 
 BondIssue, BondPurchase i BondAuditEvent dodaje migracja 0004. Warstwa domain/bonds.py nie zależy od HTTP ani ORM. Endpointy, prywatność, wersjonowanie i semantykę ponowień opisuje [bonds.md](bonds.md). Wszystkie zapisy obligacji blokują wiersz właściciela, następnie rachunku, co serializuje dobór wersji parametrów i równoczesne korekty. Dane ręczne nie służą jeszcze do wyliczania odsetek.
+
+## Akcje FT-010
+
+Migracja 0005 wprowadza prywatny katalog Instrument.owner_id oraz obsługę PLN/EUR/USD we wspólnych zakupach i cenach. Warstwa application/stocks.py odpowiada za tożsamość katalogu i rejestrację, a purchases.py i valuations.py zachowują wspólne obliczenia i audyt. Frontend rozdziela widoki ETF i akcji; domyślny GET /listings nadal pokazuje ETF. Kontrakt i ograniczenia opisuje stocks.md.

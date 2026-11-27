@@ -1,10 +1,11 @@
 from collections.abc import Generator
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import select, text
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -35,10 +36,11 @@ from app.application.purchases import (
     get_audit,
     get_purchases,
 )
+from app.application.stock_contracts import InvestmentAccountCreate, StockCreate
+from app.application.stocks import catalogue, create_investment_account, create_stock
 from app.application.valuation_contracts import PriceCreate, PriceResponse, ValuationResponse
 from app.application.valuations import create_price, get_valuation
 from app.infrastructure.catalog import IUSQ_LISTING_ID
-from app.infrastructure.models import Instrument, Listing
 
 router = APIRouter(prefix="/api")
 
@@ -82,19 +84,35 @@ def accounts(request: Request, session: Session = Depends(get_session)):
 
 
 @router.get("/listings", response_model=list[ListingResponse])
-def listings(session: Session = Depends(get_session)):
-    rows = session.execute(select(Listing, Instrument).join(Instrument))
-    return [
-        ListingResponse(
-            id=listing.id,
-            name=instrument.name,
-            symbol=listing.symbol,
-            isin=instrument.isin,
-            mic=listing.mic,
-            currency=listing.currency,
-        )
-        for listing, instrument in rows
-    ]
+def listings(
+    request: Request, kind: Literal["ETF", "STOCK"] = "ETF", session: Session = Depends(get_session)
+):
+    return catalogue(session, request.app.state.settings.local_owner_id, kind)
+
+
+@router.post("/stocks", response_model=ListingResponse, status_code=201)
+def add_stock(
+    data: StockCreate, request: Request, response: Response, session: Session = Depends(get_session)
+):
+    result, created = create_stock(session, request.app.state.settings.local_owner_id, data)
+    if not created:
+        response.status_code = 200
+    return result
+
+
+@router.post("/investment-accounts", response_model=AccountResponse, status_code=201)
+def add_investment_account(
+    data: InvestmentAccountCreate,
+    request: Request,
+    response: Response,
+    session: Session = Depends(get_session),
+):
+    result, created = create_investment_account(
+        session, request.app.state.settings.local_owner_id, data
+    )
+    if not created:
+        response.status_code = 200
+    return result
 
 
 @router.get("/accounts/{account_id}/purchases", response_model=list[PurchaseResponse])

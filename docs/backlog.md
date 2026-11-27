@@ -70,3 +70,9 @@ Eksport/import, sprzedaż i rozliczenie partii, dywidendy wypłacane, podziały 
 Status: Ukończone — 105 testów backendu, 16 testów przeglądarkowych oraz migracje i trwałość Compose potwierdzone w CI. Priorytet nadany przez użytkownika przed FT-004–FT-008.
 
 Zakres: tworzenie rachunków PLN zwykły/IKE/IKZE, zakupy TOS/COI/EDO, niezmienne wersje parametrów emisji, koszt zakupu Decimal, korekty z audytem, izolacja właścicieli, idempotencja, migracja 0004, formularz i testy. Szczegóły w bonds.md. Nie obejmuje silnika odsetek ani zasad podatkowych; FT-007 i FT-008 pozostają osobnymi zadaniami wymagającymi dokumentów źródłowych.
+
+## FT-010 — Dodawanie i podgląd akcji
+
+Status: Ukończone — 127 testów backendu, 21 testów przeglądarkowych oraz migracje i trwałość Compose potwierdzone w CI. Priorytet nadany przez użytkownika.
+
+Pusty, prywatny katalog akcji, ręczna rejestracja spółki/notowania, rachunki zwykłe/IKE/IKZE, zakupy i korekty, ręczna wycena, koszt i wynik w walucie notowania PLN/EUR/USD. Migracja 0005, izolacja właścicieli, idempotencja oraz regresja ETF i obligacji. Automatyczne kursy, FX, dywidendy i sprzedaż pozostają osobnymi zadaniami. Patrz stocks.md.

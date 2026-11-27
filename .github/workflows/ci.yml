@@ -86,6 +86,7 @@ jobs:
           node scripts/smoke-purchases.mjs create
           node scripts/smoke-valuation.mjs create
           node scripts/smoke-bonds.mjs create
+          node scripts/smoke-stocks.mjs create
       - name: Check persistence after restart
         run: |
           docker compose restart db backend frontend
@@ -93,6 +94,7 @@ jobs:
           node scripts/smoke-purchases.mjs verify
           node scripts/smoke-valuation.mjs verify
           node scripts/smoke-bonds.mjs verify
+          node scripts/smoke-stocks.mjs verify
       - name: Check database outage and recovery
         run: |
           docker compose stop db

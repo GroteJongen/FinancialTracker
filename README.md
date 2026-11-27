@@ -118,3 +118,7 @@ FT-003 przeszedł pełny przebieg CI: 73 testy backendu, 12 testów przeglądark
 ## Zakupy obligacji
 
 Sekcja „Obligacje skarbowe” pozwala tworzyć rachunki PLN (zwykły, IKE, IKZE), zapisywać serie i zakupy COI/TOS/EDO oraz poprawiać dane z historią zmian. Opcjonalne parametry emisji są podane ręcznie i niezweryfikowane. Koszt zakupu nie jest bieżącą wyceną; odsetki i podatki nie są naliczane. Pełna [instrukcja i kontrakt API](docs/bonds.md).
+
+## Akcje
+
+Sekcja „Akcje” pozwala dodać własne spółki i notowania, tworzyć rachunki zwykłe/IKE/IKZE, zapisywać zakupy i ręczne ceny oraz przeglądać koszt i wynik w PLN, EUR lub USD. Katalog startuje pusty. [Instrukcja i ograniczenia](docs/stocks.md).

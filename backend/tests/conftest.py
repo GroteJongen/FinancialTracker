@@ -18,6 +18,8 @@ from app.infrastructure.models import (
     BondAuditEvent,
     BondIssue,
     BondPurchase,
+    Instrument,
+    Listing,
     Operation,
     Owner,
     PriceObservation,
@@ -89,14 +91,19 @@ def ledger(test_database):
     with TestClient(create_app(settings, engine)) as client:
         yield client, engine, settings, account_id
     with Session(engine) as session, session.begin():
-        ids = select(Operation.id).where(Operation.account_id == account_id)
         account_ids = select(Account.id).where(Account.owner_id == owner_id)
+        ids = select(Operation.id).where(Operation.account_id.in_(account_ids))
         session.execute(delete(BondAuditEvent).where(BondAuditEvent.owner_id == owner_id))
         session.execute(delete(BondPurchase).where(BondPurchase.account_id.in_(account_ids)))
         session.execute(delete(BondIssue).where(BondIssue.owner_id == owner_id))
-        session.execute(delete(PriceObservation).where(PriceObservation.account_id == account_id))
+        session.execute(
+            delete(PriceObservation).where(PriceObservation.account_id.in_(account_ids))
+        )
         session.execute(delete(AuditEvent).where(AuditEvent.owner_id == owner_id))
         session.execute(delete(PurchaseDetails).where(PurchaseDetails.operation_id.in_(ids)))
-        session.execute(delete(Operation).where(Operation.account_id == account_id))
+        session.execute(delete(Operation).where(Operation.account_id.in_(account_ids)))
+        instrument_ids = select(Instrument.id).where(Instrument.owner_id == owner_id)
+        session.execute(delete(Listing).where(Listing.instrument_id.in_(instrument_ids)))
+        session.execute(delete(Instrument).where(Instrument.owner_id == owner_id))
         session.execute(delete(Account).where(Account.owner_id == owner_id))
         session.execute(delete(Owner).where(Owner.id == owner_id))

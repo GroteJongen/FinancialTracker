@@ -44,3 +44,7 @@ Przykłady w calculations.md przechodzą; zapis przetrwa restart; interfejs rozr
 ## Dodany zakres FT-009
 
 Użytkownik może ewidencjonować zakupy COI/TOS/EDO na rachunkach PLN typu zwykły, IKE lub IKZE, poprawiać je z historią i zapisywać ręcznie parametry konkretnej emisji. Bieżąca wartość i odsetki obligacji pozostają poza tą zmianą. Patrz bonds.md.
+
+## Dodany zakres FT-010
+
+Użytkownik ma możliwość samodzielnego dodawania akcji do pustego katalogu i ich podglądu. Nie dodajemy wybranych za użytkownika spółek. Podgląd z zakupami i ceną ręczną pokazuje pozycję, koszt i wynik w walucie notowania, z korektami i audytem. Patrz stocks.md.

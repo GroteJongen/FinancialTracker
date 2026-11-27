@@ -72,7 +72,7 @@ function AccountPurchases({ account, onBusyChange }: {
     ]).then(([options, items]) => {
       if (!active) return
       setListings(options)
-      setPurchases(sortPurchases(items))
+      setPurchases(sortPurchases(items.filter((item) => options.some((option) => option.id === item.listing_id))))
       setForm((previous) => ({ ...previous, listing_id: previous.listing_id || options[0]?.id || '' }))
       setLoadError('')
       setLoaded(true)

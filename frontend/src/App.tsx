@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Purchases from './purchases/Purchases'
 import Bonds from './bonds/Bonds'
+import Stocks from './stocks/Stocks'
 
 type Account = { id: string; name: string; kind: string; currency: string }
 type Connection =
@@ -125,6 +126,7 @@ export default function App() {
           {connection.status === 'ready' && connection.accounts.some((account) => account.currency === 'EUR') &&
             <Purchases accounts={connection.accounts.filter((account) => account.currency === 'EUR')} />}
           {connection.status === 'ready' && <Bonds accounts={connection.accounts} onAccountsChanged={refresh} />}
+          {connection.status === 'ready' && <Stocks accounts={connection.accounts} onAccountsChanged={refresh} />}
           <section className="next-step">
             <span className="step-number">01</span>
             <div><h3>Następny krok: automatyczne ceny</h3>

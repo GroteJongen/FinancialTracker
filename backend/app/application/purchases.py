@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.application.purchase_contracts import PurchaseCorrection, PurchaseCreate, PurchaseResponse
+from app.infrastructure.catalog import IUSQ_LISTING_ID
 from app.infrastructure.models import (
     Account,
     AuditEvent,
@@ -17,9 +18,10 @@ from app.infrastructure.models import (
 
 
 class PurchaseError(Exception):
-    def __init__(self, message: str, status_code: int = 404):
+    def __init__(self, message: str, status_code: int = 404, *, field: str | None = None):
         self.message = message
         self.status_code = status_code
+        self.field = field
         super().__init__(message)
 
 
@@ -33,11 +35,33 @@ def owned_account(session: Session, account_id: UUID, owner_id: UUID, *, lock=Fa
     return account
 
 
-def supported_listing(session: Session, listing_id: UUID):
+def supported_listing(session: Session, listing_id: UUID, owner_id: UUID):
     listing = session.get(Listing, listing_id)
-    if listing is None or listing.currency != "EUR" or listing.symbol != "IUSQ":
-        raise PurchaseError("Wybierz obsługiwane notowanie IUSQ w EUR.", 422)
+    if listing is None:
+        raise PurchaseError("Nie znaleziono obsługiwanego notowania.", 422)
+    instrument = session.get(Instrument, listing.instrument_id)
+    if instrument.kind == "STOCK" and instrument.owner_id != owner_id:
+        raise PurchaseError("Nie znaleziono notowania.")
+    stock = instrument.kind == "STOCK" and instrument.owner_id == owner_id
+    etf = listing.id == IUSQ_LISTING_ID and instrument.owner_id is None
+    if listing.currency not in {"EUR", "PLN", "USD"} or not (stock or etf):
+        raise PurchaseError("Wybierz obsługiwane notowanie akcji lub IUSQ.", 422)
     return listing
+
+
+def matching_currency(listing: Listing, currency: str):
+    if listing.currency != currency:
+        raise PurchaseError(
+            "Waluta operacji musi być zgodna z walutą notowania.", 422, field="currency"
+        )
+
+
+def supported_account(session: Session, account: Account, listing: Listing):
+    if (
+        account.kind == "IKE_BONDS"
+        and session.get(Instrument, listing.instrument_id).kind == "STOCK"
+    ):
+        raise PurchaseError("Wybierz rachunek inwestycyjny do ewidencji akcji.", 422)
 
 
 def snapshot(operation: Operation, details: PurchaseDetails) -> dict[str, str]:
@@ -115,8 +139,10 @@ def create_purchase(
     session: Session, owner_id: UUID, account_id: UUID, data: PurchaseCreate
 ) -> tuple[PurchaseResponse, bool]:
     with session.begin():
-        owned_account(session, account_id, owner_id, lock=True)
-        listing = supported_listing(session, data.listing_id)
+        account = owned_account(session, account_id, owner_id, lock=True)
+        listing = supported_listing(session, data.listing_id, owner_id)
+        matching_currency(listing, data.currency)
+        supported_account(session, account, listing)
         digest = fingerprint(data)
         existing = session.scalar(
             select(Operation).where(
@@ -161,14 +187,18 @@ def correct_purchase(
     data: PurchaseCorrection,
 ) -> PurchaseResponse:
     with session.begin():
-        owned_account(session, account_id, owner_id, lock=True)
+        account = owned_account(session, account_id, owner_id, lock=True)
         operation, details, _, _ = find_purchase(session, account_id, purchase_id, lock=True)
         if operation.revision != data.expected_revision:
             raise PurchaseError(
                 "Zakup został już zmieniony. Odśwież historię i spróbuj ponownie.", 409
             )
-        listing = supported_listing(session, data.listing_id)
+        listing = supported_listing(session, data.listing_id, owner_id)
+        matching_currency(listing, data.currency)
+        supported_account(session, account, listing)
         before = snapshot(operation, details)
+        if operation.listing_id != listing.id:
+            raise PurchaseError("Korekta nie może zmienić notowania zakupu.", 422)
         operation.listing_id = listing.id
         operation.trade_date = data.trade_date
         operation.revision += 1

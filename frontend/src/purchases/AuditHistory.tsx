@@ -2,17 +2,17 @@ import { useEffect, useState } from 'react'
 import { formatDate, formatDecimal, request } from './api'
 import type { Audit } from './api'
 
-const fields = [
+const fields = (currency: string) => [
   ['trade_date', 'Data zakupu'], ['quantity', 'Liczba jednostek'],
-  ['unit_price', 'Cena jednostki (EUR)'], ['commission', 'Prowizja (EUR)'],
+  ['unit_price', 'Cena jednostki (' + currency + ')'], ['commission', 'Prowizja (' + currency + ')'],
 ]
 
 function value(key: string, text: string) {
   return key === 'trade_date' ? formatDate(text) : formatDecimal(text)
 }
 
-export default function AuditHistory({ accountId, purchaseId }: {
-  accountId: string; purchaseId: string
+export default function AuditHistory({ accountId, purchaseId, currency = 'EUR' }: {
+  accountId: string; purchaseId: string; currency?: string
 }) {
   const [events, setEvents] = useState<Audit[] | null>(null)
   const [error, setError] = useState('')
@@ -38,7 +38,7 @@ export default function AuditHistory({ accountId, purchaseId }: {
             timeZone: 'Europe/Warsaw', dateStyle: 'short', timeStyle: 'medium',
           }).format(new Date(event.created_at))}</span></div>
         {event.reason && <p className="audit-reason">Powód: {event.reason}</p>}
-        <dl>{fields.map(([key, label]) => <div key={key}><dt>{label}</dt><dd>
+        <dl>{fields(currency).map(([key, label]) => <div key={key}><dt>{label}</dt><dd>
           {event.before && <><span>{value(key, event.before[key])}</span><span aria-label="zmieniono na"> → </span></>}
           <strong>{value(key, event.after[key])}</strong>
         </dd></div>)}</dl>

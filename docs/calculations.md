@@ -48,3 +48,7 @@ Najpierw pozyskaj list emisyjny konkretnej serii i tabele odsetkowe. Odwzoruj ko
 ## FT-009 — Koszt zakupów obligacji
 
 Koszt partii w PLN = całkowita liczba sztuk × rzeczywista cena jednej sztuki w PLN. Przykład syntetyczny: 10 × 99,90 = 999,00 PLN. To koszt, nie nominał, wycena, odsetki ani wynik. Nominału i cen wykupu nie wyprowadzamy z ceny zakupu. Typowe okresy 3/4/10 lat są metadanymi typu, bez harmonogramu lub wyliczania daty wykupu. Brakujące stopy są null; brak prognozy przyszłej inflacji i podatku. Szczegóły w bonds.md.
+
+## FT-010 — Akcje w walucie notowania
+
+Te same wzory kosztu, średniej, wartości i wyniku stosujemy osobno dla każdego rachunku/notowania akcji w PLN, EUR i USD. Przykład 10 × 100 + 2 prowizji przy cenie 110 daje koszt 1002, wartość 1100, wynik 98 i 9,78% w każdej z tych walut osobno. Waluta bazowa rachunku nie jest kursem przewalutowania. Nie sumujemy różnych walut, nie uwzględniamy dywidend, sprzedaży, splitów ani podatków.
