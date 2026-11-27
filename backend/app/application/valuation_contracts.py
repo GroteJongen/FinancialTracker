@@ -37,8 +37,10 @@ class PriceResponse(BaseModel):
     price: Decimal
     currency: str
     observed_on: date
-    source: Literal["MANUAL"]
+    source: Literal["MANUAL", "YAHOO"]
     recorded_at: datetime
+    quoted_at: datetime | None = None
+    provider_symbol: str | None = None
 
     @field_serializer("price")
     def decimal_text(self, value: Decimal) -> str:

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { quoteTime } from '../portfolio/market'
 import type { FormEvent } from 'react'
 import { ApiError, formatDate, formatDecimal, request, todayWarsaw } from '../purchases/api'
 import type { Listing, Purchase } from '../purchases/api'
@@ -7,7 +8,7 @@ import AuditHistory from '../purchases/AuditHistory'
 type Summary = {
   status: 'empty' | 'unpriced' | 'outdated' | 'priced'; quantity: string
   latest_trade_date: string | null
-  price: { price: string; observed_on: string } | null
+  price: { price: string; observed_on: string; source?: string; quoted_at?: string | null; recorded_at: string } | null
   display: { cost: string; average_cost: string | null; market_value: string | null; gain: string | null; gain_percent: string | null }
 }
 type TradeForm = { trade_date: string; quantity: string; unit_price: string; commission: string; reason: string }
@@ -49,6 +50,12 @@ export default function StockPosition({ accountId, listing, onBusy, disabled }: 
     }).catch(() => { if (active) setLoadError('Nie udało się pobrać pozycji akcji. Spróbuj ponownie.') })
     return () => { active = false; controller.abort() }
   }, [accountId, listing.id, refresh])
+
+  useEffect(() => {
+    const update = () => setRefresh((value) => value + 1)
+    window.addEventListener('financialtracker:quotes-updated', update)
+    return () => window.removeEventListener('financialtracker:quotes-updated', update)
+  }, [])
 
   function field(key: keyof TradeForm, value: string) { setForm((previous) => ({ ...previous, [key]: value })) }
   function cancel() { setEditing(null); setForm(initial()); setMessage(null); tradeSubmission.current = null }
@@ -108,7 +115,7 @@ export default function StockPosition({ accountId, listing, onBusy, disabled }: 
     {summary?.status === 'empty' && <p className="valuation-note">Nie zapisano zakupów tej akcji na wybranym rachunku.</p>}
     {summary?.status === 'unpriced' && <p className="valuation-note">Brak wyceny akcji — wpisz cenę poniżej.</p>}
     {summary?.status === 'outdated' && <p className="valuation-warning">Cena akcji wymaga aktualizacji po ostatnim zakupie. Wynik pozostaje niedostępny do podania nowszej ceny.</p>}
-    {summary?.price && <p className="price-reference">Cena ręczna: <strong>{amount(summary.price.price)}</strong> · {formatDate(summary.price.observed_on)}</p>}
+    {summary?.price && <p className="price-reference">{summary.price.source === 'YAHOO' ? 'Yahoo Finance' : 'Cena ręczna'}: <strong>{amount(summary.price.price)}</strong> · {formatDate(summary.price.observed_on)}{summary.price.quoted_at && <> · Notowanie: {quoteTime(summary.price.quoted_at)} · Pobrano: {quoteTime(summary.price.recorded_at)}</>}</p>}
     <p className="form-hint">Kwoty w walucie notowania. Wynik uwzględnia prowizje zakupu, bez podatku, dywidend i kosztu przyszłej sprzedaży.</p>
     <form aria-label="Cena wyceny akcji" noValidate onSubmit={(event) => { void save(event, 'price') }}>
       <fieldset disabled={blocked}><div className="price-form-grid">

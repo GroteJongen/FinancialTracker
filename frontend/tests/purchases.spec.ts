@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 test('adds fractional purchases, corrects with audit, and survives reload', async ({ page }) => {
   await page.goto('/')

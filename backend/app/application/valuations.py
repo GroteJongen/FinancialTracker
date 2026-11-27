@@ -3,6 +3,8 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.application.market_prices import selected_price
+
 from app.application.purchases import (
     PurchaseError,
     matching_currency,
@@ -17,7 +19,7 @@ from app.application.valuation_contracts import (
     ValuationResponse,
 )
 from app.domain.valuation import Lot, calculate, money
-from app.infrastructure.models import Operation, PriceObservation, PurchaseDetails
+from app.infrastructure.models import Operation, PriceObservation, PurchaseDetails, YahooListing
 
 
 def latest_trade_date(session: Session, account_id: UUID, listing_id: UUID):
@@ -111,7 +113,9 @@ def get_valuation(session: Session, owner_id: UUID, account_id: UUID, listing_id
             )
         )
         latest_trade = max((row.trade_date for row in purchases), default=None)
-        price = history[0] if history else None
+        price = selected_price(
+            history[0] if history else None, session.get(YahooListing, listing_id), listing
+        )
         outdated = bool(price and latest_trade and price.observed_on < latest_trade)
         position = calculate(
             [Lot(row.quantity, row.unit_price, row.commission) for row in purchases],

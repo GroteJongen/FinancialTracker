@@ -39,7 +39,7 @@ Playwright: zakup 10 × 100 + 2 EUR, cena 110 EUR, wynik 98 EUR; odświeżenie s
 
 ## FT-005 — Automatyczne ceny IUSQ
 
-Status: Do ustalenia po FT-004.
+Status: W trakcie - priorytet uzytkownika: Yahoo na odswiezeniu, IUSQ i jawne mapowania akcji. Szczegoly w yahoo.md.
 
 Zweryfikuj pobieranie IUSQ.DE i warunki użycia. Adapter, symbol dostawcy, dzienne kursy, identyfikacja zamkniętej sesji, timeout i brak duplikatów. Przycisk odświeżenia, data/źródło i zachowanie ostatniej ceny podczas awarii. Cena ręczna i automatyczna mają jawny priorytet ustalony przed implementacją. Testy bez sieci oraz osobny test rzeczywistej integracji.
 

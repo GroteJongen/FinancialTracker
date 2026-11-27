@@ -53,3 +53,7 @@ Akcje używają istniejących Instrument/Listing, Operation/PurchaseDetails, Aud
 ## ADR-025 — Wspólny dashboard w PLN
 
 Koszt walutowy przeliczamy historycznie jako jawny szacunek NBP, a wartość aktualnym dostępnym kursem referencyjnym. Wypłacone odsetki są skumulowanym dochodem, nie kolejnym aktywem ani kolejnymi wpłatami. Brak pełnej wyceny daje null i blokuje pełny wykres wartości. Ręczna wycena partii obligacji nie udaje automatycznego silnika reguł emisji. Konto IKE_BONDS należy do filtra IKE. Blokadę właściciela zmieniono na FOR NO KEY UPDATE, aby umożliwić równoczesne kontrole klucza obcego podczas zapisu zakupów/audytu; test wymusza tę kolejność współbieżną.
+
+## ADR-026 - Yahoo jako wymienny adapter i trwaly cache
+
+Nieoficjalny endpoint chart, bez nowej zaleznosci, sluzy prywatnej aplikacji. Surowy JSON jest parsowany do Decimal, bez float. Tylko zweryfikowane symbol/gielda/waluta/typ trafiaja do oddzielnego cache YahooListing. Reczne ceny pozostaja niezmienne i prywatne dla rachunku; nowszy dzien/czas wyceny wygrywa, a uzytkownik moze wylaczyc Yahoo. Rezerwacja proby trwa 5 minut i jest zatwierdzana przed HTTP; token chroni przed zapisem po zmianie mapowania. Brak automatycznego zgadywania symboli akcji. Dokumentacja: yahoo.md.

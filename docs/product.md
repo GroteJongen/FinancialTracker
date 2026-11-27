@@ -52,3 +52,7 @@ Użytkownik ma możliwość samodzielnego dodawania akcji do pustego katalogu i 
 ## Dodany zakres FT-011
 
 Dashboard wszystkich zakupionych aktywów z filtrami zwykłe/IKE/IKZE/razem, sumą PLN, wynikiem i diagramem kołowym. Nie dopisuje aktywów demonstracyjnych. Pokazuje dane niepełne wprost, zapisuje ręczne wyceny obligacji i sumuje wypłacone odsetki; zapewnia referencyjne przeliczenie NBP. Szczegóły: portfolio.md.
+
+## Dodany zakres FT-005
+
+Odswiezenie strony sprawdza automatyczne ceny posiadanych ETF/akcji z limitem 5 minut. IUSQ ma jawne mapowanie, akcje wymagaja wpisania symbolu Yahoo. Interfejs rozroznia czas notowania i pobrania; ceny reczne i dane przy awarii sa zachowane. Szczegoly: yahoo.md.

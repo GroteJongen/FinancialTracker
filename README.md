@@ -126,3 +126,7 @@ Sekcja „Akcje” pozwala dodać własne spółki i notowania, tworzyć rachunk
 ## Dashboard portfela
 
 „Mój portfel” pokazuje koszt, wartość aktywów i wynik w PLN, filtry zwykłe/IKE/IKZE/wszystkie oraz wykres udziałów. Wyceny giełdowe są ręczne; dla obligacji można zapisać bieżącą wartość i skumulowane wypłacone odsetki brutto. Waluty wymagają pobrania referencyjnych kursów NBP. Braki nie są traktowane jako zero. [Zasady i ograniczenia](docs/portfolio.md).
+
+## Kursy Yahoo Finance
+
+Po otwarciu lub odswiezeniu aplikacji pobieramy ceny posiadanych ETF/akcji z Yahoo, najwyzej raz na 5 minut na notowanie. IUSQ.DE jest ustawiony automatycznie; symbole akcji przypiszesz w dashboardzie, w „Automatyczne kursy Yahoo Finance”. Wyceny moga byc opoznione (Xetra okolo 15 minut). Ostatnia poprawna cena zostaje przy awarii; nowsza reczna wycena ma pierwszenstwo. Brak klucza i platnego API. [Obsluga, pierwszenstwo i ograniczenia](docs/yahoo.md).
