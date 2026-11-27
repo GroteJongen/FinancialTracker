@@ -15,6 +15,9 @@ from app.infrastructure.database import make_engine
 from app.infrastructure.models import (
     Account,
     AuditEvent,
+    BondAuditEvent,
+    BondIssue,
+    BondPurchase,
     Operation,
     Owner,
     PriceObservation,
@@ -87,9 +90,13 @@ def ledger(test_database):
         yield client, engine, settings, account_id
     with Session(engine) as session, session.begin():
         ids = select(Operation.id).where(Operation.account_id == account_id)
+        account_ids = select(Account.id).where(Account.owner_id == owner_id)
+        session.execute(delete(BondAuditEvent).where(BondAuditEvent.owner_id == owner_id))
+        session.execute(delete(BondPurchase).where(BondPurchase.account_id.in_(account_ids)))
+        session.execute(delete(BondIssue).where(BondIssue.owner_id == owner_id))
         session.execute(delete(PriceObservation).where(PriceObservation.account_id == account_id))
         session.execute(delete(AuditEvent).where(AuditEvent.owner_id == owner_id))
         session.execute(delete(PurchaseDetails).where(PurchaseDetails.operation_id.in_(ids)))
         session.execute(delete(Operation).where(Operation.account_id == account_id))
-        session.execute(delete(Account).where(Account.id == account_id))
+        session.execute(delete(Account).where(Account.owner_id == owner_id))
         session.execute(delete(Owner).where(Owner.id == owner_id))

@@ -44,3 +44,7 @@ Koszt w PLN bazuje na rzeczywistym koszcie lub jawnie oznaczonym oszacowaniu. Bi
 ## Obligacje — warunek rozpoczęcia
 
 Najpierw pozyskaj list emisyjny konkretnej serii i tabele odsetkowe. Odwzoruj konwencje dni, granice okresów, stopy, kapitalizację lub wypłatę, zaokrąglenia i wcześniejszy wykup. Testy mają zawierać wartości z tabel oraz daty graniczne. Rozdziel wartość naliczoną, kwotę wykupu i prognozę. Nie wyliczaj przyszłych stóp jako znanych. Zasady rachunku/podatku ustal po potwierdzeniu rodzaju rachunku obligacji.
+
+## FT-009 — Koszt zakupów obligacji
+
+Koszt partii w PLN = całkowita liczba sztuk × rzeczywista cena jednej sztuki w PLN. Przykład syntetyczny: 10 × 99,90 = 999,00 PLN. To koszt, nie nominał, wycena, odsetki ani wynik. Nominału i cen wykupu nie wyprowadzamy z ceny zakupu. Typowe okresy 3/4/10 lat są metadanymi typu, bez harmonogramu lub wyliczania daty wykupu. Brakujące stopy są null; brak prognozy przyszłej inflacji i podatku. Szczegóły w bonds.md.

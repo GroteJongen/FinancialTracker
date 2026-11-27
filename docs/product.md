@@ -40,3 +40,7 @@ Sprzedaż i sposób rozliczania partii, wynik podatkowy, automatyczne rozliczeni
 ## Odbiór
 
 Przykłady w calculations.md przechodzą; zapis przetrwa restart; interfejs rozróżnia brak wyceny i wynik zerowy. Test przeglądarkowy przechodzi od formularza zakupu do wyniku. Nie pokazujemy fikcyjnych danych jako danych użytkownika.
+
+## Dodany zakres FT-009
+
+Użytkownik może ewidencjonować zakupy COI/TOS/EDO na rachunkach PLN typu zwykły, IKE lub IKZE, poprawiać je z historią i zapisywać ręcznie parametry konkretnej emisji. Bieżąca wartość i odsetki obligacji pozostają poza tą zmianą. Patrz bonds.md.
