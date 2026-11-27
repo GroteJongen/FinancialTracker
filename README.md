@@ -1,6 +1,6 @@
 # FinancialTracker
 
-Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja zawiera zakupy IUSQ, korekty, historię zmian i ręczną wycenę pozycji z wynikiem w EUR. Dodawanie obligacji COI, TOS i EDO opisuje [instrukcja](docs/bonds.md). Automatyczne kursy i naliczanie odsetek dodamy w kolejnych etapach. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
+Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja zawiera zakupy IUSQ, korekty, historię zmian i ręczną wycenę pozycji z wynikiem w EUR. Dodawanie obligacji COI, TOS i EDO opisuje [instrukcja](docs/bonds.md). Kursy ETF/akcji pobieramy z Yahoo Finance; naliczanie odsetek obligacji pozostaje kolejnym etapem. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
 
 ## Zakupy IUSQ
 
@@ -18,7 +18,7 @@ Data ceny musi mieścić się pomiędzy ostatnim zakupem a dniem bieżącym wed�
 
 Ceny są prywatne dla rachunku i notowania. Każdy zapis zachowuje cenę, datę, źródło ręczne i czas zapisu; historię rozwiniesz pod formularzem. Najnowsza data ceny ma pierwszeństwo, a w obrębie tej samej daty wybierany jest ostatni zapis. Starsza data dodana później nie zastępuje nowszej. Ponowienie po utracie odpowiedzi nie dopisuje duplikatu. Wynik aktualizuje się po zakupie lub korekcie, bez ręcznego odświeżania strony.
 
-Obliczenia używają Decimal i co najmniej 38 cyfr precyzji; prezentacja EUR i procentu stosuje ROUND_HALF_UP do 2 miejsc. Wynik nie obejmuje podatku ani przyszłych kosztów sprzedaży. Ceny bieżące nie są jeszcze pobierane automatycznie.
+Obliczenia używają Decimal i co najmniej 38 cyfr precyzji; prezentacja EUR i procentu stosuje ROUND_HALF_UP do 2 miejsc. Wynik nie obejmuje podatku ani przyszłych kosztów sprzedaży. Bieżące ceny mogą także pochodzić z Yahoo Finance; zasady pierwszeństwa i ograniczenia opisuje docs/yahoo.md.
 
 ## Uruchomienie na Windows
 
@@ -136,4 +136,8 @@ Sekcja „Akcje” pozwala dodać własne spółki i notowania, tworzyć rachunk
 
 ## Dashboard portfela
 
-„Mój portfel” pokazuje koszt, wartość aktywów i wynik w PLN, filtry zwykłe/IKE/IKZE/wszystkie oraz wykres udziałów. Wyceny giełdowe są ręczne; dla obligacji można zapisać bieżącą wartość i skumulowane wypłacone odsetki brutto. Waluty wymagają pobrania referencyjnych kursów NBP. Braki nie są traktowane jako zero. [Zasady i ograniczenia](docs/portfolio.md).
+„Mój portfel” pokazuje koszt, wartość aktywów i wynik w PLN, filtry zwykłe/IKE/IKZE/wszystkie oraz wykres udziałów. Wyceny giełdowe pochodzą z Yahoo Finance lub wpisów ręcznych; dla obligacji można zapisać bieżącą wartość i skumulowane wypłacone odsetki brutto. Waluty wymagają pobrania referencyjnych kursów NBP. Braki nie są traktowane jako zero. [Zasady i ograniczenia](docs/portfolio.md).
+
+## Kursy Yahoo Finance
+
+Po otwarciu lub odswiezeniu aplikacji pobieramy ceny posiadanych ETF/akcji z Yahoo, najwyzej raz na 5 minut na notowanie. IUSQ.DE jest ustawiony automatycznie; symbole akcji przypiszesz w dashboardzie, w „Automatyczne kursy Yahoo Finance”. Wyceny moga byc opoznione (Xetra okolo 15 minut). Ostatnia poprawna cena zostaje przy awarii; nowsza reczna wycena ma pierwszenstwo. Brak klucza i platnego API. [Obsluga, pierwszenstwo i ograniczenia](docs/yahoo.md).

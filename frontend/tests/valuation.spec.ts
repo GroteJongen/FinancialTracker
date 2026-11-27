@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 async function selectAccount(page: import('@playwright/test').Page, name: string) {
   await page.goto('/')

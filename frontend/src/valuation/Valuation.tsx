@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { quoteTime } from '../portfolio/market'
 import type { FormEvent } from 'react'
 import { ApiError, formatDate, formatDecimal, request, todayWarsaw } from '../purchases/api'
 
 type Price = {
   id: string; listing_id: string; price: string; currency: string
-  observed_on: string; source: 'MANUAL'; recorded_at: string
+  observed_on: string; source: 'MANUAL' | 'YAHOO'; recorded_at: string; quoted_at?: string | null
 }
 type Figures = {
   cost: string; average_cost: string | null; market_value: string | null
@@ -49,6 +50,12 @@ export default function Valuation({ accountId, listingId, ledgerVersion }: {
       .catch(() => { if (active) setLoaded({ key, error: 'Nie udało się pobrać wyceny.' }) })
     return () => { active = false; controller.abort() }
   }, [accountId, listingId, key])
+
+  useEffect(() => {
+    const update = () => setRefresh((value) => value + 1)
+    window.addEventListener('financialtracker:quotes-updated', update)
+    return () => window.removeEventListener('financialtracker:quotes-updated', update)
+  }, [])
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -103,7 +110,7 @@ export default function Valuation({ accountId, listingId, ledgerVersion }: {
   ]
   const negative = summary?.display.gain?.startsWith('-')
   return <section className="valuation-section" aria-labelledby="valuation-title">
-    <div className="valuation-heading"><h3 id="valuation-title">Wycena IUSQ</h3><span>EUR · CENA RĘCZNA</span></div>
+    <div className="valuation-heading"><h3 id="valuation-title">Wycena IUSQ</h3><span>EUR · {summary?.price?.source === 'YAHOO' ? 'YAHOO FINANCE' : 'CENA RĘCZNA'}</span></div>
     {!current && <p role="status" aria-label="Stan wyceny">Przeliczanie pozycji…</p>}
     {error && <div role="alert"><p>{error}</p>
       <button type="button" className="text-button" onClick={() => setRefresh((value) => value + 1)}>Ponów odczyt wyceny</button>
@@ -122,7 +129,8 @@ export default function Valuation({ accountId, listingId, ledgerVersion }: {
     </p>}
     {summary?.price && <p className="price-reference">
       Cena: <strong>{formatDecimal(summary.price.price, 2)} EUR</strong> ·
-      Data: <strong>{formatDate(summary.price.observed_on)}</strong> · Źródło: ręczne
+      Data: <strong>{formatDate(summary.price.observed_on)}</strong> · Źródło: {summary.price.source === 'YAHOO' ? 'Yahoo Finance' : 'ręczne'}
+      {summary.price.quoted_at && <> · Notowanie: {quoteTime(summary.price.quoted_at)} · Pobrano: {quoteTime(summary.price.recorded_at)}</>}
     </p>}
     <p className="form-hint">Wynik niezrealizowany uwzględnia prowizje zakupu. Bez podatku i kosztu przyszłej sprzedaży.</p>
     <form onSubmit={(event) => { void save(event) }} noValidate aria-label="Cena wyceny">

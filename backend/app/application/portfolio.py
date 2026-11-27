@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.application.bonds import bond_account, find_purchase, lock_owner
+from app.application.market_prices import mapping_info, selected_price
 from app.application.portfolio_contracts import BondValuationCreate
 from app.application.purchases import PurchaseError
 from app.domain.portfolio import Holding, summarize
@@ -25,6 +26,7 @@ from app.infrastructure.models import (
     Operation,
     PriceObservation,
     PurchaseDetails,
+    YahooListing,
 )
 
 SCOPES = {
@@ -125,6 +127,12 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL"):
         groups = defaultdict(list)
         for row in securities:
             groups[(row[0].account_id, row[0].listing_id)].append(row)
+        automatic = {
+            row.listing_id: row
+            for row in session.scalars(
+                select(YahooListing).where(YahooListing.listing_id.in_({key[1] for key in groups}))
+            )
+        }
         items, holdings = [], []
 
         def add(
@@ -171,7 +179,8 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL"):
         for (account_id, listing_id), lots in groups.items():
             _, _, listing, instrument = lots[0]
             latest_trade = max(row[0].trade_date for row in lots)
-            price = prices.get((account_id, listing_id))
+            provider = automatic.get(listing_id)
+            price = selected_price(prices.get((account_id, listing_id)), provider, listing)
             valid = price is not None and price.observed_on >= latest_trade
             position = calculate(
                 [Lot(row[1].quantity, row[1].unit_price, row[1].commission) for row in lots],
@@ -210,6 +219,11 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL"):
                 price.observed_on if price else None,
                 listing_id=str(listing_id),
                 quantity=format(position.quantity, "f"),
+                price_source=price.source if price else None,
+                quoted_at=price.quoted_at.isoformat() if price and price.quoted_at else None,
+                fetched_at=price.recorded_at.isoformat() if price else None,
+                yahoo=mapping_info(provider),
+                stale_price=bool(price and (today - price.observed_on).days > 4),
             )
         for purchase, issue in bonds:
             mark = marks.get(purchase.id)

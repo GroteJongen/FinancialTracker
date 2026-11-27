@@ -261,3 +261,24 @@ class FxRate(Base):
     fetched_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.clock_timestamp()
     )
+
+
+class YahooListing(Base):
+    __tablename__ = "yahoo_listings"
+    __table_args__ = (
+        CheckConstraint("price > 0", name="ck_yahoo_price"),
+        CheckConstraint(
+            "(price IS NULL AND quoted_at IS NULL AND fetched_at IS NULL) OR "
+            "(price IS NOT NULL AND quoted_at IS NOT NULL AND fetched_at IS NOT NULL)",
+            name="ck_yahoo_quote_complete",
+        ),
+    )
+    listing_id: Mapped[UUID] = mapped_column(ForeignKey("listings.id"), primary_key=True)
+    id: Mapped[UUID] = mapped_column(default=uuid4, unique=True)
+    symbol: Mapped[str] = mapped_column(String(30))
+    price: Mapped[Decimal | None] = mapped_column(Numeric(18, 8))
+    quoted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    attempted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    lease: Mapped[UUID | None]
+    failed: Mapped[bool] = mapped_column(server_default=text("false"))

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { quoteTime, refreshMarket } from './market'
+import YahooMapping from './YahooMapping'
 import type { FormEvent } from 'react'
 import { formatDate, formatDecimal, request, todayWarsaw } from '../purchases/api'
 
@@ -9,6 +11,8 @@ type Position = {
   currency: string; native_cost: string; native_value: string | null; cost_pln: string | null
   value_pln: string | null; gain_pln: string | null; paid_income: string | null; reasons: string[]
   observed_on: string | null; purchase_id?: string; purchase_revision?: number
+  price_source?: string | null; quoted_at?: string | null; fetched_at?: string | null; stale_price?: boolean
+  yahoo?: { symbol: string; failed: boolean; attempted_at: string | null; quoted_at: string | null; fetched_at: string | null } | null
   quantity: string; mark_id?: string | null; trade_date?: string; listing_id?: string
 }
 type Snapshot = { scope: string; as_of: string; account_count: number; position_count: number; totals: Totals; positions: Position[]; estimated_fx: boolean; missing_fx: { currency: string; requested_on: string }[]; fx_rates: { currency: string; requested_on: string; effective_on: string; rate: string; table_number: string }[] }
@@ -24,6 +28,9 @@ export default function Portfolio() {
   const [loaded, setLoaded] = useState<{ key: string; data: Snapshot } | null>(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [marketMessage, setMarketMessage] = useState('')
+  const [marketBusy, setMarketBusy] = useState(false)
+  const marketLock = useRef(false)
   const [basis, setBasis] = useState<'value' | 'cost'>('value')
   const [busy, setBusy] = useState(false)
   const savingRef = useRef(false)
@@ -44,6 +51,23 @@ export default function Portfolio() {
       .catch(() => { if (active) setError('Nie udało się pobrać podsumowania portfela.') })
     return () => { active = false; controller.abort() }
   }, [scope, key])
+
+  async function fetchMarket() {
+    if (marketLock.current) return
+    marketLock.current = true; setMarketBusy(true); setMarketMessage('Pobieranie kursów Yahoo Finance...')
+    try {
+      const result = await refreshMarket()
+      setMarketMessage('Yahoo Finance: odświeżono ' + result.updated + ' notowań.' + (result.failed ? ' Nie pobrano ' + result.failed + '; zachowano ostatnie poprawne ceny.' : ' Zapytania najwyżej raz na 5 minut dla każdego notowania.'))
+    } catch { setMarketMessage('Nie udało się odświeżyć Yahoo. Zachowano poprzednie ceny; możesz wpisać cenę ręcznie.') }
+    finally { marketLock.current = false; setMarketBusy(false) }
+  }
+  useEffect(() => {
+    let active = true
+    void refreshMarket().then((result) => {
+      if (active) setMarketMessage(result.failed ? 'Yahoo: nie pobrano ' + result.failed + ' notowań. Zachowano poprzednie ceny.' : 'Yahoo Finance: sprawdzono dostępne kursy. Zapytania najwyżej raz na 5 minut.')
+    }).catch(() => { if (active) setMarketMessage('Yahoo jest niedostępne. Zachowano poprzednie ceny.') })
+    return () => { active = false }
+  }, [])
 
   async function fetchFx() {
     if (savingRef.current) return
@@ -70,11 +94,13 @@ export default function Portfolio() {
       {scopes.map(([value, label]) => <button key={value} type="button" aria-pressed={scope === value} disabled={busy}
         onClick={() => { setScope(value); setEditing(null); setMessage('') }}>{label}</button>)}
     </div>
-    <div className="portfolio-actions"><button type="button" className="text-button" disabled={busy} onClick={() => setVersion((value) => value + 1)}>Odśwież podsumowanie</button>
+    <div className="portfolio-actions"><button type="button" className="text-button" disabled={busy || marketBusy} onClick={() => { setVersion((value) => value + 1); void fetchMarket() }}>Odśwież podsumowanie</button>
       <button type="button" className="secondary-button" disabled={busy || !data} onClick={() => { void fetchFx() }}>{busy ? 'Pobieranie…' : 'Pobierz kursy NBP'}</button></div>
     {!data && !error && <p role="status">Pobieranie podsumowania portfela…</p>}
     {error && <p role="alert" className="portfolio-warning">{error}</p>}
     {message && <p role="status" aria-label="Informacja portfela" className="valuation-note">{message}</p>}
+    {marketMessage && <p role="status" aria-label="Stan Yahoo" className="valuation-note">{marketMessage}</p>}
+    <p className="form-hint">Yahoo Finance: notowania mogą być opóźnione; Xetra około 15 minut. Czas notowania nie jest czasem pobrania. Nowsza cena ręczna ma pierwszeństwo do pojawienia się późniejszego notowania. NBP aktualizujesz osobnym przyciskiem. Jedno odświeżenie obejmuje do 8 notowań; przy większym portfelu powtórz odświeżenie.</p>
     <dl className="portfolio-cards">{cards.map(([label, value]) => <div key={label} className={label === 'Łączny zysk / strata' && totals?.gain?.startsWith('-') ? 'portfolio-loss' : ''}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
     {data && !totals?.complete && <p className="portfolio-warning" role="status" aria-label="Kompletność portfela">
       Podsumowanie jest niepełne. Wartość pozycji z dostępną wyceną: {amount(totals?.known_value)}.
@@ -106,10 +132,20 @@ export default function Portfolio() {
         <td>{amount(item.value_pln)}{item.currency !== 'PLN' && item.native_value !== null && <small>{formatDecimal(item.native_value, 2)} {item.currency}</small>}</td>
         <td>{amount(item.gain_pln)}</td><td>{item.observed_on && <span>{formatDate(item.observed_on)}<br /></span>}
           {item.reasons.map((reason) => <span key={reason}>{reasons[reason]}<br /></span>)}
+          {item.price_source && <small>{item.price_source === 'YAHOO' ? 'Yahoo Finance' : 'Cena ręczna'}</small>}
+          {item.quoted_at && <small>Notowanie: {quoteTime(item.quoted_at)}</small>}
+          {item.price_source === 'YAHOO' && item.fetched_at && <small>Pobrano: {quoteTime(item.fetched_at)}</small>}
+          {item.stale_price && <small>Cena starsza niż 4 dni</small>}
+          {item.yahoo?.failed && <small>Ostatnia próba Yahoo nieudana; poprzednia cena zachowana</small>}
           {item.purchase_id && <button type="button" className="text-button" disabled={busy} onClick={() => setEditing(item.purchase_id!)}>Wycena obligacji</button>}</td>
       </tr>)}</tbody></table></div>}
     {bond && <BondMark key={bond.purchase_id + ':' + bond.purchase_revision + ':' + bond.mark_id} position={bond} onBusy={setBusy}
       onSaved={() => { setEditing(null); setMessage('Wycena obligacji została zapisana.') }} onCancel={() => setEditing(null)} />}
+    {bondData && bondData.positions.some((item) => item.listing_id) && <details className="portfolio-fx"><summary>Automatyczne kursy Yahoo Finance</summary>
+      <p className="form-hint">IUSQ ma domyślnie symbol IUSQ.DE. Dla akcji przypisz symbol z Yahoo dla tej samej giełdy i waluty. Obsługiwane giełdy: XETR, XNAS, XNYS, XWAR. Odpowiedź dostawcy musi potwierdzić giełdę, walutę i typ aktywa. Symbol innej spółki na tej samej giełdzie wymaga Twojej kontroli.</p>
+      {[...new Map(bondData.positions.filter((item) => item.listing_id).map((item) => [item.listing_id, item])).values()].map((item) =>
+        <YahooMapping key={item.listing_id} listingId={item.listing_id!} label={item.label} current={item.yahoo?.symbol ?? null} />)}
+    </details>}
     {data && data.fx_rates.length > 0 && <details className="portfolio-fx"><summary>Kursy NBP użyte w podsumowaniu</summary>
       <div className="purchase-table-scroll"><table className="purchase-table"><caption className="sr-only">Kursy przeliczenia portfela</caption>
         <thead><tr><th>Waluta</th><th>Dla dnia</th><th>Data tabeli</th><th>PLN / jednostkę</th><th>Tabela NBP</th></tr></thead>

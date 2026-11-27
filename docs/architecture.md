@@ -90,3 +90,7 @@ Migracja 0005 wprowadza prywatny katalog Instrument.owner_id oraz obsługę PLN/
 ## Portfel FT-011
 
 Agregacja jest odrębnym przypadkiem użycia application/portfolio.py, z czystym sumowaniem domain/portfolio.py i osobnym adapterem infrastructure/nbp.py. BondValuation przechowuje niezmienne, ręczne obserwacje dla rewizji zakupu. FxRate przechowuje publiczne kursy NBP dla dat wymaganych przez portfel. GET nie wykonuje HTTP do dostawcy. Kontrakt, spójność odczytu i zasady niepełnych danych: portfolio.md.
+
+## Automatyczne ceny FT-005
+
+Migracja 0007 dodaje YahooListing: jawny symbol i ostatni poprawny kurs z czasem notowania, pobrania, proby i tokenem. application/market_prices.py wybiera cene wspolnie dla dashboardu i pojedynczych pozycji. infrastructure/yahoo.py izoluje nieoficjalne API. Domenowe wzory sie nie zmieniaja. Szczegoly: yahoo.md.

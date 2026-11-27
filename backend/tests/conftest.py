@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
@@ -26,6 +26,7 @@ from app.infrastructure.models import (
     Owner,
     PriceObservation,
     PurchaseDetails,
+    YahooListing,
 )
 from app.main import create_app
 
@@ -108,6 +109,21 @@ def ledger(test_database):
         session.execute(delete(PurchaseDetails).where(PurchaseDetails.operation_id.in_(ids)))
         session.execute(delete(Operation).where(Operation.account_id.in_(account_ids)))
         instrument_ids = select(Instrument.id).where(Instrument.owner_id == owner_id)
+        session.execute(
+            delete(YahooListing).where(
+                YahooListing.listing_id.in_(
+                    select(Listing.id).where(Listing.instrument_id.in_(instrument_ids))
+                )
+            )
+        )
+        session.execute(
+            delete(YahooListing).where(
+                YahooListing.listing_id == "00000000-0000-4000-8000-000000000004"
+            )
+        )
+        session.add(
+            YahooListing(listing_id=UUID("00000000-0000-4000-8000-000000000004"), symbol="IUSQ.DE")
+        )
         session.execute(delete(Listing).where(Listing.instrument_id.in_(instrument_ids)))
         session.execute(delete(Instrument).where(Instrument.owner_id == owner_id))
         session.execute(delete(Account).where(Account.owner_id == owner_id))
