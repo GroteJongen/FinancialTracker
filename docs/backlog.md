@@ -116,3 +116,7 @@ Status: Ukończone - 208 testów backendu i 39 przeglądarkowych zaliczone w CI.
 ## FT-019 - Wyłącznie historia zakupów instrumentu
 
 Status: Ukończone - 208 testów backendu i 35 przeglądarkowych zaliczone w CI. Usunięcie całego panelu Pozycja i formularzy ceny oraz nowego zakupu. Pozostaje historia zakupów, korekta wybranego wpisu i audyt. Bez pobierania wyceny przez historię, bez zmian backendu i usuwania danych.
+
+## FT-020 - Zintegrowana historia, wyszukiwanie i sortowanie
+
+Status: Weryfikacja w CI. Jedna karta historii z wyborem instrumentu i rachunku, bez powtórzonego opisu instrumentu. Wyszukiwanie w bieżącej historii, licznik wyników i sortowanie daty zakupu w obu kierunkach. Zachowane korekty i audyt; bez zmian backendu.

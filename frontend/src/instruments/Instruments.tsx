@@ -119,18 +119,21 @@ export default function Instruments({ accounts, onAccountsChanged, focus }: { ac
     {!current && !loadError && <p role="status">Pobieranie katalogu instrumentu…</p>}
     {loadError && <div role="alert"><p>{loadError}</p><button onClick={() => setRefresh((value) => value + 1)}>Ponów odczyt katalogu instrumentu</button></div>}
     {current && listings.length === 0 && <p className="empty-purchases">Katalog instrumentu jest pusty. Dodaj pierwszy instrument.</p>}
-    {stockForm.kind !== 'BOND' && listing && <>
-      <div className="purchase-account-picker"><label htmlFor="stock-listing">Wybierz instrument</label>
-        <select id="stock-listing" value={listing.id} disabled={blocked} onChange={(event) => { setListingId(event.target.value); setAccountId(''); setMessage(null) }}>
-          {listings.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.symbol} · {item.mic} · {item.currency}</option>)}
-        </select></div>
-      <div className="stock-reference"><strong>{listing.name}</strong><p>{listing.symbol} · {listing.mic} · {listing.currency} · ISIN: {listing.isin ?? 'nie podano'}</p><p>Dane instrumentu podane ręcznie.</p></div>
-      {account && <><div className="purchase-account-picker"><label htmlFor="stock-account">Rachunek instrumentu</label>
-        <select id="stock-account" value={account.id} disabled={blocked} onChange={(event) => { setAccountId(event.target.value); setMessage(null) }}>
-          {eligible.map((item) => <option key={item.id} value={item.id}>{item.name} · {kinds[item.kind]}</option>)}
-        </select></div>
-        <PurchaseHistory key={account.id + '/' + listing.id} accountId={account.id} listing={listing} onBusy={setLedgerBusy}
-          disabled={saving || (!!accountId && !eligible.some((item) => item.id === accountId))} /></>}
-    </>}
+    {stockForm.kind !== 'BOND' && listing && <section className="purchase-panel instrument-history" aria-label="Historia zakupów instrumentu">
+      <div className="history-heading"><h3>Historia zakupów instrumentu</h3></div>
+      <p className="valuation-note">Wybierz instrument i rachunek, aby zobaczyć ich historię zakupów.</p>
+      <div className="history-controls">
+        <div className="purchase-account-picker"><label htmlFor="stock-listing">Wybierz instrument</label>
+          <select id="stock-listing" value={listing.id} disabled={blocked} onChange={(event) => { setListingId(event.target.value); setAccountId(''); setMessage(null) }}>
+            {listings.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.symbol} · {item.mic} · {item.currency}</option>)}
+          </select></div>
+        {account && <div className="purchase-account-picker"><label htmlFor="stock-account">Rachunek instrumentu</label>
+          <select id="stock-account" value={account.id} disabled={blocked} onChange={(event) => { setAccountId(event.target.value); setMessage(null) }}>
+            {eligible.map((item) => <option key={item.id} value={item.id}>{item.name} · {kinds[item.kind]}</option>)}
+          </select></div>}
+      </div>
+      {account ? <PurchaseHistory key={account.id + '/' + listing.id} accountId={account.id} accountName={account.name} listing={listing} onBusy={setLedgerBusy}
+        disabled={saving || (!!accountId && !eligible.some((item) => item.id === accountId))} /> : <p className="empty-purchases">Dodaj rachunek inwestycyjny, aby przeglądać historię zakupów.</p>}
+    </section>}
   </section>
 }

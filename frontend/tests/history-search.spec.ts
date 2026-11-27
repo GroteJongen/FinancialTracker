@@ -1,0 +1,64 @@
+import { expect, test } from './fixtures'
+import { iusq, iusqAccount, openIusq } from './instrument-fixture'
+import type { Page } from '@playwright/test'
+
+async function buy(page: Page, account: string, listing: string, day: string, quantity: string, price: string) {
+  expect((await page.request.post(`/api/accounts/${account}/purchases`, { data: { listing_id: listing, request_id: crypto.randomUUID(), trade_date: day, quantity, unit_price: price, commission: '0.25', currency: 'EUR' } })).status()).toBe(201)
+}
+
+test('one history card combines selectors with search, result count and both date orders', async ({ page }) => {
+  const account = await iusqAccount(page)
+  await buy(page, account, iusq, '2026-01-01', '0.125', '950')
+  await buy(page, account, iusq, '2026-01-03', '3', '1100')
+  await buy(page, account, iusq, '2026-01-02', '2', '1002.75')
+  await openIusq(page)
+  const history = page.getByRole('region', { name: 'Historia zakupów instrumentu', exact: true })
+  await expect(history.getByLabel('Wybierz instrument', { exact: true })).toHaveValue(iusq)
+  await expect(history.getByLabel('Rachunek instrumentu', { exact: true })).toHaveValue(account)
+  await expect(history.getByRole('heading', { name: 'Historia zakupów instrumentu', exact: true })).toHaveCount(1)
+  await expect(page.locator('.stock-reference')).toHaveCount(0)
+  const dates = history.getByRole('table', { name: 'Zakupy instrumentu IUSQ', exact: true }).locator('tbody tr td:first-child')
+  await expect(dates).toHaveText(['03.01.2026', '02.01.2026', '01.01.2026'])
+  await history.getByLabel('Sortuj według daty zakupu', { exact: true }).selectOption('asc')
+  await expect(dates).toHaveText(['01.01.2026', '02.01.2026', '03.01.2026'])
+  const search = history.getByRole('searchbox', { name: 'Wyszukaj w historii', exact: true })
+  await search.fill('02.01.2026')
+  await expect(dates).toHaveText(['02.01.2026'])
+  await expect(history.getByRole('status', { name: 'Liczba zakupów' })).toHaveText('Znaleziono: 1 z 3 zakupów.')
+  await search.fill('1 100,00')
+  await expect(dates).toHaveText(['03.01.2026'])
+  await search.fill('0,125')
+  await expect(dates).toHaveText(['01.01.2026'])
+  await search.fill('brak takiego zakupu')
+  await expect(dates).toHaveCount(0)
+  await expect(history.getByText('Brak zakupów pasujących do wyszukiwania.')).toBeVisible()
+  await history.getByRole('button', { name: 'Wyczyść wyszukiwanie', exact: true }).click()
+  await expect(dates).toHaveText(['01.01.2026', '02.01.2026', '03.01.2026'])
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(search).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
+})
+
+test('switching account or instrument resets search and keeps their purchases separate', async ({ page }) => {
+  const account = await iusqAccount(page)
+  const other = await (await page.request.post('/api/investment-accounts', { data: { name: 'TEST filtry ' + crypto.randomUUID(), kind: 'IKZE', currency: 'EUR' } })).json() as { id: string }
+  const listing = await (await page.request.post('/api/securities', { data: { account_id: account, kind: 'ETF', name: 'TEST wyszukiwanie ETF ' + crypto.randomUUID(), symbol: 'SEARCH' + crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase(), mic: 'XETR', currency: 'EUR' } })).json() as { id: string }
+  await buy(page, account, iusq, '2026-01-01', '1', '100')
+  await buy(page, other.id, iusq, '2026-01-20', '2', '200')
+  await buy(page, account, listing.id, '2026-01-25', '3', '300')
+  await openIusq(page)
+  const history = page.getByRole('region', { name: 'Historia zakupów instrumentu', exact: true })
+  const search = history.getByRole('searchbox', { name: 'Wyszukaj w historii', exact: true })
+  await search.fill('nie ma')
+  await history.getByLabel('Sortuj według daty zakupu', { exact: true }).selectOption('asc')
+  await history.getByLabel('Rachunek instrumentu', { exact: true }).selectOption(other.id)
+  await expect(search).toHaveValue('')
+  await expect(history.getByLabel('Sortuj według daty zakupu', { exact: true })).toHaveValue('desc')
+  await expect(history.locator('tbody tr td:first-child')).toHaveText(['20.01.2026'])
+  await search.fill('2026-01-20')
+  await expect(history.getByRole('status', { name: 'Liczba zakupów' })).toHaveText('Znaleziono: 1 z 1 zakupów.')
+  await history.getByLabel('Wybierz instrument', { exact: true }).selectOption(listing.id)
+  await expect(search).toHaveValue('')
+  await expect(history.getByLabel('Rachunek instrumentu', { exact: true })).toHaveValue(account)
+  await expect(history.locator('tbody tr td:first-child')).toHaveText(['25.01.2026'])
+})

@@ -6,7 +6,7 @@ Dodawanie instrumentu w sekcji „Instrumenty” wymaga wyboru istniejącego rac
 
 ## Historia zakupów instrumentu
 
-W sekcji „Instrumenty” wybierz instrument i rachunek. Poniżej znajduje się wyłącznie historia zakupów z datą, liczbą jednostek, ceną i prowizją. „Popraw instrument” otwiera korektę wybranego zakupu, wymagającą powodu; „Zmiany instrumentu” pokazuje audyt. Formularz korekty jest domyślnie ukryty.
+W sekcji „Instrumenty” karta „Historia zakupów instrumentu” łączy wybór instrumentu i rachunku z listą zakupów. Wyszukiwanie filtruje bieżącą listę po dacie, liczbie jednostek, cenie lub prowizji; sortowanie po dacie działa w obu kierunkach (domyślnie najnowsze). „Popraw instrument” otwiera korektę wybranego zakupu, wymagającą powodu; „Zmiany instrumentu” pokazuje audyt. Formularz korekty jest domyślnie ukryty.
 
 Panel Pozycja, kafelki wyceny, formularze ręcznej ceny i nowego zakupu oraz historia cen zostały usunięte z tego widoku. Wartości aktywów i wynik są prezentowane w dashboardzie. Istniejące zakupy, ceny i audyt pozostają w bazie; wspólne API finansowe i integracje nadal działają. Bez migracji i usuwania danych.
 
