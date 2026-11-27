@@ -93,3 +93,11 @@ Playwright: 26 testów, w tym 5 nowych scenariuszy dashboardu. Sprawdzono filtry
 Compose potwierdził trwałość dashboardu, ręcznej wyceny obligacji, odsetek i proporcji po restarcie db/backend/frontend, wraz z dotychczasowymi scenariuszami ETF, akcji i obligacji oraz kontrolowaną niedostępnością i powrotem bazy. Adapter NBP ma testy z atrapami; osobny krok rzeczywistej sieci zakończył się PASS dla EUR, publikacja 2025-01-03, tabela 002/A/NBP/2025. Nie korzysta z danych portfela i nie blokuje pozostałych testów w razie awarii dostawcy.
 
 Lokalnie zaliczono git diff --check oraz docker compose --env-file .env.example config --quiet. Nie wykonywano zapisów do lokalnego portfela użytkownika. Testy używają wyłącznie danych syntetycznych; partia TOS1129 ma ręcznie podaną wycenę i nie stanowi testu silnika naliczania odsetek z listu emisyjnego. Ograniczenia: ręczne ceny aktywów i wyceny obligacji, szacunkowy historyczny FX NBP, brak gotówki, sprzedaży, dywidend i podatków. Szczegóły w portfolio.md.
+
+## FT-005 - Yahoo Finance, 2026-11-27
+
+CI https://github.com/GroteJongen/FinancialTracker/actions/runs/46009835322 zaliczony: 196 testow backendu (35 nowych), 29 testow Playwright (3 nowe), ruff, TypeScript/ESLint/build, Alembic, pelny Compose z migracja 0007, restartem, trwaloscia syntetycznej ceny/mapowania i historia reczna oraz awaria/powrotem bazy. Powstal tez dodatkowy odczyt rzeczywistego Yahoo: PASS IUSQ.DE / XETR / EUR, czas notowania 2026-11-27T13:31:15+00:00. Rzeczywisty odczyt NBP rowniez zaliczony. Nie jest to gwarancja dostepnosci Yahoo z kazdego IP.
+
+Testy sprawdzaja metadane, Decimal, bledne/niepelne ceny, zakres czasu, 429, zakaz przekierowan, cooldown takze po awarii, zachowanie cache, brak podwojnego pobierania przy rownoczesnych odswiezeniach, brak transakcji podczas HTTP, prywatnosc akcji, zmiane/wylaczenie mapowania w trakcie zapytania, cofniecie czasu repliki, date ostatniego zakupu i pierwszenstwo nowszej ceny recznej. Przegladarka pokazuje odswiezenie, oba czasy, awarie i konfiguracje.
+
+Lokalnie git diff --check i docker compose --env-file .env.example config --quiet zaliczone. Agent nie ma dostepu do lokalnego silnika Docker; nie uruchamial testow na bazie uzytkownika i nie dopisal rzeczywistych ani demonstracyjnych aktywow. Pytest zglasza istniejace ostrzezenie przestarzalego httpx TestClient, bez bledu testow.

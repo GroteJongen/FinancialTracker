@@ -15,7 +15,7 @@ Wynik jest brutto, bez podatków, kosztu przyszłej sprzedaży/wykupu, dywidend 
 
 ## Wyceny i brak danych
 
-ETF/akcje korzystają z istniejących ręcznych cen rachunku/notowania. Cena starsza niż ostatni zakup nie daje wyceny. Każda partia obligacji może otrzymać ręczną wycenę brutto z datą oraz łączną kwotę wypłaconych odsetek brutto od zakupu. Wartość ma obejmować kapitał i odsetki nadal pozostające w obligacjach, z pominięciem już wypłaconych kwot. To zapis rzeczywistych danych rachunku, bez automatycznego naliczania według listu emisyjnego.
+ETF/akcje korzystają z cen Yahoo Finance lub ręcznych cen rachunku/notowania; wspólne zasady wyboru ceny opisuje yahoo.md. Cena starsza niż ostatni zakup nie daje wyceny. Każda partia obligacji może otrzymać ręczną wycenę brutto z datą oraz łączną kwotę wypłaconych odsetek brutto od zakupu. Wartość ma obejmować kapitał i odsetki nadal pozostające w obligacjach, z pominięciem już wypłaconych kwot. To zapis rzeczywistych danych rachunku, bez automatycznego naliczania według listu emisyjnego.
 
 Wyceny obligacji są dopisywane, nie nadpisywane. Wybieramy najnowszą datę, następnie czas zapisu, dla aktualnej rewizji zakupu. Korekta zakupu unieważnia użycie wcześniejszej wyceny; historia pozostaje. Powtórzenie tego samego request_id nie tworzy nowego wpisu. Inne dane z tym identyfikatorem dają 409. Wycena nie może poprzedzać zakupu ani dotyczyć przyszłości.
 

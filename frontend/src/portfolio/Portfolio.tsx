@@ -100,7 +100,7 @@ export default function Portfolio() {
     {error && <p role="alert" className="portfolio-warning">{error}</p>}
     {message && <p role="status" aria-label="Informacja portfela" className="valuation-note">{message}</p>}
     {marketMessage && <p role="status" aria-label="Stan Yahoo" className="valuation-note">{marketMessage}</p>}
-    <p className="form-hint">Yahoo Finance: notowania mogą być opóźnione; Xetra około 15 minut. Czas notowania nie jest czasem pobrania. Nowsza cena ręczna ma pierwszeństwo do pojawienia się późniejszego notowania. NBP aktualizujesz osobnym przyciskiem.</p>
+    <p className="form-hint">Yahoo Finance: notowania mogą być opóźnione; Xetra około 15 minut. Czas notowania nie jest czasem pobrania. Nowsza cena ręczna ma pierwszeństwo do pojawienia się późniejszego notowania. NBP aktualizujesz osobnym przyciskiem. Jedno odświeżenie obejmuje do 8 notowań; przy większym portfelu powtórz odświeżenie.</p>
     <dl className="portfolio-cards">{cards.map(([label, value]) => <div key={label} className={label === 'Łączny zysk / strata' && totals?.gain?.startsWith('-') ? 'portfolio-loss' : ''}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
     {data && !totals?.complete && <p className="portfolio-warning" role="status" aria-label="Kompletność portfela">
       Podsumowanie jest niepełne. Wartość pozycji z dostępną wyceną: {amount(totals?.known_value)}.
