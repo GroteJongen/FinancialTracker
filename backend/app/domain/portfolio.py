@@ -12,6 +12,7 @@ class Holding:
     cost: Decimal | None
     value: Decimal | None
     paid_income: Decimal | None = Decimal("0")
+    earned_interest: Decimal | None = Decimal("0")
 
 
 def allocation(rows: list[Holding], basis: str):
@@ -49,7 +50,7 @@ def summarize(rows: list[Holding]):
     for row in rows:
         if row.asset_class not in {"BOND", "ETF", "STOCK", "REIT"}:
             raise ValueError("Unknown asset class")
-        for value in (row.cost, row.value, row.paid_income):
+        for value in (row.cost, row.value, row.paid_income, row.earned_interest):
             if value is not None and (
                 not isinstance(value, Decimal) or not value.is_finite() or value < 0
             ):
@@ -61,6 +62,11 @@ def summarize(rows: list[Holding]):
         cost = sum((row.cost for row in rows), Decimal("0")) if cost_known else None
         value = sum((row.value for row in rows), Decimal("0")) if value_known else None
         income = sum((row.paid_income for row in rows), Decimal("0")) if income_known else None
+        earned = (
+            sum((row.earned_interest for row in rows), Decimal("0"))
+            if all(row.earned_interest is not None for row in rows)
+            else None
+        )
         gain = (
             value + income - cost
             if cost is not None and value is not None and income is not None
@@ -71,6 +77,13 @@ def summarize(rows: list[Holding]):
             cost=money(cost),
             value=money(value),
             paid_income=money(income),
+            earned_interest=money(earned),
+            known_earned_interest=money(
+                sum(
+                    (row.earned_interest for row in rows if row.earned_interest is not None),
+                    Decimal("0"),
+                )
+            ),
             gain=money(gain),
             gain_percent=money(percent),
             known_value=money(

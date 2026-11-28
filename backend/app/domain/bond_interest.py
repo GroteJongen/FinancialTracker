@@ -16,6 +16,19 @@ class MissingBondData(ValueError):
     pass
 
 
+def earned_interest(
+    value: Decimal | None, coupons: Decimal | None, quantity: int
+) -> Decimal | None:
+    """Interest retained in the bond plus past coupons, excluding purchase discount."""
+    if value is None or coupons is None:
+        return None
+    with localcontext(prec=80):
+        result = value + coupons - Decimal("100") * quantity
+    # A manual mark below nominal may include fees or redemption; it cannot
+    # establish the amount of interest earned without more information.
+    return result if result >= 0 else None
+
+
 def anniversary(start: date, years: int) -> date:
     year = start.year + years
     return date(year, start.month, min(start.day, monthrange(year, start.month)[1]))

@@ -162,3 +162,11 @@ Przegladarka sprawdza zintegrowana historie, wyszukiwanie daty/ilosci/ceny/pelne
 Osobny odczyt publiczny zaliczony: TOS1129 4,40%, COI1130 4,75% z marza 1,50%, EDO1136 5,35% z marza 2,00%; GUS 322 miesiace od 2000-01 do 2026-10. NBP i Yahoo tez dostepne. Nie zastapiono tym deterministycznych testow z atrapami. Dostepnosc sieci moze sie zmienic; brak danych nigdy nie udaje zera.
 
 Lokalnie git diff --check i docker compose --env-file .env.example config --quiet zaliczone. Naliczanie jest brutto, bez podatkow i oplat za wczesniejszy wykup; nalezny kupon nie potwierdza przelewu. Istniejace zakupy i ich niezmienne parametry sa zachowane.
+
+## FT-022 - Zarobione odsetki, 2026-11-28
+
+CI https://github.com/GroteJongen/FinancialTracker/actions/runs/46128422352 (bb0e4113): 236 testow backendu i 39 Playwright zaliczone; Ruff/format, TypeScript/ESLint/build, Alembic i pelny Compose z restartem, awaria bazy oraz przejsciem na obrazy rowniez zaliczone. Brak migracji i zmian istniejacych wyplat.
+
+Regresje sprawdzaja odsetki przed pierwsza wyplata TOS, COI i EDO, roznice miedzy odsetkami a rabatem zakupu, kapitalizacje EDO i nalezne kupony COI, brak powtornego dodania do zysku i wartosci aktywow, filtry ALL/STANDARD/IKE/IKZE/RETIREMENT i prywatnej grupy. Przy braku danych earned_interest pozostaje null, a znana czesc jest opisana oddzielnie. Reczne wyceny pozostaja nadrzedne; wartosc ponizej nominalu nie udaje ujemnych ani zerowych odsetek.
+
+Playwright sprawdza kafelek i wiersz TOS z dodatnimi odsetkami, zachowanie po odswiezeniu, wyzerowanie sumy po filtrze bez obligacji i jej przywrocenie po powrocie, a takze jawne niekompletne odsetki przy awarii zrodla. Publiczne proby NBP, Yahoo, stron trzech emisji i GUS przeszly osobno od testow finansowych z atrapami. Lokalnie git diff --check i docker compose --env-file .env.example config --quiet zaliczone. Nie wykonywano operacji na rzeczywistych portfelach.

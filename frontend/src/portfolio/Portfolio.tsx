@@ -9,10 +9,10 @@ import type { FormEvent } from 'react'
 import { formatDate, formatDecimal, request, todayWarsaw } from '../shared/api'
 
 type Allocation = { asset_class: string; amount: string; percent: string; start: string; end: string }
-type Totals = { cost: string | null; value: string | null; paid_income: string | null; gain: string | null; gain_percent: string | null; known_value: string; complete: boolean; allocation_value: Allocation[]; allocation_cost: Allocation[] }
+type Totals = { earned_interest?: string | null; known_earned_interest?: string; cost: string | null; value: string | null; paid_income: string | null; gain: string | null; gain_percent: string | null; known_value: string; complete: boolean; allocation_value: Allocation[]; allocation_cost: Allocation[] }
 type Position = {
   account_id: string; account_name: string; account_kind: string; label: string; asset_class: string
-  currency: string; native_cost: string; native_value: string | null; native_gain?: string | null; native_gain_percent?: string | null; cost_pln: string | null
+  earned_interest?: string | null; currency: string; native_cost: string; native_value: string | null; native_gain?: string | null; native_gain_percent?: string | null; cost_pln: string | null
   value_pln: string | null; gain_pln: string | null; paid_income: string | null; reasons: string[]
   observed_on: string | null; purchase_id?: string; purchase_revision?: number
   price_source?: string | null; quoted_at?: string | null; fetched_at?: string | null; stale_price?: boolean
@@ -129,7 +129,7 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
   const gradient = allocation.map((item) => `${colors[item.asset_class]} ${item.start}% ${item.end}%`).join(', ')
   const cards = [
     ['Koszt zakupów', amount(totals?.cost)], ['Wartość aktywów', amount(totals?.value)],
-    ['Odsetki wypłacone / należne', amount(totals?.paid_income)], ['Łączny zysk / strata', amount(totals?.gain)],
+    ['Odsetki zarobione', amount(totals?.earned_interest)], ['Łączny zysk / strata', amount(totals?.gain)],
     ['Wynik względem kosztu', totals?.gain_percent == null ? '—' : formatDecimal(totals.gain_percent, 2) + '%'],
   ]
   const bondData = data ?? (loaded?.data.scope === scope && (loaded.data.portfolio_id ?? '') === portfolioId ? loaded.data : null)
@@ -159,7 +159,8 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
       {data.missing_fx.length > 0 && <> Brakuje kursów NBP do walut obcych.</>}
       {data.positions.some((item) => item.reasons.includes('missing_bond_valuation')) && <> Brakuje oprocentowania, marży lub inflacji do naliczenia obligacji; nie jest to brak kursu NBP.</>}</p>}
     {data?.estimated_fx && <p className="valuation-note">Kwoty walutowe są przeliczane na PLN. Koszt historyczny jest szacunkiem po kursie NBP z dnia zakupu lub ostatniej wcześniejszej publikacji; bieżąca wartość korzysta z ostatniego dostępnego kursu dla dnia podsumowania.</p>}
-    <p className="form-hint">Wypłacone odsetki zwiększają wynik, ale nie są dodawane do aktywów na wykresie. Automatyczne wypłaty oznaczają odsetki należne za zakończone okresy, bez potwierdzenia przelewu. Gotówka i dywidendy akcji nie są jeszcze ewidencjonowane. Wynik brutto, bez podatków i kosztu przyszłej sprzedaży lub wykupu.</p>
+    <p className="form-hint">Odsetki zarobione to suma odsetek narosłych w bieżącym okresie, skapitalizowanych i należnych kuponów od początku inwestycji, także dla TOS. Kwota jest już uwzględniona w łącznym wyniku — nie dodajemy jej ponownie. To wartość brutto, bez podatków i opłat za wcześniejszy wykup; nie oznacza wypłaty na rachunek. Rabat przy zakupie nie jest odsetkami.</p>
+    {data && totals?.earned_interest == null && <p className="valuation-note" role="status" aria-label="Kompletność odsetek">Brakuje danych do pełnej sumy odsetek. Znane odsetki zarobione: {amount(totals?.known_earned_interest)}.</p>}
     {data?.position_count === 0 && <p className="empty-purchases">Brak zakupionych aktywów w wybranym filtrze.</p>}
     {data && data.positions.length > 0 && <div className="purchase-table-scroll"><table className="purchase-table portfolio-table">
       <caption className="sr-only">Wszystkie aktywa wybranego portfela</caption>
@@ -177,6 +178,7 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
           {item.stale_price && <small>Cena starsza niż 4 dni</small>}
           {item.yahoo?.failed && <small>Ostatnia próba Yahoo nieudana; poprzednia cena zachowana</small>}
           {item.reasons.map((reason) => <small key={reason}>{reasons[reason]}</small>)}
+            {item.asset_class === 'BOND' && <small>Odsetki zarobione: {amount(item.earned_interest)}</small>}
           {item.bond_calculation === 'ACCRUED' && <small>Naliczone brutto · {item.bond_interest_mode === 'PAYOUT' ? 'wypłata co roku' : 'kapitalizacja co roku'}{item.bond_current_rate != null ? ' · ' + formatDecimal(item.bond_current_rate) + '%' : ''}</small>}
           {item.bond_missing_data && <small>{({ missing_bond_rate: 'Brak oprocentowania', missing_bond_margin: 'Brak marży emisji', missing_bond_inflation: 'Brak właściwego wskaźnika inflacji GUS' } as Record<string, string>)[item.bond_missing_data]}</small>}
           {item.purchase_id && <button type="button" className="text-button" disabled={busy} onClick={() => setEditing(item.purchase_id!)}>Wycena obligacji</button>}

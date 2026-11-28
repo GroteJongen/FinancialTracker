@@ -64,3 +64,7 @@ GET portfolio liczy tylko z lokalnych danych. POST /api/bonds/refresh pobiera do
 - https://www.obligacjeskarbowe.pl/media_files/21db12fd-35ec-4cbd-b3f4-28a9a7ae2c7e.pdf (COI0930, załączniki 1–3)
 - https://www.obligacjeskarbowe.pl/media_files/25f35d9b-0ea3-4cb9-b3c2-cd9200473a57.pdf (EDO1136, załączniki 1–3)
 - https://stat.gov.pl/obszary-tematyczne/ceny-handel/wskazniki-cen/wskazniki-cen-towarow-i-uslug-konsumpcyjnych-pot-inflacja-/miesieczne-wskazniki-cen-towarow-i-uslug-konsumpcyjnych-od-1982-roku/
+
+## Widok odsetek zarobionych FT-022
+
+Dashboard pokazuje kafelek **Odsetki zarobione**: narosłe i skapitalizowane odsetki oraz kupony od początku inwestycji, także dla TOS. To kwota brutto, niezależna od daty faktycznej wypłaty. Te same odsetki widać przy poszczególnych obligacjach. Nie są doliczane do wyniku drugi raz; szczegóły i przykłady: [obliczenia](calculations.md#zarobione-odsetki-ft-022). Dotychczasowe dane wypłaconych odsetek pozostają zachowane.

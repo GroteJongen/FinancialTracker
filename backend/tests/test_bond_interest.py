@@ -3,9 +3,18 @@ from decimal import Decimal
 
 import pytest
 
-from app.domain.bond_interest import MissingBondData, accrue, inflation_month
+from app.domain.bond_interest import MissingBondData, accrue, earned_interest, inflation_month
 
 D = Decimal
+
+
+def test_earned_interest_includes_retained_and_due_amounts_but_not_purchase_discount():
+    assert earned_interest(D("1002.20"), D("0"), 10) == D("2.20")
+    assert earned_interest(D("1112.10"), D("0"), 10) == D("112.10")
+    assert earned_interest(D("1000.20"), D("94"), 10) == D("94.20")
+    assert earned_interest(None, D("0"), 10) is None
+    assert earned_interest(D("1000"), None, 10) is None
+    assert earned_interest(D("900"), D("0"), 10) is None
 
 
 def test_tos_official_maturity_example_and_cap():

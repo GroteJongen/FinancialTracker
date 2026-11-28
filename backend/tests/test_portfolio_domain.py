@@ -30,6 +30,23 @@ def test_paid_interest_counts_once_and_is_not_a_holding():
     assert result["allocation_value"][0]["amount"] == "100000.00"
 
 
+def test_earned_interest_is_information_not_an_extra_gain_or_asset():
+    result = summarize(
+        [
+            Holding("BOND", D("999"), D("1100"), D("0"), D("100")),
+            Holding("BOND", D("1000"), D("1002"), D("50"), D("52")),
+            Holding("ETF", D("500"), D("600")),
+        ]
+    )
+    assert result["earned_interest"] == "152.00"
+    assert result["value"] == "2702.00"
+    assert result["gain"] == "253.00"
+    assert result["paid_income"] == "50.00"
+    unknown = summarize([Holding("BOND", D("100"), None, None, None)])
+    assert unknown["earned_interest"] is None
+    assert unknown["known_earned_interest"] == "0.00"
+
+
 @pytest.mark.parametrize("missing", ["cost", "value", "paid_income"])
 def test_missing_values_never_become_zero(missing):
     values = dict(cost=D("10"), value=D("15"), paid_income=D("0"))
