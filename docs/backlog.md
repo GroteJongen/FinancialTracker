@@ -120,3 +120,7 @@ Status: Ukończone - 208 testów backendu i 35 przeglądarkowych zaliczone w CI.
 ## FT-020 - Zintegrowana historia, wyszukiwanie i sortowanie
 
 Status: Weryfikacja w CI. Jedna karta historii z wyborem instrumentu i rachunku, bez powtórzonego opisu instrumentu. Wyszukiwanie w bieżącej historii, licznik wyników i sortowanie daty zakupu w obu kierunkach. Zachowane korekty i audyt; bez zmian backendu.
+
+## FT-021 - Rzeczywiste odsetki obligacji i pełny koszt zakupu
+
+Status: Weryfikacja w CI. TOS/COI/EDO z naliczaniem brutto, roczną kapitalizacją lub należnymi kuponami, marżą konkretnej serii i historyczną inflacją GUS. Cache publicznych danych w migracji 0010; ręczne wyceny zachowane. Koszt historii akcji/ETF/REIT obejmuje jednostki × cenę + prowizję i jest liczony przez backend Decimal. NBP służy tylko przeliczeniu walut.

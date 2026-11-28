@@ -60,7 +60,7 @@ export default function PurchaseHistory({ accountId, accountName, listing, onBus
   const needle = searchable(query)
   const purchases = (current?.purchases ?? []).filter((item) => !needle || [
     listing.name, listing.symbol, listing.isin ?? '', accountName, item.trade_date, formatDate(item.trade_date),
-    formatDecimal(item.quantity), formatDecimal(item.unit_price, 2), formatDecimal(item.commission, 2),
+    formatDecimal(item.quantity), formatDecimal(item.unit_price, 2), formatDecimal(item.commission, 2), formatDecimal(item.cost, 2),
   ].some((value) => searchable(value).includes(needle))).sort((left, right) => {
     const comparison = left.trade_date.localeCompare(right.trade_date) || left.created_at.localeCompare(right.created_at) || left.id.localeCompare(right.id)
     return order === 'asc' ? comparison : -comparison
@@ -71,11 +71,11 @@ export default function PurchaseHistory({ accountId, accountName, listing, onBus
       <label className="history-search" htmlFor="history-search">Wyszukaj w historii
         <input id="history-search" type="search" placeholder="Data, liczba jednostek lub cena" value={query} disabled={saving || disabled} onChange={(event) => setQuery(event.target.value)} />
       </label>
-      <label htmlFor="history-order">Sortuj według daty zakupu
+      <div className="history-sort"><label htmlFor="history-order">Sortuj według daty zakupu</label>
         <select id="history-order" value={order} disabled={saving || disabled} onChange={(event) => setOrder(event.target.value as 'desc' | 'asc')}>
           <option value="desc">Najnowsze pierwsze</option><option value="asc">Najstarsze pierwsze</option>
         </select>
-      </label>
+      </div>
       {query && <button type="button" className="secondary-button" disabled={saving || disabled} onClick={() => setQuery('')}>Wyczyść wyszukiwanie</button>}
     </div>
     {current && <p className="form-hint" role="status" aria-label="Liczba zakupów" aria-live="polite">Znaleziono: {purchases.length} z {current.purchases.length} zakupów.</p>}
@@ -84,12 +84,13 @@ export default function PurchaseHistory({ accountId, accountName, listing, onBus
     {current?.purchases.length === 0 && <p className="empty-purchases">Brak zakupów tego instrumentu na wybranym rachunku.</p>}
     {current && current.purchases.length > 0 && purchases.length === 0 && <p className="empty-purchases">Brak zakupów pasujących do wyszukiwania.</p>}
     <div className="purchase-table-scroll"><table className="purchase-table"><caption className="sr-only">Zakupy instrumentu {listing.symbol}</caption>
-      <thead><tr><th>Data</th><th>Liczba jednostek</th><th>Cena ({listing.currency})</th><th>Prowizja ({listing.currency})</th><th>Działania</th></tr></thead>
+      <thead><tr><th>Data</th><th>Liczba jednostek</th><th>Cena ({listing.currency})</th><th>Prowizja ({listing.currency})</th><th>Koszt zakupu ({listing.currency})</th><th>Działania</th></tr></thead>
       <tbody>{purchases.map((item) => <tr key={item.id}><td>{formatDate(item.trade_date)}</td><td>{formatDecimal(item.quantity)}</td>
-        <td>{formatDecimal(item.unit_price, 2)}</td><td>{formatDecimal(item.commission, 2)}</td><td className="row-actions">
+        <td>{formatDecimal(item.unit_price, 2)}</td><td>{formatDecimal(item.commission, 2)}</td><td>{formatDecimal(item.cost, 2)}</td><td className="row-actions">
           <button className="text-button" type="button" disabled={blocked} onClick={() => edit(item)}>Popraw instrument</button>
           <button className="text-button" type="button" disabled={blocked} aria-expanded={auditId === item.id} onClick={() => setAuditId((previous) => previous === item.id ? null : item.id)}>Zmiany instrumentu</button>
         </td></tr>)}</tbody></table></div>
+    <p className="form-hint">Koszt zakupu obejmuje liczbę jednostek × cenę jednostki oraz prowizję.</p>
     {editing && <form aria-label="Korekta zakupu instrumentu" noValidate onSubmit={(event) => { void save(event) }}>
       <h4>Popraw zakup instrumentu</h4>
       <fieldset disabled={blocked}><div className="purchase-form-grid">

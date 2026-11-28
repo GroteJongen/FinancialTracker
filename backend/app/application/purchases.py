@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.application.purchase_contracts import PurchaseCorrection, PurchaseCreate, PurchaseResponse
+from app.domain.valuation import Lot, calculate
 from app.infrastructure.catalog import IUSQ_LISTING_ID
 from app.infrastructure.models import (
     Account,
@@ -87,6 +88,7 @@ def response(operation: Operation, details: PurchaseDetails, listing: Listing, i
         quantity=details.quantity,
         unit_price=details.unit_price,
         commission=details.commission,
+        cost=calculate([Lot(details.quantity, details.unit_price, details.commission)]).cost,
         currency=details.currency,
         revision=operation.revision,
         created_at=operation.created_at,

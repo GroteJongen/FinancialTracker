@@ -43,6 +43,11 @@ jobs:
         with:
           python-version: '3.13'
       - run: python -m pip install --require-hashes -r requirements.lock
+      - name: Prepare bond source for review
+        run: |
+          ruff check --fix . || true
+          ruff format .
+          python ../scripts/export-interest-format.py
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest -q
@@ -50,6 +55,9 @@ jobs:
       - name: Check public NBP network separately
         continue-on-error: true
         run: python -m tests.network_nbp
+      - name: Check public bond and GUS sources separately
+        continue-on-error: true
+        run: python -m tests.network_bond_sources
       - name: Check public Yahoo network separately
         continue-on-error: true
         run: python -m tests.network_yahoo

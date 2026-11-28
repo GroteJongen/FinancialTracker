@@ -16,6 +16,7 @@ from app.application.bond_contracts import (
     BondCreate,
     BondResponse,
 )
+from app.application.bond_pricing import refresh_bond_data
 from app.application.bonds import (
     correct_bond_purchase,
     create_bond_account,
@@ -53,6 +54,11 @@ PortfolioScope = Literal["ALL", "STANDARD", "IKE", "IKZE", "RETIREMENT"]
 def get_session(request: Request) -> Generator[Session]:
     with request.app.state.session_factory() as session:
         yield session
+
+
+@router.post("/bonds/refresh")
+def bond_refresh(request: Request, scope: PortfolioScope = "ALL", portfolio_id: UUID | None = None, session: Session = Depends(get_session)):
+    return refresh_bond_data(session, request.app.state.settings.local_owner_id, scope, portfolio_id)
 
 
 @router.post("/market-prices/refresh")

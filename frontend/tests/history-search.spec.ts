@@ -27,6 +27,8 @@ test('one history card combines selectors with search, result count and both dat
   await expect(history.getByRole('status', { name: 'Liczba zakupów' })).toHaveText('Znaleziono: 1 z 3 zakupów.')
   await search.fill('1 100,00')
   await expect(dates).toHaveText(['03.01.2026'])
+  await search.fill('2 005,75')
+  await expect(dates).toHaveText(['02.01.2026'])
   await search.fill('0,125')
   await expect(dates).toHaveText(['01.01.2026'])
   await search.fill('brak takiego zakupu')

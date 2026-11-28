@@ -31,6 +31,7 @@ class BondAccountCreate(BaseModel):
 class BondFields(BaseModel):
     model_config = ConfigDict(extra="forbid")
     series: str
+    interest_mode: Literal["PAYOUT", "CAPITALIZE"] | None = None
     trade_date: date
     quantity: int = Field(strict=True, ge=1, le=999999999)
     unit_price: Decimal
@@ -80,6 +81,12 @@ class BondFields(BaseModel):
 
     @model_validator(mode="after")
     def validate_margin(self):
+        expected = "PAYOUT" if self.series.startswith("COI") else "CAPITALIZE"
+        if self.interest_mode is not None and self.interest_mode != expected:
+            raise ValueError(
+                "Tryb odsetek jest niezgodny z typem obligacji: "
+                "COI wypłaca co rok, TOS/EDO kapitalizuje co rok."
+            )
         if self.series.startswith("TOS") and self.margin is not None:
             raise ValueError("TOS ma oprocentowanie stałe; nie podawaj marży inflacyjnej.")
         return self
@@ -100,6 +107,7 @@ class BondCorrection(BondFields):
 
 
 class BondResponse(BaseModel):
+    interest_mode: Literal["PAYOUT", "CAPITALIZE"]
     id: UUID
     account_id: UUID
     issue_id: UUID

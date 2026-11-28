@@ -308,3 +308,23 @@ class AccountListing(Base):
     listing_id: Mapped[UUID] = mapped_column(
         ForeignKey("listings.id", ondelete="CASCADE"), primary_key=True
     )
+
+
+class BondSeriesCache(Base):
+    __tablename__ = "bond_series_cache"
+    __table_args__ = (CheckConstraint("annual_rate BETWEEN 0 AND 100 AND (margin IS NULL OR margin BETWEEN 0 AND 100)", name="ck_bond_series_cache_rates"),)
+    series: Mapped[str] = mapped_column(String(7), primary_key=True)
+    annual_rate: Mapped[Decimal] = mapped_column(Numeric(11, 8))
+    margin: Mapped[Decimal | None] = mapped_column(Numeric(11, 8))
+    source_url: Mapped[str] = mapped_column(String(2000))
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.clock_timestamp())
+
+
+class InflationRate(Base):
+    __tablename__ = "inflation_rates"
+    __table_args__ = (CheckConstraint("year BETWEEN 2000 AND 2099 AND month BETWEEN 1 AND 12 AND rate > -100 AND rate < 900", name="ck_inflation_rates_values"),)
+    year: Mapped[int] = mapped_column(primary_key=True)
+    month: Mapped[int] = mapped_column(primary_key=True)
+    rate: Mapped[Decimal] = mapped_column(Numeric(11, 8))
+    source_url: Mapped[str] = mapped_column(String(2000))
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.clock_timestamp())

@@ -47,3 +47,19 @@ Jeśli kontener migrate ma już zakończony wcześniejszy przebieg, Compose odtw
 ## Weryfikacja
 
 Testy API obejmują typy rachunków, zapis, korekty, niezmienne snapshoty, walidację, utratę odpowiedzi, konflikt klucza i wersji, równoczesne zapisy, odmowę dostępu i wycofanie transakcji przy błędzie audytu. Testy Playwright obejmują TOS/COI/EDO, trzy typy rachunków, przecinek dziesiętny, korektę, audyt, odświeżenie, ponowienie i szerokość mobilną. `scripts/smoke-bonds.mjs` sprawdza trwałość po restarcie całego Compose na syntetycznych danych CI. Wyniki wykonania opisujemy w verification.md.
+
+## Automatyczne naliczanie FT-021
+
+Wymagane dane formularza to seria/typ, rachunek, data, liczba sztuk, cena zakupu i oprocentowanie: stałe dla TOS, z pierwszego roku dla COI/EDO. Tryb wynika z produktu: TOS/EDO kapitalizują rocznie, COI wypłaca roczne kupony. Nie można przypisać produktu do niezgodnego trybu. Brakującą marżę i stopę pierwszego roku dla starych wpisów pobieramy ze strony danej serii MF; nie z bieżącej oferty innej emisji. Inflacja pochodzi z tabeli GUS „analogiczny miesiąc poprzedniego roku = 100”, pomniejszonej o 100 punktów. Dla okresu rozpoczynającego się w listopadzie używamy wrześniowego CPI, ogłoszonego w październiku. Ujemną inflację ograniczamy do zera przed dodaniem marży.
+
+Nominał to 100 PLN na sztukę, niezależnie od ceny nabycia (np. 99,90). Stosujemy ACT/ACT dla niepełnego rocznego okresu, z uwzględnieniem lat przestępnych. Wartości zaokrąglamy na sztukę do grosza. TOS używa zaokrąglonego kapitału z poprzedniego okresu przy naliczaniu części roku; EDO iloczynu kolejnych stóp, zgodnie z załącznikami listów. COI liczy kupony od nominału; zakończone kupony zwiększają wynik, bez ponownego dodawania do wartości obligacji. Kapitalizacja zwiększa wartość, bez drugiego doliczania jako wypłata. Naliczanie kończy się w terminie wykupu; samo nadejście tej daty nie potwierdza umorzenia ani transferu pieniędzy.
+
+Wynik jest brutto, bez podatku i opłat za wcześniejszy wykup. Należny kupon nie potwierdza przelewu na rachunek. Ręcznie zapisana wycena dla aktualnej rewizji zakupu ma pierwszeństwo. Brak stopy, marży lub właściwego CPI pozostaje brakiem pełnej wyceny — nie zastępujemy danych stopą pierwszego roku ani zerem. Nominał może być pokazany osobno i nie udaje pełnej wartości aktywa.
+
+GET portfolio liczy tylko z lokalnych danych. POST /api/bonds/refresh pobiera do czterech brakujących serii równolegle i jedną tabelę GUS, poza transakcją bazy. Do dostawców nie wysyłamy rachunków, ilości ani wartości zakupów. Cache jest uzupełniany bez nadpisywania historycznych odczytów. Błędy nie usuwają znanych danych. Frontend pobiera brakujące dane automatycznie po otwarciu i dodaniu obligacji; ponowienie jest dostępne przyciskiem.
+
+Źródła zweryfikowane 2026-11-28:
+- https://www.obligacjeskarbowe.pl/media_files/0f23ffd0-a3d6-467d-b3cc-c3ffcc190ecd.pdf (TOS0829, załączniki 1 i 2)
+- https://www.obligacjeskarbowe.pl/media_files/21db12fd-35ec-4cbd-b3f4-28a9a7ae2c7e.pdf (COI0930, załączniki 1–3)
+- https://www.obligacjeskarbowe.pl/media_files/25f35d9b-0ea3-4cb9-b3c2-cd9200473a57.pdf (EDO1136, załączniki 1–3)
+- https://stat.gov.pl/obszary-tematyczne/ceny-handel/wskazniki-cen/wskazniki-cen-towarow-i-uslug-konsumpcyjnych-pot-inflacja-/miesieczne-wskazniki-cen-towarow-i-uslug-konsumpcyjnych-od-1982-roku/
