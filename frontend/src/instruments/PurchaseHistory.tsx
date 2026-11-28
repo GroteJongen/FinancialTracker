@@ -4,12 +4,16 @@ import { ApiError, formatDate, formatDecimal, request, todayWarsaw } from '../sh
 import type { Listing, Purchase } from '../shared/api'
 import AuditHistory from '../shared/AuditHistory'
 
+const searchable = (value: string) => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pl-PL').replace(/\s/g, '').replace(/,/g, '.')
+
 type Correction = { trade_date: string; quantity: string; unit_price: string; commission: string; reason: string }
 
-export default function PurchaseHistory({ accountId, listing, onBusy, disabled }: {
-  accountId: string; listing: Listing; onBusy: (value: boolean) => void; disabled: boolean
+export default function PurchaseHistory({ accountId, accountName, listing, onBusy, disabled }: {
+  accountId: string; accountName: string; listing: Listing; onBusy: (value: boolean) => void; disabled: boolean
 }) {
   const [refresh, setRefresh] = useState(0)
+  const [query, setQuery] = useState('')
+  const [order, setOrder] = useState<'desc' | 'asc'>('desc')
   const [loaded, setLoaded] = useState<{ version: number; purchases: Purchase[] } | null>(null)
   const [loadError, setLoadError] = useState('')
   const [editing, setEditing] = useState<Purchase | null>(null)
@@ -53,18 +57,40 @@ export default function PurchaseHistory({ accountId, listing, onBusy, disabled }
     } finally { savingRef.current = false; setSaving(false); onBusy(false) }
   }
 
-  return <section className="purchase-panel" aria-label="Historia zakupów instrumentu" aria-busy={!current}>
-    <div className="history-heading"><h3>Historia zakupów instrumentu</h3></div>
+  const needle = searchable(query)
+  const purchases = (current?.purchases ?? []).filter((item) => !needle || [
+    listing.name, listing.symbol, listing.isin ?? '', accountName, item.trade_date, formatDate(item.trade_date),
+    formatDecimal(item.quantity), formatDecimal(item.unit_price, 2), formatDecimal(item.commission, 2), formatDecimal(item.cost, 2),
+  ].some((value) => searchable(value).includes(needle))).sort((left, right) => {
+    const comparison = left.trade_date.localeCompare(right.trade_date) || left.created_at.localeCompare(right.created_at) || left.id.localeCompare(right.id)
+    return order === 'asc' ? comparison : -comparison
+  })
+
+  return <div aria-busy={!current}>
+    <div className="history-tools">
+      <label className="history-search" htmlFor="history-search">Wyszukaj w historii
+        <input id="history-search" type="search" placeholder="Data, liczba jednostek lub cena" value={query} disabled={saving || disabled} onChange={(event) => setQuery(event.target.value)} />
+      </label>
+      <div className="history-sort"><label htmlFor="history-order">Sortuj według daty zakupu</label>
+        <select id="history-order" value={order} disabled={saving || disabled} onChange={(event) => setOrder(event.target.value as 'desc' | 'asc')}>
+          <option value="desc">Najnowsze pierwsze</option><option value="asc">Najstarsze pierwsze</option>
+        </select>
+      </div>
+      {query && <button type="button" className="secondary-button" disabled={saving || disabled} onClick={() => setQuery('')}>Wyczyść wyszukiwanie</button>}
+    </div>
+    {current && <p className="form-hint" role="status" aria-label="Liczba zakupów" aria-live="polite">Znaleziono: {purchases.length} z {current.purchases.length} zakupów.</p>}
     {!current && !loadError && <p role="status">Pobieranie historii zakupów instrumentu…</p>}
     {loadError && <div role="alert"><p>{loadError}</p><button onClick={() => setRefresh((value) => value + 1)}>Ponów odczyt historii</button></div>}
     {current?.purchases.length === 0 && <p className="empty-purchases">Brak zakupów tego instrumentu na wybranym rachunku.</p>}
+    {current && current.purchases.length > 0 && purchases.length === 0 && <p className="empty-purchases">Brak zakupów pasujących do wyszukiwania.</p>}
     <div className="purchase-table-scroll"><table className="purchase-table"><caption className="sr-only">Zakupy instrumentu {listing.symbol}</caption>
-      <thead><tr><th>Data</th><th>Liczba jednostek</th><th>Cena ({listing.currency})</th><th>Prowizja ({listing.currency})</th><th>Działania</th></tr></thead>
-      <tbody>{current?.purchases.map((item) => <tr key={item.id}><td>{formatDate(item.trade_date)}</td><td>{formatDecimal(item.quantity)}</td>
-        <td>{formatDecimal(item.unit_price, 2)}</td><td>{formatDecimal(item.commission, 2)}</td><td className="row-actions">
+      <thead><tr><th>Data</th><th>Liczba jednostek</th><th>Cena ({listing.currency})</th><th>Prowizja ({listing.currency})</th><th>Koszt zakupu ({listing.currency})</th><th>Działania</th></tr></thead>
+      <tbody>{purchases.map((item) => <tr key={item.id}><td>{formatDate(item.trade_date)}</td><td>{formatDecimal(item.quantity)}</td>
+        <td>{formatDecimal(item.unit_price, 2)}</td><td>{formatDecimal(item.commission, 2)}</td><td>{formatDecimal(item.cost, 2)}</td><td className="row-actions">
           <button className="text-button" type="button" disabled={blocked} onClick={() => edit(item)}>Popraw instrument</button>
           <button className="text-button" type="button" disabled={blocked} aria-expanded={auditId === item.id} onClick={() => setAuditId((previous) => previous === item.id ? null : item.id)}>Zmiany instrumentu</button>
         </td></tr>)}</tbody></table></div>
+    <p className="form-hint">Koszt zakupu obejmuje liczbę jednostek × cenę jednostki oraz prowizję.</p>
     {editing && <form aria-label="Korekta zakupu instrumentu" noValidate onSubmit={(event) => { void save(event) }}>
       <h4>Popraw zakup instrumentu</h4>
       <fieldset disabled={blocked}><div className="purchase-form-grid">
@@ -79,5 +105,5 @@ export default function PurchaseHistory({ accountId, listing, onBusy, disabled }
     </form>}
     {message && <p role={message.error ? 'alert' : 'status'} aria-label="Wynik zapisu instrumentu" className={'purchase-message ' + (message.error ? 'message-error' : 'message-success')}>{message.text}</p>}
     {auditId && <AuditHistory key={auditId + ':' + current?.purchases.find((item) => item.id === auditId)?.revision} accountId={accountId} purchaseId={auditId} currency={listing.currency} />}
-  </section>
+  </div>
 }

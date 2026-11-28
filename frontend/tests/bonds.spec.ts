@@ -27,7 +27,7 @@ for (const [type, series, kind] of [['TOS', 'TOS1129', 'STANDARD'], ['COI', 'COI
     await section.getByLabel('Data zakupu obligacji', { exact: true }).fill('2026-11-10')
     await section.getByLabel('Liczba obligacji', { exact: true }).fill('10')
     await section.getByLabel('Cena jednej obligacji (PLN)', { exact: true }).fill('99,90')
-    await section.getByLabel('Oprocentowanie (%) — opcjonalnie', { exact: true }).fill('4,4')
+    await section.getByLabel('Oprocentowanie roczne (%)', { exact: true }).fill('4,4')
     if (type !== 'TOS') await section.getByLabel('Marża ponad inflację (%) — opcjonalnie').fill('1,5')
     await section.getByRole('button', { name: 'Zapisz zakup obligacji', exact: true }).click()
     await expect(section.getByRole('status', { name: 'Wynik zapisu obligacji' })).toContainText('Zakup obligacji został zapisany.')
@@ -50,12 +50,13 @@ for (const [type, series, kind] of [['TOS', 'TOS1129', 'STANDARD'], ['COI', 'COI
     await section.getByLabel('Rachunek obligacji', { exact: true }).selectOption(accountId)
     row = section.getByRole('row').filter({ hasText: series })
     await expect(row).toContainText('1\u00a0198,80')
-    await expect(section).toContainText('Koszt zakupu nie jest bieżącą wyceną')
+    await expect(section).toContainText('Wartość obligacji naliczamy brutto')
   })
 }
 
 test('bond retry after lost response does not duplicate purchase; invalid quantity keeps form', async ({ page }) => {
   const section = await createAccount(page, 'TEST ponowienie obligacji ' + Date.now())
+  await section.getByLabel('Oprocentowanie roczne (%)', { exact: true }).fill('4,4')
   await section.getByLabel('Seria obligacji', { exact: true }).fill('TOS1129')
   await section.getByLabel('Data zakupu obligacji', { exact: true }).fill('2026-11-10')
   await section.getByLabel('Liczba obligacji', { exact: true }).fill('0,5')

@@ -7,11 +7,13 @@ from sqlalchemy import func, select, tuple_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.application.bond_pricing import cached_inputs, calculate_bond, requirement_keys
 from app.application.bonds import bond_account, find_purchase, lock_owner
 from app.application.market_prices import mapping_info, selected_price
 from app.application.portfolio_contracts import BondValuationCreate
 from app.application.portfolio_groups import owned_group
 from app.application.purchases import PurchaseError
+from app.domain.bond_interest import MissingBondData
 from app.domain.portfolio import Holding, summarize
 from app.domain.purchases import business_today
 from app.domain.valuation import Lot, calculate, money
@@ -256,11 +258,26 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 yahoo=mapping_info(provider),
                 stale_price=bool(price and (today - price.observed_on).days > 4),
             )
+        bond_terms, inflation = cached_inputs(session)
         for purchase, issue in bonds:
             mark = marks.get(purchase.id)
             cost = purchase.quantity * purchase.unit_price
             value = mark.value if mark else None
             paid = mark.paid_interest if mark else None
+            calculated, missing, mode, terms_source = (
+                None,
+                None,
+                "PAYOUT" if issue.bond_type == "COI" else "CAPITALIZE",
+                None,
+            )
+            if mark is None:
+                try:
+                    calculated, mode, terms_source = calculate_bond(
+                        purchase, issue, today, bond_terms, inflation
+                    )
+                    value, paid = calculated.value, calculated.due_interest
+                except MissingBondData as failure:
+                    missing = str(failure)
             add(
                 purchase.account_id,
                 issue.series,
@@ -271,8 +288,8 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 paid,
                 cost,
                 value,
-                [] if mark else ["missing_bond_valuation"],
-                mark.observed_on if mark else None,
+                [] if value is not None else ["missing_bond_valuation"],
+                mark.observed_on if mark else today if calculated else None,
                 purchase_id=str(purchase.id),
                 purchase_revision=purchase.revision,
                 quantity=str(purchase.quantity),
@@ -280,6 +297,16 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 trade_date=purchase.trade_date.isoformat(),
                 unit_price=money(value / purchase.quantity) if value is not None else None,
                 average_cost=format(purchase.unit_price, "f"),
+                bond_calculation="MANUAL" if mark else "ACCRUED" if calculated else None,
+                bond_missing_data=missing,
+                bond_interest_mode=mode,
+                bond_current_rate=format(calculated.current_rate, "f") if calculated else None,
+                bond_accrued_interest=money(calculated.accrued_interest) if calculated else None,
+                bond_capitalized_interest=money(calculated.capitalized_interest)
+                if calculated
+                else None,
+                bond_nominal_value=money(Decimal("100") * purchase.quantity),
+                bond_terms_source=terms_source,
             )
         missing = sorted(fx_keys(securities) - rates.keys())
         return dict(
@@ -299,6 +326,7 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 )
                 for key in ("BOND", "ETF", "STOCK", "REIT")
             ],
+            bond_requirements=requirement_keys(session, bonds, today),
             missing_fx=[
                 dict(currency=currency, requested_on=day.isoformat()) for currency, day in missing
             ],

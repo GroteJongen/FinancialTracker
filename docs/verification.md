@@ -150,3 +150,15 @@ Usunięto dwa duplikaty komponentów, ich style, domyślny IUSQ w routingu wycen
 CI https://github.com/GroteJongen/FinancialTracker/actions/runs/46076765321: 208 testów backendu, 35 Playwright, Ruff/format, TypeScript/ESLint/build, Alembic oraz pełny Compose i gotowe obrazy zaliczone. Regresja sprawdza brak nagłówka Pozycja, kafelków, formularza ceny i nowego zakupu oraz brak GET valuation z widoku historii. Istniejące zakupy i ceny pozostają w bazie, a wycena nadal jest dostępna w dashboardzie i API. Korekty ułamkowych zakupów, wymagany powód, zachowanie błędnego szkicu, anulowanie, audyt, różne rachunki/waluty, ponowne otwarcie i mobile zaliczone.
 
 Usunięto InstrumentPosition, jego stan i pobieranie wyceny, obsługę zapisu ceny/nowego zakupu oraz nieużywane style. PurchaseHistory wyświetla zakupy i otwiera formularz korekty tylko po wybraniu wiersza. Cztery scenariusze UI usuniętych formularzy wyceny usunięto; logika finansowa nadal ma 208 testów backendu. Bez zmian backendu, schematu i operacji na danych użytkownika. Lokalnie git diff --check i docker compose --env-file .env.example config --quiet zaliczone.
+
+## FT-020 / FT-021 - Historia i rzeczywiste odsetki, 2026-11-28
+
+CI https://github.com/GroteJongen/FinancialTracker/actions/runs/46125433177 (493cb378): 230 testow backendu, 39 Playwright, Ruff/format, TypeScript/ESLint/build, Alembic i pelny Compose zaliczone. Przejscie od pustej bazy do 0010, restart, awaria i powrot bazy, obrazy lokalne i aktualizator zachowuja syntetyczne dane. Testy bez rzeczywistej bazy uzytkownika.
+
+Nowe przypadki: ACT/ACT i rok przestepny, nominal niezalezny od kosztu, roczna kapitalizacja TOS, historyczne stopy COI/EDO, rozdzielenie kuponow i wartosci, brak marzy/CPI, ujemna inflacja, termin wykupu, priorytet recznej wyceny, odmowa dostepu, zgodnosc trybu produktu i ponowienie starszego zadania bez duplikatu. Test integracji wymusza brak zajetego polaczenia z baza podczas HTTP; ponowienie nie pobiera kompletnych danych. PostgreSQL RETURNING liczy faktycznie dodane rekordy, bez zaleznosci od rowcount sterownika.
+
+Przegladarka sprawdza zintegrowana historie, wyszukiwanie daty/ilosci/ceny/pelnego kosztu, sortowanie w obu kierunkach, izolacje rachunkow i instrumentow, automatyczna wycene obligacji po otwarciu i odswiezeniu, brak potrzeby FX dla obligacji PLN oraz niepelny dashboard i reczne ponowienie po awarii zrodla.
+
+Osobny odczyt publiczny zaliczony: TOS1129 4,40%, COI1130 4,75% z marza 1,50%, EDO1136 5,35% z marza 2,00%; GUS 322 miesiace od 2000-01 do 2026-10. NBP i Yahoo tez dostepne. Nie zastapiono tym deterministycznych testow z atrapami. Dostepnosc sieci moze sie zmienic; brak danych nigdy nie udaje zera.
+
+Lokalnie git diff --check i docker compose --env-file .env.example config --quiet zaliczone. Naliczanie jest brutto, bez podatkow i oplat za wczesniejszy wykup; nalezny kupon nie potwierdza przelewu. Istniejace zakupy i ich niezmienne parametry sa zachowane.

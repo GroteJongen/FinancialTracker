@@ -10,6 +10,7 @@ export const test = base.extend<{ marketNetwork: void }>({
     await page.route('**/api/portfolio/fx/refresh?*', (route) => route.fulfill({
       status: 200, contentType: 'application/json', body: JSON.stringify({ updated: 0, failed: 0, remaining: 0 }),
     }))
+    await page.route('**/api/bonds/refresh?*', (route) => route.fulfill({ json: { updated: 0, failed: 0, remaining: 0 } }))
     await use()
   }, { auto: true }],
 })

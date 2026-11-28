@@ -14,6 +14,7 @@ test('existing fractional purchases can be corrected with audit and survive relo
   const row = history.getByRole('row').filter({ hasText: '08.01.2026' })
   await expect(row).toContainText('0,125')
   await expect(row).toContainText('100,12345678')
+  await expect(row).toContainText('12,62')
   await row.getByRole('button', { name: 'Popraw instrument', exact: true }).click()
   await history.getByLabel('Liczba jednostek instrumentu', { exact: true }).fill('0,25')
   await history.getByLabel('Powód korekty instrumentu', { exact: true }).fill('Syntetyczna korekta ilości')

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { quoteTime, refreshMarket } from './market'
 import { refreshFxRates } from './fx'
+import { refreshBondData } from './bonds'
 import YahooMapping from './YahooMapping'
 import PortfolioPicker from './PortfolioPicker'
 import type { Account } from '../shared/api'
@@ -16,10 +17,11 @@ type Position = {
   observed_on: string | null; purchase_id?: string; purchase_revision?: number
   price_source?: string | null; quoted_at?: string | null; fetched_at?: string | null; stale_price?: boolean
   yahoo?: { symbol: string; failed: boolean; attempted_at: string | null; quoted_at: string | null; fetched_at: string | null } | null
+  bond_calculation?: string | null; bond_missing_data?: string | null; bond_nominal_value?: string | null; bond_interest_mode?: string; bond_current_rate?: string | null; bond_accrued_interest?: string | null; bond_capitalized_interest?: string | null;
   quantity: string; mark_id?: string | null; trade_date?: string; listing_id?: string
   unit_price?: string | null; gain_percent?: string | null; symbol?: string; mic?: string; average_cost?: string | null
 }
-type Snapshot = { portfolio_id?: string | null; scope: string; as_of: string; account_count: number; position_count: number; totals: Totals; positions: Position[]; estimated_fx: boolean; missing_fx: { currency: string; requested_on: string }[]; fx_rates: { currency: string; requested_on: string; effective_on: string; rate: string; table_number: string }[] }
+type Snapshot = { bond_requirements?: string[]; portfolio_id?: string | null; scope: string; as_of: string; account_count: number; position_count: number; totals: Totals; positions: Position[]; estimated_fx: boolean; missing_fx: { currency: string; requested_on: string }[]; fx_rates: { currency: string; requested_on: string; effective_on: string; rate: string; table_number: string }[] }
 const labels: Record<string, string> = { BOND: 'Obligacje', ETF: 'ETF-y', STOCK: 'Akcje', REIT: 'REIT-y' }
 const colors: Record<string, string> = { BOND: '#b58a36', ETF: '#426e42', STOCK: '#387e87', REIT: '#8566a5' }
 const reasons: Record<string, string> = { missing_price: 'Brak ceny', outdated_price: 'Cena sprzed ostatniego zakupu', missing_fx: 'Brak kursu NBP', missing_bond_valuation: 'Uzupełnij wycenę obligacji' }
@@ -38,6 +40,9 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
   const marketLock = useRef(false)
   const [basis, setBasis] = useState<'value' | 'cost'>('value')
   const [busy, setBusy] = useState(false)
+  const bondTried = useRef(new Set<string>())
+  const bondRun = useRef(0)
+  const [bondState, setBondState] = useState<{ query: string; text: string; busy: boolean } | null>(null)
   const fxTried = useRef(new Set<string>())
   const fxStarted = useRef(new Set<string>())
   const fxRun = useRef(0)
@@ -99,6 +104,24 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
     for (const key of data.missing_fx) fxTried.current.add(query + '/' + key.currency + '/' + key.requested_on)
     void fetchFx(!onOpen)
   }, [data, query, fetchFx])
+  const fetchBonds = useCallback(async () => {
+    const run = ++bondRun.current
+    setBondState({ query, text: 'Pobieranie warunków emisji i inflacji GUS…', busy: true })
+    try {
+      const result = await refreshBondData(query)
+      if (run === bondRun.current) setBondState({ query, busy: false, text: result.failed || result.remaining
+        ? 'Nie udało się uzupełnić wszystkich danych obligacji. Zachowano dostępne dane; brakujące odsetki nie są zgadywane. Możesz ponowić pobranie.'
+        : 'Dane obligacji uzupełnione. Wycena uwzględnia naliczone odsetki brutto.' })
+    } catch {
+      if (run === bondRun.current) setBondState({ query, busy: false, text: 'Nie udało się pobrać danych obligacji. Zachowano poprzednie dane.' })
+    }
+  }, [query])
+  useEffect(() => {
+    if (!data?.bond_requirements?.some((key) => !bondTried.current.has(query + '/' + key))) return
+    for (const key of data.bond_requirements) bondTried.current.add(query + '/' + key)
+    void fetchBonds()
+  }, [data, query, fetchBonds])
+  const currentBonds = bondState?.query === query ? bondState : null
   const currentFx = fxState?.query === query ? fxState : null
   const fxBusy = currentFx?.busy ?? false
   const totals = data?.totals
@@ -106,7 +129,7 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
   const gradient = allocation.map((item) => `${colors[item.asset_class]} ${item.start}% ${item.end}%`).join(', ')
   const cards = [
     ['Koszt zakupów', amount(totals?.cost)], ['Wartość aktywów', amount(totals?.value)],
-    ['Wypłacone odsetki', amount(totals?.paid_income)], ['Łączny zysk / strata', amount(totals?.gain)],
+    ['Odsetki wypłacone / należne', amount(totals?.paid_income)], ['Łączny zysk / strata', amount(totals?.gain)],
     ['Wynik względem kosztu', totals?.gain_percent == null ? '—' : formatDecimal(totals.gain_percent, 2) + '%'],
   ]
   const bondData = data ?? (loaded?.data.scope === scope && (loaded.data.portfolio_id ?? '') === portfolioId ? loaded.data : null)
@@ -119,20 +142,24 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
         onClick={() => { setScope(value); setEditing(null); setMessage('') }}>{label}</button>)}
     </div>
     <dl className="portfolio-cards">{cards.map(([label, value]) => <div key={label} className={label === 'Łączny zysk / strata' && totals?.gain?.startsWith('-') ? 'portfolio-loss' : ''}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-    <div className="portfolio-actions"><button type="button" className="text-button" disabled={busy || marketBusy} onClick={() => { setVersion((value) => value + 1); void fetchMarket(); void fetchFx() }}>Odśwież podsumowanie</button>
+    <div className="portfolio-actions"><button type="button" className="text-button" disabled={busy || marketBusy} onClick={() => { setVersion((value) => value + 1); void fetchMarket(); void fetchFx(); if (data?.positions.some((item) => item.asset_class === 'BOND')) void fetchBonds() }}>Odśwież podsumowanie</button>
       <button type="button" className="secondary-button" disabled={busy || fxBusy || !data} onClick={() => { void fetchFx() }}>{fxBusy ? 'Pobieranie NBP…' : 'Pobierz kursy NBP'}</button></div>
     {!data && !error && <p role="status">Pobieranie podsumowania portfela…</p>}
     {error && <p role="alert" className="portfolio-warning">{error}</p>}
     {message && <p role="status" aria-label="Informacja portfela" className="valuation-note">{message}</p>}
     {currentFx && <p role="status" aria-label="Kursy NBP" className="valuation-note">{currentFx.text}</p>}
+    {data?.positions.some((item) => item.asset_class === 'BOND') && <div className="portfolio-actions"><p className="valuation-note">Obligacje w PLN nie wymagają kursu NBP. Wartość naliczamy z oprocentowania; inflacja i marża dotyczą COI/EDO.</p><button type="button" className="secondary-button" disabled={busy || !!currentBonds?.busy} onClick={() => { void fetchBonds() }}>Odśwież dane obligacji</button></div>}
+    {currentBonds && <p role="status" aria-label="Dane obligacji" className="valuation-note">{currentBonds.text}</p>}
     {marketMessage && <p role="status" aria-label="Stan Yahoo" className="valuation-note">{marketMessage}</p>}
     <p className="form-hint">Yahoo Finance: notowania mogą być opóźnione; Xetra około 15 minut. Czas notowania nie jest czasem pobrania. Nowsza cena ręczna ma pierwszeństwo do pojawienia się późniejszego notowania. Brakujące kursy NBP pobieramy automatycznie. Jedno odświeżenie obejmuje do 8 notowań; przy większym portfelu powtórz odświeżenie.</p>
 
     {data && !totals?.complete && <p className="portfolio-warning" role="status" aria-label="Kompletność portfela">
       Podsumowanie jest niepełne. Wartość pozycji z dostępną wyceną w PLN: {amount(totals?.known_value)}.
-      Uzupełnij brakujące ceny, wyceny obligacji lub kursy NBP. Braki nie są traktowane jako zero.</p>}
+      Braki nie są traktowane jako zero.
+      {data.missing_fx.length > 0 && <> Brakuje kursów NBP do walut obcych.</>}
+      {data.positions.some((item) => item.reasons.includes('missing_bond_valuation')) && <> Brakuje oprocentowania, marży lub inflacji do naliczenia obligacji; nie jest to brak kursu NBP.</>}</p>}
     {data?.estimated_fx && <p className="valuation-note">Kwoty walutowe są przeliczane na PLN. Koszt historyczny jest szacunkiem po kursie NBP z dnia zakupu lub ostatniej wcześniejszej publikacji; bieżąca wartość korzysta z ostatniego dostępnego kursu dla dnia podsumowania.</p>}
-    <p className="form-hint">Wypłacone odsetki zwiększają wynik, ale nie są dodawane do aktywów na wykresie. Gotówka i dywidendy akcji nie są jeszcze ewidencjonowane. Wynik brutto, bez podatków i kosztu przyszłej sprzedaży lub wykupu.</p>
+    <p className="form-hint">Wypłacone odsetki zwiększają wynik, ale nie są dodawane do aktywów na wykresie. Automatyczne wypłaty oznaczają odsetki należne za zakończone okresy, bez potwierdzenia przelewu. Gotówka i dywidendy akcji nie są jeszcze ewidencjonowane. Wynik brutto, bez podatków i kosztu przyszłej sprzedaży lub wykupu.</p>
     {data?.position_count === 0 && <p className="empty-purchases">Brak zakupionych aktywów w wybranym filtrze.</p>}
     {data && data.positions.length > 0 && <div className="purchase-table-scroll"><table className="purchase-table portfolio-table">
       <caption className="sr-only">Wszystkie aktywa wybranego portfela</caption>
@@ -150,16 +177,18 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
           {item.stale_price && <small>Cena starsza niż 4 dni</small>}
           {item.yahoo?.failed && <small>Ostatnia próba Yahoo nieudana; poprzednia cena zachowana</small>}
           {item.reasons.map((reason) => <small key={reason}>{reasons[reason]}</small>)}
+          {item.bond_calculation === 'ACCRUED' && <small>Naliczone brutto · {item.bond_interest_mode === 'PAYOUT' ? 'wypłata co roku' : 'kapitalizacja co roku'}{item.bond_current_rate != null ? ' · ' + formatDecimal(item.bond_current_rate) + '%' : ''}</small>}
+          {item.bond_missing_data && <small>{({ missing_bond_rate: 'Brak oprocentowania', missing_bond_margin: 'Brak marży emisji', missing_bond_inflation: 'Brak właściwego wskaźnika inflacji GUS' } as Record<string, string>)[item.bond_missing_data]}</small>}
           {item.purchase_id && <button type="button" className="text-button" disabled={busy} onClick={() => setEditing(item.purchase_id!)}>Wycena obligacji</button>}
         </td>
         <td>{item.unit_price == null ? '—' : formatDecimal(item.unit_price, 2) + ' ' + item.currency}</td>
-        <td>{item.value_pln == null && item.native_value != null ? formatDecimal(item.native_value, 2) + ' ' + item.currency : amount(item.value_pln)}{item.currency !== 'PLN' && item.native_value !== null && item.value_pln !== null && <small>{formatDecimal(item.native_value, 2)} {item.currency}</small>}</td>
+        <td>{item.asset_class === 'BOND' && item.value_pln == null && item.bond_nominal_value != null ? <>{amount(item.bond_nominal_value)}<small>Sam nominał — bez brakujących odsetek; nie jest pełną wyceną</small></> : item.value_pln == null && item.native_value != null ? formatDecimal(item.native_value, 2) + ' ' + item.currency : amount(item.value_pln)}{item.currency !== 'PLN' && item.native_value !== null && item.value_pln !== null && <small>{formatDecimal(item.native_value, 2)} {item.currency}</small>}</td>
         <td className={(item.gain_pln ?? item.native_gain)?.startsWith('-') ? 'position-loss' : (item.gain_pln ?? item.native_gain) == null ? '' : 'position-gain'}>{item.gain_pln != null ? amount(item.gain_pln) : item.native_gain == null ? '—' : formatDecimal(item.native_gain, 2) + ' ' + item.currency}
           {item.gain_pln == null && item.native_gain != null && <small>Brak przeliczenia na PLN</small>}</td>
         <td className={(item.gain_percent ?? item.native_gain_percent)?.startsWith('-') ? 'position-loss' : (item.gain_percent ?? item.native_gain_percent) == null ? '' : 'position-gain'}>{(item.gain_percent ?? item.native_gain_percent) == null ? '—' : formatDecimal((item.gain_percent ?? item.native_gain_percent)!, 2) + '%'}
           {item.gain_percent == null && item.native_gain_percent != null && <small>Wynik w {item.currency}</small>}</td>
       </tr>)}</tbody></table></div>}
-    <p className="form-hint">Wartość i wynik są w PLN, cena jednostki w walucie notowania. Do uzupełnienia kursów NBP pokazujemy znane kwoty i wynik w walucie instrumentu z oznaczeniem braku przeliczenia. Dla obligacji cena jednostki to ręcznie podana wartość partii podzielona przez liczbę sztuk. Przy nazwie widoczny jest rachunek; to samo aktywo na różnych rachunkach ma osobne wiersze.</p>
+    <p className="form-hint">Wartość i wynik są w PLN, cena jednostki w walucie notowania. Do uzupełnienia kursów NBP pokazujemy znane kwoty i wynik w walucie instrumentu z oznaczeniem braku przeliczenia. Dla obligacji cena jednostki to naliczona lub ręcznie podana wartość partii podzielona przez liczbę sztuk. Przy nazwie widoczny jest rachunek; to samo aktywo na różnych rachunkach ma osobne wiersze.</p>
     <div className="portfolio-chart-panel"><div>
       <h3>Struktura portfela</h3>
       <div className="portfolio-filters" role="group" aria-label="Podstawa wykresu">

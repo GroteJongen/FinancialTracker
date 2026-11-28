@@ -1,14 +1,14 @@
 # FinancialTracker
 
-Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja obsluguje wlasne portfele grupujace rachunki, rozne ETF-y, akcje, gieldowe REIT-y i obligacje, z historia zakupow i wycen. Dodawanie obligacji COI, TOS i EDO opisuje [instrukcja](docs/bonds.md). Kursy ETF/akcji pobieramy z Yahoo Finance; naliczanie odsetek obligacji pozostaje kolejnym etapem. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
+Prywatny tracker portfela: React + TypeScript, FastAPI i PostgreSQL. Aplikacja obsluguje wlasne portfele grupujace rachunki, rozne ETF-y, akcje, gieldowe REIT-y i obligacje, z historia zakupow i wycen. Dodawanie obligacji COI, TOS i EDO opisuje [instrukcja](docs/bonds.md). Kursy ETF/akcji pobieramy z Yahoo Finance; TOS, COI i EDO maja automatyczne naliczanie odsetek brutto, z kapitalizacja lub kuponami oraz historyczna inflacja GUS i marza konkretnej emisji. Frontend i backend pozostają w jednym repozytorium, z osobnymi katalogami, obrazami i zadaniami CI.
 
 Dodawanie instrumentu w sekcji „Instrumenty” wymaga wyboru istniejącego rachunku. Jeśli nie masz zgodnego rachunku, najpierw utwórz go w pokazanym formularzu. Nieistniejący lub niedostępny rachunek powoduje komunikat błędu, a wpisane dane instrumentu pozostają zachowane.
 
 ## Historia zakupów instrumentu
 
-W sekcji „Instrumenty” wybierz instrument i rachunek. Poniżej znajduje się wyłącznie historia zakupów z datą, liczbą jednostek, ceną i prowizją. „Popraw instrument” otwiera korektę wybranego zakupu, wymagającą powodu; „Zmiany instrumentu” pokazuje audyt. Formularz korekty jest domyślnie ukryty.
+W sekcji „Instrumenty” karta „Historia zakupów instrumentu” łączy wybór instrumentu i rachunku z listą zakupów. Wyszukiwanie filtruje bieżącą listę po dacie, liczbie jednostek, cenie, prowizji lub lacznym koszcie zakupu; sortowanie po dacie działa w obu kierunkach (domyślnie najnowsze). „Popraw instrument” otwiera korektę wybranego zakupu, wymagającą powodu; „Zmiany instrumentu” pokazuje audyt. Formularz korekty jest domyślnie ukryty.
 
-Panel Pozycja, kafelki wyceny, formularze ręcznej ceny i nowego zakupu oraz historia cen zostały usunięte z tego widoku. Wartości aktywów i wynik są prezentowane w dashboardzie. Istniejące zakupy, ceny i audyt pozostają w bazie; wspólne API finansowe i integracje nadal działają. Bez migracji i usuwania danych.
+Panel Pozycja, kafelki wyceny, formularze ręcznej ceny i nowego zakupu oraz historia cen zostały usunięte z tego widoku. Wartości aktywów i wynik są prezentowane w dashboardzie. Istniejące zakupy, ceny i audyt pozostają w bazie; wspólne API finansowe i integracje nadal działają. Zmiany historii nie usuwaja danych. Naliczanie obligacji wymaga migracji 0010, wykonywanej przy aktualizacji aplikacji.
 
 ## Uruchomienie na Windows
 

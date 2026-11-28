@@ -51,13 +51,13 @@ NBP API, historyczny koszt i aktualna wycena według calculations.md. Ustal zach
 
 ## FT-007 — TOS
 
-Status: Do ustalenia; wymagane seria, list emisyjny, tabele i typ rachunku.
+Status: Naliczanie brutto i kapitalizacja wdrozone w FT-021 wedlug listu emisyjnego. Pozostaje rozliczenie przedterminowego wykupu i szersza zgodnosc z tabelami poszczegolnych emisji.
 
 Parametry emisji, zakup, harmonogram kapitalizacji, wycena i testy zgodności z oficjalnymi tabelami. Reguły zaokrągleń i wcześniejszy wykup wymagają weryfikacji źródłowej.
 
 ## FT-008 — COI i EDO
 
-Status: Do ustalenia; po FT-007 i z dokumentami konkretnych emisji.
+Status: Naliczanie brutto z historyczna inflacja, marza emisji, kuponami COI i kapitalizacja EDO wdrozone w FT-021. Prognozy, oplaty i rozliczenie przedterminowego wykupu pozostaja poza zakresem.
 
 Oddziel wypłaty COI od kapitalizacji EDO. Dodaj znane stopy dla okresów i osobne założenia prognozy. Zweryfikuj daty graniczne i zgodność z tabelami.
 
@@ -116,3 +116,11 @@ Status: Ukończone - 208 testów backendu i 39 przeglądarkowych zaliczone w CI.
 ## FT-019 - Wyłącznie historia zakupów instrumentu
 
 Status: Ukończone - 208 testów backendu i 35 przeglądarkowych zaliczone w CI. Usunięcie całego panelu Pozycja i formularzy ceny oraz nowego zakupu. Pozostaje historia zakupów, korekta wybranego wpisu i audyt. Bez pobierania wyceny przez historię, bez zmian backendu i usuwania danych.
+
+## FT-020 - Zintegrowana historia, wyszukiwanie i sortowanie
+
+Status: Ukonczone - 230 testow backendu i 39 przegladarkowych zaliczone w CI. Jedna karta historii z wyborem instrumentu i rachunku, bez powtórzonego opisu instrumentu. Wyszukiwanie w bieżącej historii, licznik wyników i sortowanie daty zakupu w obu kierunkach. Zachowane korekty i audyt; bez zmian backendu.
+
+## FT-021 - Rzeczywiste odsetki obligacji i pełny koszt zakupu
+
+Status: Ukonczone - 230 testow backendu i 39 przegladarkowych zaliczone w CI. TOS/COI/EDO z naliczaniem brutto, roczną kapitalizacją lub należnymi kuponami, marżą konkretnej serii i historyczną inflacją GUS. Cache publicznych danych w migracji 0010; ręczne wyceny zachowane. Koszt historii akcji/ETF/REIT obejmuje jednostki × cenę + prowizję i jest liczony przez backend Decimal. NBP służy tylko przeliczeniu walut.

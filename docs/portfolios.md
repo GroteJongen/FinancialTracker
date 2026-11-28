@@ -14,7 +14,7 @@ koszty i prywatne ceny reczne. Wartosc/wynik/procent sa w PLN wedlug istniejacyc
 zasad NBP; cena jednostki pozostaje w walucie notowania. Brak danych pozostaje
 brakiem, nigdy zerem. Wynik procentowy = wynik / koszt x 100, bez annualizacji.
 
-Obligacje pozostaja oddzielnymi partiami z reczna wycena i wyplaconymi odsetkami.
+Obligacje pozostaja oddzielnymi partiami. TOS/COI/EDO maja automatyczna wycene brutto z kapitalizacja lub naleznymi kuponami; reczna wycena pozostaje nadrzedna dla aktualnej rewizji zakupu. Szczegoly zrodel i brakow danych: [obligacje](bonds.md#automatyczne-naliczanie-ft-021).
 Cena jednej sztuki to wartosc partii / liczba sztuk; nie jest notowaniem gieldowym
 ani nominalem; prezentacja ceny sztuki w PLN jest zaokraglona do 2 miejsc. Odsetki wyplacone wchodza do wyniku, ale nie sa dopisywane do aktywow.
 Nie rozszerzamy silnika regul emisji ani przepisow podatkowych.
@@ -59,3 +59,9 @@ Sekcja Operacje ETF (EUR) została usunięta. IUSQ wybiera się w sekcji Instrum
 ## Historia zamiast panelu Pozycja (FT-019)
 
 Po wybraniu instrumentu i rachunku w operacjach pozostaje wyłącznie Historia zakupów instrumentu. Panel Pozycja, kafelki, źródło wyceny, ręczna cena, historia cen i formularz nowego zakupu zostały usunięte z UI. Formularz korekty otwiera się tylko z wybranego wiersza historii; audyt pozostaje dostępny. Historia pobiera tylko zakupy, bez GET valuation i bez reagowania na aktualizacje kursów. Dashboard i istniejące API nadal obliczają wycenę. Dane cen i zakupów nie są usuwane.
+
+## Filtry i wyszukiwanie historii (FT-020)
+
+Wybór instrumentu i rachunku znajduje się wewnątrz karty Historia zakupów instrumentu. Powtórzony blok nazwy/tickera/ISIN został usunięty. Wyszukiwanie działa na zakupach wybranego instrumentu i rachunku, po dacie (polskiej lub ISO), liczbie jednostek, cenie i prowizji, a także nazwie instrumentu, tickerze, ISIN i nazwie rachunku. Akceptuje przecinek/kropkę i pomija odstępy w kwotach. Nie przeszukuje innych rachunków. Wyniki można wyczyścić jednym przyciskiem.
+
+Sortowanie używa daty zakupu, domyślnie malejąco; przy tej samej dacie kolejność ustala czas utworzenia i ID. Porównywane są teksty dat i formatowane kwoty, bez obliczeń finansowych na Number. Licznik odróżnia brak zakupów od braku wyników. Zmiana instrumentu/rachunku rozpoczyna nową historię z pustym wyszukiwaniem i domyślnym sortowaniem. Backend i dane pozostają bez zmian.

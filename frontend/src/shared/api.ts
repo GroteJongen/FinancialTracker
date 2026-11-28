@@ -6,7 +6,7 @@ export type Listing = {
 export type Purchase = {
   id: string; account_id: string; listing_id: string; symbol: string; isin: string | null
   trade_date: string; quantity: string; unit_price: string; commission: string; currency: string
-  revision: number; created_at: string; updated_at: string
+  cost: string; revision: number; created_at: string; updated_at: string
 }
 export type Audit = {
   id: string; revision: number; kind: string; reason: string | null

@@ -8,16 +8,16 @@ type Bond = {
   id: string; account_id: string; series: string; bond_type: BondType; term_years: number
   trade_date: string; quantity: number; unit_price: string; cost: string
   annual_rate: string | null; margin: string | null; source_url: string | null
-  revision: number; created_at: string
+  interest_mode: 'PAYOUT' | 'CAPITALIZE'; revision: number; created_at: string
 }
 type Form = {
   bond_type: BondType; series: string; trade_date: string; quantity: string; unit_price: string
-  annual_rate: string; margin: string; source_url: string; reason: string
+  interest_mode: string; annual_rate: string; margin: string; source_url: string; reason: string
 }
 const terms = { TOS: '3 lata · stałe oprocentowanie', COI: '4 lata · indeksowane inflacją', EDO: '10 lat · indeksowane inflacją' }
 const freshForm = (): Form => ({
   bond_type: 'TOS', series: '', trade_date: todayWarsaw(), quantity: '', unit_price: '100,00',
-  annual_rate: '', margin: '', source_url: '', reason: '',
+  interest_mode: 'CAPITALIZE', annual_rate: '', margin: '', source_url: '', reason: '',
 })
 const normalize = (value: string) => value.trim().replace(',', '.')
 const canonical = (value: string) => {
@@ -60,8 +60,8 @@ export default function Bonds({ accounts, onAccountsChanged, onBusyChange }: {
 
   return <section className="purchases-section bonds-section" aria-labelledby="bonds-title">
     <div className="section-heading"><h2 id="bonds-title">Obligacje skarbowe</h2><span>COI · TOS · EDO · PLN</span></div>
-    <p className="valuation-note">Zapisuj zakupy i warunki konkretnej serii. Koszt zakupu nie jest bieżącą wyceną.
-      Odsetki i wynik pojawią się po wdrożeniu zasad z listów emisyjnych.</p>
+    <p className="valuation-note">Zapisuj zakupy i warunki konkretnej serii. Wartość obligacji naliczamy brutto z uwzględnieniem wypłaty lub kapitalizacji.
+      Dla COI i EDO kolejne stopy wynikają z inflacji GUS i marży emisji.</p>
     {selected && !account && <p role="alert">Wybrany rachunek nie istnieje lub nie obsługuje obligacji. Wybierz istniejący rachunek.</p>}
     {!options.length && <p role="status" aria-label="Wymagany rachunek obligacji">Najpierw dodaj rachunek obligacji. Dopiero potem możesz zapisać zakup.</p>}
     <div className="purchase-account-picker">
@@ -123,7 +123,7 @@ function BondLedger({ account, onBusy, disabled }: {
     setForm({
       bond_type: item.bond_type, series: item.series, trade_date: item.trade_date,
       quantity: String(item.quantity), unit_price: item.unit_price, annual_rate: item.annual_rate ?? '',
-      margin: item.margin ?? '', source_url: item.source_url ?? '', reason: '',
+      interest_mode: item.interest_mode, margin: item.margin ?? '', source_url: item.source_url ?? '', reason: '',
     })
     setMessage(null)
   }
@@ -138,8 +138,11 @@ function BondLedger({ account, onBusy, disabled }: {
     if (!/^[0-9]{1,9}$/.test(form.quantity.trim()) || /^0+$/.test(form.quantity.trim())) {
       setMessage({ text: 'Liczba obligacji: podaj całkowitą liczbę od 1 do 999999999.', error: true }); return
     }
+    if (!form.annual_rate.trim()) {
+      setMessage({ text: 'Podaj oprocentowanie roczne: stałe dla TOS lub z pierwszego roku dla COI/EDO.', error: true }); return
+    }
     const body = {
-      series, trade_date: form.trade_date, quantity: Number(form.quantity.trim()),
+      interest_mode: form.interest_mode, series, trade_date: form.trade_date, quantity: Number(form.quantity.trim()),
       unit_price: normalize(form.unit_price), annual_rate: normalize(form.annual_rate) || null,
       margin: form.bond_type === 'TOS' ? null : normalize(form.margin) || null,
       source_url: form.source_url.trim() || null,
@@ -176,7 +179,7 @@ function BondLedger({ account, onBusy, disabled }: {
       <fieldset disabled={saving || disabled}><div className="purchase-form-grid">
         <div className="bond-select-field"><label htmlFor="bond-type">Rodzaj obligacji</label>
           <select id="bond-type" value={form.bond_type} onChange={(event) => setForm((previous) => ({
-            ...previous, bond_type: event.target.value as BondType, series: '', margin: '',
+            ...previous, bond_type: event.target.value as BondType, series: '', margin: '', interest_mode: event.target.value === 'COI' ? 'PAYOUT' : 'CAPITALIZE',
           }))}>{Object.entries(terms).map(([type, text]) => <option key={type} value={type}>{type} · {text}</option>)}</select></div>
         <label htmlFor="bond-series">Seria obligacji
           <input id="bond-series" required maxLength={7} placeholder="np. TOS1129" value={form.series}
@@ -190,7 +193,12 @@ function BondLedger({ account, onBusy, disabled }: {
         <label htmlFor="bond-price">Cena jednej obligacji (PLN)
           <input id="bond-price" inputMode="decimal" required value={form.unit_price}
             onChange={(event) => field('unit_price', event.target.value)} /></label>
-        <label htmlFor="bond-rate">Oprocentowanie (%) — opcjonalnie
+        <div className="bond-select-field"><label htmlFor="bond-interest-mode">Sposób rozliczania odsetek</label>
+          <select id="bond-interest-mode" value={form.interest_mode} onChange={(event) => field('interest_mode', event.target.value)}>
+            <option value="CAPITALIZE" disabled={form.bond_type === 'COI'}>Kapitalizacja co roku (TOS / EDO)</option>
+            <option value="PAYOUT" disabled={form.bond_type !== 'COI'}>Wypłata co roku (COI)</option>
+          </select></div>
+        <label htmlFor="bond-rate">Oprocentowanie roczne (%)
           <input id="bond-rate" inputMode="decimal" value={form.annual_rate} placeholder="Z listu emisyjnego"
             onChange={(event) => field('annual_rate', event.target.value)} /></label>
         {form.bond_type !== 'TOS' && <label htmlFor="bond-margin">Marża ponad inflację (%) — opcjonalnie
@@ -202,7 +210,7 @@ function BondLedger({ account, onBusy, disabled }: {
           <textarea id="bond-reason" required maxLength={500} rows={2} value={form.reason}
             onChange={(event) => field('reason', event.target.value)} /></label>}
       </div><p className="form-hint">Oprocentowanie: dla TOS stałe, dla COI/EDO z pierwszego roku.
-        Warunki zapisujemy jako podane ręcznie, bez automatycznej weryfikacji dokumentu.</p>
+        TOS i EDO kapitalizują odsetki co roku, COI wypłaca je co roku. Brakującą marżę pobieramy dla wskazanej serii; nie zastępujemy inflacji stopą z pierwszego roku.</p>
       <div className="form-actions"><button className="primary-button" type="submit">
         {saving ? 'Zapisywanie…' : editing ? 'Zapisz korektę obligacji' : 'Zapisz zakup obligacji'}</button>
         {editing && <button className="secondary-button" type="button" onClick={reset}>Anuluj korektę obligacji</button>}

@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_serializer, field_validator
 
 from app.domain.purchases import parse_amount, parse_trade_date
+from app.domain.valuation import money
 
 
 class PurchaseFields(BaseModel):
@@ -43,6 +44,7 @@ class PurchaseCorrection(PurchaseFields):
 
 
 class PurchaseResponse(BaseModel):
+    cost: Decimal
     id: UUID
     account_id: UUID
     listing_id: UUID
@@ -56,6 +58,10 @@ class PurchaseResponse(BaseModel):
     revision: int
     created_at: datetime
     updated_at: datetime
+
+    @field_serializer("cost")
+    def cost_text(self, value: Decimal) -> str | None:
+        return money(value)
 
     @field_serializer("quantity", "unit_price", "commission")
     def decimal_text(self, value: Decimal) -> str:

@@ -50,6 +50,10 @@ jobs:
       - name: Check public NBP network separately
         continue-on-error: true
         run: python -m tests.network_nbp
+      - name: Check public bond and GUS sources separately
+        if: always()
+        continue-on-error: true
+        run: python -m tests.network_bond_sources
       - name: Check public Yahoo network separately
         continue-on-error: true
         run: python -m tests.network_yahoo
