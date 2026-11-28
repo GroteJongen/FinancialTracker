@@ -30,10 +30,19 @@ test('bond purchase immediately has accrued value, no FX required, and survives 
   await expect(row).toContainText('kapitalizacja co roku')
   await expect(row).toContainText(formatDecimal(holding.value_pln, 2) + ' PLN')
   await expect(row).toContainText(formatDecimal(holding.gain_pln, 2) + ' PLN')
+  const interestCard = region.getByText('Odsetki zarobione', { exact: true }).locator('..').locator('dd')
+  await expect(interestCard).toHaveText(formatDecimal(snapshot.totals.earned_interest, 2) + ' PLN')
+  expect(snapshot.totals.earned_interest).not.toBe('0.00')
+  await expect(row).toContainText('Odsetki zarobione: ' + formatDecimal(holding.earned_interest, 2) + ' PLN')
   expect(fxCalls).toBe(0)
   await page.reload()
   await region.getByLabel('Portfel', { exact: true }).selectOption(group.id)
   await expect(row).toContainText(formatDecimal(holding.value_pln, 2) + ' PLN')
+  await expect(interestCard).toHaveText(formatDecimal(snapshot.totals.earned_interest, 2) + ' PLN')
+  await region.getByRole('button', { name: 'IKE', exact: true }).click()
+  await expect(interestCard).toHaveText('0,00 PLN')
+  await region.getByRole('button', { name: 'Wszystkie', exact: true }).click()
+  await expect(interestCard).toHaveText(formatDecimal(snapshot.totals.earned_interest, 2) + ' PLN')
 })
 
 test('opening dashboard fetches missing bond data once, failure stays incomplete with retry', async ({ page }) => {
@@ -45,7 +54,7 @@ test('opening dashboard fetches missing bond data once, failure stays incomplete
   })
   await page.route('**/api/portfolio?scope=*', (route) => route.fulfill({ json: {
     scope: 'ALL', as_of: '2026-11-28', account_count: 1, position_count: 1,
-    totals: { cost: '1000.00', value: null, gain: null, gain_percent: null, paid_income: '0.00', known_value: '0.00', complete: false, allocation_value: [], allocation_cost: [] },
+    totals: { cost: '1000.00', value: null, gain: null, gain_percent: null, paid_income: '0.00', earned_interest: null, known_earned_interest: '0.00', known_value: '0.00', complete: false, allocation_value: [], allocation_cost: [] },
     bond_requirements: ['CPI:2025-09'], missing_fx: [], fx_rates: [], estimated_fx: false,
     positions: [{ account_id: 'synthetic', account_name: 'Test CPI', account_kind: 'STANDARD', label: 'COI1128', asset_class: 'BOND', currency: 'PLN', quantity: '10', native_cost: '1000.00', cost_pln: '1000.00', native_value: null, value_pln: null, gain_pln: null, paid_income: null, reasons: ['missing_bond_valuation'], observed_on: null, bond_missing_data: 'missing_bond_inflation', bond_nominal_value: '1000.00' }],
   } }))
@@ -55,6 +64,8 @@ test('opening dashboard fetches missing bond data once, failure stays incomplete
   await expect(status).toContainText('Nie udało się uzupełnić wszystkich danych')
   await expect(region.getByRole('status', { name: 'Kompletność portfela' })).toContainText('nie jest to brak kursu NBP')
   await expect(region.getByText('Wartość aktywów', { exact: true }).locator('..').locator('dd')).toHaveText('—')
+  await expect(region.getByText('Odsetki zarobione', { exact: true }).locator('..').locator('dd')).toHaveText('—')
+  await expect(region.getByRole('status', { name: 'Kompletność odsetek' })).toContainText('Znane odsetki zarobione: 0,00 PLN')
   expect(calls).toBe(1)
   await region.getByRole('button', { name: 'Odśwież dane obligacji', exact: true }).click()
   await expect(status).toContainText('Nie udało się uzupełnić wszystkich danych')

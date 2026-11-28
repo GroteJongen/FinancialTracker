@@ -13,7 +13,7 @@ from app.application.market_prices import mapping_info, selected_price
 from app.application.portfolio_contracts import BondValuationCreate
 from app.application.portfolio_groups import owned_group
 from app.application.purchases import PurchaseError
-from app.domain.bond_interest import MissingBondData
+from app.domain.bond_interest import MissingBondData, earned_interest
 from app.domain.portfolio import Holding, summarize
 from app.domain.purchases import business_today
 from app.domain.valuation import Lot, calculate, money
@@ -162,6 +162,7 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
             value_pln,
             reasons,
             observed_on,
+            earned=Decimal("0"),
             **extra,
         ):
             account = accounts[account_id]
@@ -175,7 +176,7 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 if native_value is not None and paid is not None
                 else None
             )
-            holdings.append(Holding(asset_class, cost_pln, value_pln, paid))
+            holdings.append(Holding(asset_class, cost_pln, value_pln, paid, earned))
             items.append(
                 dict(
                     account_id=str(account_id),
@@ -193,6 +194,7 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                         else None
                     ),
                     paid_income=money(paid),
+                    earned_interest=money(earned),
                     cost_pln=money(cost_pln),
                     value_pln=money(value_pln),
                     gain_pln=money(gain),
@@ -290,6 +292,7 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 value,
                 [] if value is not None else ["missing_bond_valuation"],
                 mark.observed_on if mark else today if calculated else None,
+                earned=earned_interest(value, paid, purchase.quantity),
                 purchase_id=str(purchase.id),
                 purchase_revision=purchase.revision,
                 quantity=str(purchase.quantity),

@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -33,6 +34,9 @@ def test_new_tos_value_is_in_portfolio_without_any_nbp_or_manual_mark(ledger, mo
     assert initial["totals"]["cost"] == "999.00"
     assert initial["totals"]["value"] == "1002.20"
     assert initial["totals"]["gain"] == "3.20"
+    assert initial["totals"]["paid_income"] == "0.00"
+    assert initial["totals"]["earned_interest"] == "2.20"
+    assert initial["positions"][0]["earned_interest"] == "2.20"
     assert initial["totals"]["complete"] is True
     assert initial["positions"][0]["bond_calculation"] == "ACCRUED"
     assert client.post("/api/portfolio/fx/refresh").json()["updated"] == 0
@@ -78,6 +82,7 @@ def test_gus_and_specific_margin_complete_indexed_value_outside_transaction(ledg
     final = client.get("/api/portfolio").json()
     assert final["totals"]["value"] == "1000.20"
     assert final["totals"]["paid_income"] == "94.00"
+    assert final["totals"]["earned_interest"] == "94.20"
     assert final["totals"]["gain"] == "95.20"
     assert final["totals"]["complete"] is True
     assert client.post("/api/bonds/refresh").json()["updated"] == 0
@@ -105,6 +110,7 @@ def test_manual_bond_mark_remains_authoritative(ledger, monkeypatch):
     assert response.status_code == 201
     result = client.get("/api/portfolio").json()
     assert result["totals"]["value"] == "1050.00"
+    assert result["totals"]["earned_interest"] == "50.00"
     assert result["positions"][0]["bond_calculation"] == "MANUAL"
 
 
@@ -141,6 +147,7 @@ def test_source_failure_never_fills_unknown_interest_with_zero(ledger, monkeypat
     assert client.post("/api/bonds/refresh").json()["failed"] == 1
     result = client.get("/api/portfolio").json()
     assert result["totals"]["value"] is None
+    assert result["totals"]["earned_interest"] is None
     assert result["positions"][0]["bond_nominal_value"] == "1000.00"
 
 
@@ -191,3 +198,57 @@ def test_interest_mode_validation_and_legacy_retry_keep_existing_purchase(ledger
         )
         assert rejected.status_code == 422
     assert len(client.get(f"/api/accounts/{own}/bonds").json()) == 1
+
+
+@pytest.mark.parametrize("series", ["TOS1129", "COI1130", "EDO1136"])
+def test_each_bond_type_earns_interest_before_first_payout(ledger, monkeypatch, series):
+    client, _, _, _ = ledger
+    freeze(monkeypatch, date(2026, 11, 28))
+    own = account(client)
+    result = client.post(f"/api/accounts/{own}/bonds", json=payload(series=series))
+    assert result.status_code == 201
+    totals = client.get("/api/portfolio").json()["totals"]
+    assert totals["paid_income"] == "0.00"
+    assert totals["earned_interest"] == "2.20"
+    assert totals["gain"] == "3.20"
+
+
+def test_earned_interest_follows_group_and_retirement_filters(ledger, monkeypatch):
+    client, engine, _, _ = ledger
+    freeze(monkeypatch, date(2026, 11, 11))
+    with Session(engine) as session, session.begin():
+        for year, rate in ((2025, "2.9"), (2026, "4.1")):
+            session.add(
+                InflationRate(
+                    year=year, month=9, rate=Decimal(rate), source_url="https://stat.gov.pl"
+                )
+            )
+    accounts = []
+    values = [
+        ("STANDARD", "TOS1129", "2026-11-10", "4.4", None),
+        ("IKE_BONDS", "COI1128", "2024-11-10", "5", "1.5"),
+        ("IKZE", "EDO1134", "2024-11-10", "6", "2"),
+    ]
+    for kind, series, day, rate, margin in values:
+        own = account(client, name=kind, kind=kind)
+        accounts.append(own)
+        result = client.post(
+            f"/api/accounts/{own}/bonds",
+            json=payload(series=series, trade_date=day, annual_rate=rate, margin=margin),
+        )
+        assert result.status_code == 201
+    for scope, expected in (
+        ("ALL", "206.40"),
+        ("STANDARD", "0.10"),
+        ("IKE", "94.20"),
+        ("IKZE", "112.10"),
+        ("RETIREMENT", "206.30"),
+    ):
+        result = client.get(f"/api/portfolio?scope={scope}").json()
+        assert result["totals"]["earned_interest"] == expected
+    group = client.post(
+        "/api/portfolios", json=dict(name="TOS and COI", account_ids=accounts[:2])
+    ).json()
+    result = client.get(f"/api/portfolio?portfolio_id={group['id']}").json()
+    assert result["totals"]["earned_interest"] == "94.30"
+    assert result["totals"]["gain"] == "96.30"
