@@ -14,7 +14,7 @@ koszty i prywatne ceny reczne. Wartosc/wynik/procent sa w PLN wedlug istniejacyc
 zasad NBP; cena jednostki pozostaje w walucie notowania. Brak danych pozostaje
 brakiem, nigdy zerem. Wynik procentowy = wynik / koszt x 100, bez annualizacji.
 
-Obligacje pozostaja oddzielnymi partiami z reczna wycena i wyplaconymi odsetkami.
+Obligacje pozostaja oddzielnymi partiami. TOS/COI/EDO maja automatyczna wycene brutto z kapitalizacja lub naleznymi kuponami; reczna wycena pozostaje nadrzedna dla aktualnej rewizji zakupu. Szczegoly zrodel i brakow danych: [obligacje](bonds.md#automatyczne-naliczanie-ft-021).
 Cena jednej sztuki to wartosc partii / liczba sztuk; nie jest notowaniem gieldowym
 ani nominalem; prezentacja ceny sztuki w PLN jest zaokraglona do 2 miejsc. Odsetki wyplacone wchodza do wyniku, ale nie sa dopisywane do aktywow.
 Nie rozszerzamy silnika regul emisji ani przepisow podatkowych.

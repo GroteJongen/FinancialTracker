@@ -12,7 +12,7 @@ Seria musi mieć format TOS/COI/EDO + miesiąc 01–12 + dwie cyfry roku. Sprawd
 
 ## Korekty i trwałość
 
-Każdy zapis i korekta tworzą zdarzenie audytu w tej samej transakcji. Korekta wymaga powodu oraz aktualnej rewizji; konflikt zwraca 409. Parametry emisji są niezmiennymi, prywatnymi dla właściciela snapshotami BondIssue. Skrót SHA-256 kanonicznych pól identyfikuje wersję parametrów. Korekta parametrów tworzy lub wybiera inną wersję, nie zmienia zakupów korzystających ze starej wersji. Snapshot nie jest jeszcze kompletnym silnikiem reguł emisji.
+Każdy zapis i korekta tworzą zdarzenie audytu w tej samej transakcji. Korekta wymaga powodu oraz aktualnej rewizji; konflikt zwraca 409. Parametry emisji są niezmiennymi, prywatnymi dla właściciela snapshotami BondIssue. Skrót SHA-256 kanonicznych pól identyfikuje wersję parametrów. Korekta parametrów tworzy lub wybiera inną wersję, nie zmienia zakupów korzystających ze starej wersji. Automatyczny cache publicznych warunków nie zmienia zapisanych snapshotów.
 
 POST zakupu posiada request_id unikalne w rachunku. Identyczne ponowienie zwraca istniejący zapis (200), inne dane z tym kluczem — 409. Ponowienie pierwotnego żądania po korekcie zwraca aktualny zakup, nie cofa korekty. Tworzenie rachunku z tą samą nazwą i typem jest idempotentne; ta sama nazwa z innym typem daje 409.
 
@@ -27,13 +27,13 @@ POST zakupu posiada request_id unikalne w rachunku. Identyczne ponowienie zwraca
 | PUT | /api/accounts/{id}/bonds/{purchase_id} | Korekta z expected_revision i reason |
 | GET | /api/accounts/{id}/bonds/{purchase_id}/audit | Historia wartości przed i po korekcie |
 
-Zakupy są dostępne wyłącznie dla właściciela rachunku; obsługiwane rachunki obligacji muszą być w PLN. Nie łączymy kosztu PLN z wynikiem ETF w EUR. Migracja 0004 dodaje trzy tabele bez zmiany wcześniejszych zakupów i cen IUSQ. Seed nie dodaje fikcyjnych obligacji.
+Zakupy są dostępne wyłącznie dla właściciela rachunku; obsługiwane rachunki obligacji muszą być w PLN. Dashboard przelicza instrumenty walutowe przez NBP przed sumowaniem. Migracja 0004 wprowadziła ewidencję obligacji, a 0010 dodaje publiczny cache warunków i inflacji. Seed nie dodaje fikcyjnych obligacji.
 
 ## Ograniczenia
 
 Automatyczne naliczanie brutto TOS/COI/EDO opisano ponizej. Nadal brak podatkow, oplat za wczesniejszy wykup, sprzedazy i importu. Nalezny kupon nie potwierdza przelewu.
 
-Źródło ogólnej identyfikacji typów i okresów: https://www.obligacjeskarbowe.pl/oferta/ (sprawdzone 2026-11-27): TOS 3 lata, COI 4 lata, EDO 10 lat. Dokumenty konkretnej serii muszą być podstawą przyszłych obliczeń; dzisiejsze stopy nie są zasadami starszych emisji.
+Źródło ogólnej identyfikacji typów i okresów: https://www.obligacjeskarbowe.pl/oferta/ (sprawdzone 2026-11-27): TOS 3 lata, COI 4 lata, EDO 10 lat. Dokumenty konkretnej serii są podstawą obliczeń; dzisiejsze stopy nie zastępują zasad starszych emisji.
 
 ## Uruchomienie aktualizacji
 
@@ -43,7 +43,7 @@ Po pobraniu gałęzi/mergu, w katalogu projektu:
 docker compose up --build -d --wait --wait-timeout 300
 ```
 
-Jeśli kontener migrate ma już zakończony wcześniejszy przebieg, Compose odtworzy go po zmianie obrazu backendu. Gotowość API wymaga rewizji 0004. W razie niezgodności sprawdź `docker compose logs migrate backend`, a migrację można jawnie wykonać przez `docker compose run --rm migrate`. Nie usuwaj wolumenu postgres-data.
+Jeśli kontener migrate ma już zakończony wcześniejszy przebieg, Compose odtworzy go po zmianie obrazu backendu. Wersja schematu dla FT-021 to 0010. W razie niezgodności sprawdź `docker compose logs migrate backend`, a migrację można jawnie wykonać przez `docker compose run --rm migrate`. Nie usuwaj wolumenu postgres-data.
 
 ## Weryfikacja
 
