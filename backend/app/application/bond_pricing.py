@@ -125,8 +125,9 @@ def refresh_bond_data(session, owner_id, scope="ALL", portfolio_id=None):
                         source_url=item.source_url,
                     )
                     .on_conflict_do_nothing()
+                    .returning(BondSeriesCache.series)
                 )
-                updated += result.rowcount
+                updated += int(result.scalar_one_or_none() is not None)
         for (year, month), rate in cpi.items():
             if date(year, month, 1) >= today.replace(day=1):
                 continue
@@ -134,8 +135,9 @@ def refresh_bond_data(session, owner_id, scope="ALL", portfolio_id=None):
                 insert(InflationRate)
                 .values(year=year, month=month, rate=rate, source_url=bond_sources.GUS_URL)
                 .on_conflict_do_nothing()
+                .returning(InflationRate.year)
             )
-            updated += result.rowcount
+            updated += int(result.scalar_one_or_none() is not None)
         # Re-read ownership and composition: no HTTP result can modify holdings.
         _, _, bonds = records(session, owner_id, scope, portfolio_id=portfolio_id)
         remaining = len(requirement_keys(session, bonds, today))

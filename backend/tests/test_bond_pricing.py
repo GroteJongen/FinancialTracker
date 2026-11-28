@@ -172,3 +172,22 @@ def test_purchase_history_cost_is_exact_and_includes_commission(ledger):
     assert result.status_code == 201
     assert result.json()["cost"] == "12.62"
     assert client.get(f"/api/accounts/{account_id}/purchases").json()[0]["cost"] == "12.62"
+
+
+def test_interest_mode_validation_and_legacy_retry_keep_existing_purchase(ledger):
+    client, _, _, _ = ledger
+    own = account(client)
+    original = payload()
+    saved = client.post(f"/api/accounts/{own}/bonds", json=original)
+    assert saved.status_code == 201
+    retried = client.post(
+        f"/api/accounts/{own}/bonds", json=original | {"interest_mode": "CAPITALIZE"}
+    )
+    assert retried.status_code == 200
+    assert retried.json()["id"] == saved.json()["id"]
+    for series, wrong in (("TOS1129", "PAYOUT"), ("COI1130", "CAPITALIZE"), ("EDO1136", "PAYOUT")):
+        rejected = client.post(
+            f"/api/accounts/{own}/bonds", json=payload(series=series, interest_mode=wrong)
+        )
+        assert rejected.status_code == 422
+    assert len(client.get(f"/api/accounts/{own}/bonds").json()) == 1
