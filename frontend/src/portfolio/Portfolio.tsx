@@ -188,7 +188,7 @@ export default function Portfolio({ accounts = [], onOpenAsset }: { accounts?: A
         <td className={(item.gain_percent ?? item.native_gain_percent)?.startsWith('-') ? 'position-loss' : (item.gain_percent ?? item.native_gain_percent) == null ? '' : 'position-gain'}>{(item.gain_percent ?? item.native_gain_percent) == null ? '—' : formatDecimal((item.gain_percent ?? item.native_gain_percent)!, 2) + '%'}
           {item.gain_percent == null && item.native_gain_percent != null && <small>Wynik w {item.currency}</small>}</td>
       </tr>)}</tbody></table></div>}
-    <p className="form-hint">Wartość i wynik są w PLN, cena jednostki w walucie notowania. Do uzupełnienia kursów NBP pokazujemy znane kwoty i wynik w walucie instrumentu z oznaczeniem braku przeliczenia. Dla obligacji cena jednostki to ręcznie podana wartość partii podzielona przez liczbę sztuk. Przy nazwie widoczny jest rachunek; to samo aktywo na różnych rachunkach ma osobne wiersze.</p>
+    <p className="form-hint">Wartość i wynik są w PLN, cena jednostki w walucie notowania. Do uzupełnienia kursów NBP pokazujemy znane kwoty i wynik w walucie instrumentu z oznaczeniem braku przeliczenia. Dla obligacji cena jednostki to naliczona lub ręcznie podana wartość partii podzielona przez liczbę sztuk. Przy nazwie widoczny jest rachunek; to samo aktywo na różnych rachunkach ma osobne wiersze.</p>
     <div className="portfolio-chart-panel"><div>
       <h3>Struktura portfela</h3>
       <div className="portfolio-filters" role="group" aria-label="Podstawa wykresu">

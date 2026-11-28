@@ -11,7 +11,11 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 from app.domain.bonds import parse_series
 
 GUS_URL = "https://stat.gov.pl/obszary-tematyczne/ceny-handel/wskazniki-cen/wskazniki-cen-towarow-i-uslug-konsumpcyjnych-pot-inflacja-/miesieczne-wskazniki-cen-towarow-i-uslug-konsumpcyjnych-od-1982-roku/"
-KINDS = {"TOS": "obligacje-3-letnie-tos", "COI": "obligacje-4-letnie-coi", "EDO": "obligacje-10-letnie-edo"}
+KINDS = {
+    "TOS": "obligacje-3-letnie-tos",
+    "COI": "obligacje-4-letnie-coi",
+    "EDO": "obligacje-10-letnie-edo",
+}
 
 
 class SourceUnavailable(Exception):
@@ -21,14 +25,23 @@ class SourceUnavailable(Exception):
 class Redirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         parsed = urlsplit(newurl)
-        if parsed.scheme != "https" or parsed.hostname not in {"stat.gov.pl", "www.obligacjeskarbowe.pl"} or parsed.username or parsed.password or parsed.port not in {None, 443}:
+        if (
+            parsed.scheme != "https"
+            or parsed.hostname not in {"stat.gov.pl", "www.obligacjeskarbowe.pl"}
+            or parsed.username
+            or parsed.password
+            or parsed.port not in {None, 443}
+        ):
             raise SourceUnavailable("Untrusted provider redirect")
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
 def fetch(url: str) -> str:
     try:
-        with build_opener(Redirect()).open(Request(url, headers={"User-Agent": "FinancialTracker/1.0", "Accept": "text/html"}), timeout=4) as response:
+        with build_opener(Redirect()).open(
+            Request(url, headers={"User-Agent": "FinancialTracker/1.0", "Accept": "text/html"}),
+            timeout=10,
+        ) as response:
             raw = response.read(2_000_001)
         if len(raw) > 2_000_000:
             raise ValueError("Provider response too large")
@@ -92,11 +105,13 @@ def parse_terms(series: str, html: str) -> SeriesTerms:
     rate = re.search(r"Oprocentowanie:\s*([0-9]+(?:[,.][0-9]+)?)\s*%", text)
     if not found or found[1] != series or not rate:
         raise SourceUnavailable("Wrong or incomplete issue page")
-    segment = text[found.start():].split("Charakterystyka obligacji")[0]
+    segment = text[found.start() :].split("Charakterystyka obligacji")[0]
     margin = re.search(r"marża\s*([0-9]+(?:[,.][0-9]+)?)\s*%", segment, re.I)
     annual = Decimal(rate[1].replace(",", "."))
     extra = Decimal(margin[1].replace(",", ".")) if margin else None
-    if not Decimal("0") <= annual <= Decimal("100") or (extra is not None and not Decimal("0") <= extra <= Decimal("100")):
+    if not Decimal("0") <= annual <= Decimal("100") or (
+        extra is not None and not Decimal("0") <= extra <= Decimal("100")
+    ):
         raise SourceUnavailable("Invalid issue rates")
     if series[:3] != "TOS" and extra is None:
         raise SourceUnavailable("Missing issue margin")
@@ -105,7 +120,9 @@ def parse_terms(series: str, html: str) -> SeriesTerms:
 
 def series_url(series: str) -> str:
     series = parse_series(series)
-    return f"https://www.obligacjeskarbowe.pl/oferta-obligacji/{KINDS[series[:3]]}/{series.lower()}/"
+    return (
+        f"https://www.obligacjeskarbowe.pl/oferta-obligacji/{KINDS[series[:3]]}/{series.lower()}/"
+    )
 
 
 def terms(series: str) -> SeriesTerms:
@@ -126,11 +143,13 @@ def parse_inflation(html: str) -> dict[tuple[int, int], Decimal]:
             active = False
         if not active:
             continue
-        year_at = next((index for index, cell in enumerate(row) if re.fullmatch(r"20\d{2}", plain(cell))), None)
+        year_at = next(
+            (index for index, cell in enumerate(row) if re.fullmatch(r"20\d{2}", plain(cell))), None
+        )
         if year_at is None or len(row) - year_at != 13:
             continue
         year = int(row[year_at])
-        for month, cell in enumerate(row[year_at + 1:], 1):
+        for month, cell in enumerate(row[year_at + 1 :], 1):
             cell = plain(cell)
             if not cell or cell in {".", "-", "x"}:
                 continue

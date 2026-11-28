@@ -7,13 +7,13 @@ from sqlalchemy import func, select, tuple_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from app.application.bonds import bond_account, find_purchase, lock_owner
 from app.application.bond_pricing import cached_inputs, calculate_bond, requirement_keys
-from app.domain.bond_interest import MissingBondData
+from app.application.bonds import bond_account, find_purchase, lock_owner
 from app.application.market_prices import mapping_info, selected_price
 from app.application.portfolio_contracts import BondValuationCreate
 from app.application.portfolio_groups import owned_group
 from app.application.purchases import PurchaseError
+from app.domain.bond_interest import MissingBondData
 from app.domain.portfolio import Holding, summarize
 from app.domain.purchases import business_today
 from app.domain.valuation import Lot, calculate, money
@@ -264,10 +264,17 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
             cost = purchase.quantity * purchase.unit_price
             value = mark.value if mark else None
             paid = mark.paid_interest if mark else None
-            calculated, missing, mode, terms_source = None, None, "PAYOUT" if issue.bond_type == "COI" else "CAPITALIZE", None
+            calculated, missing, mode, terms_source = (
+                None,
+                None,
+                "PAYOUT" if issue.bond_type == "COI" else "CAPITALIZE",
+                None,
+            )
             if mark is None:
                 try:
-                    calculated, mode, terms_source = calculate_bond(purchase, issue, today, bond_terms, inflation)
+                    calculated, mode, terms_source = calculate_bond(
+                        purchase, issue, today, bond_terms, inflation
+                    )
                     value, paid = calculated.value, calculated.due_interest
                 except MissingBondData as failure:
                     missing = str(failure)
@@ -295,7 +302,9 @@ def get_portfolio(session: Session, owner_id: UUID, scope="ALL", portfolio_id=No
                 bond_interest_mode=mode,
                 bond_current_rate=format(calculated.current_rate, "f") if calculated else None,
                 bond_accrued_interest=money(calculated.accrued_interest) if calculated else None,
-                bond_capitalized_interest=money(calculated.capitalized_interest) if calculated else None,
+                bond_capitalized_interest=money(calculated.capitalized_interest)
+                if calculated
+                else None,
                 bond_nominal_value=money(Decimal("100") * purchase.quantity),
                 bond_terms_source=terms_source,
             )

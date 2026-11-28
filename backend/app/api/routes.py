@@ -57,8 +57,15 @@ def get_session(request: Request) -> Generator[Session]:
 
 
 @router.post("/bonds/refresh")
-def bond_refresh(request: Request, scope: PortfolioScope = "ALL", portfolio_id: UUID | None = None, session: Session = Depends(get_session)):
-    return refresh_bond_data(session, request.app.state.settings.local_owner_id, scope, portfolio_id)
+def bond_refresh(
+    request: Request,
+    scope: PortfolioScope = "ALL",
+    portfolio_id: UUID | None = None,
+    session: Session = Depends(get_session),
+):
+    return refresh_bond_data(
+        session, request.app.state.settings.local_owner_id, scope, portfolio_id
+    )
 
 
 @router.post("/market-prices/refresh")

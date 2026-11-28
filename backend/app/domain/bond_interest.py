@@ -7,7 +7,7 @@ assumption that a due coupon has actually reached a bank account.
 from calendar import monthrange
 from dataclasses import dataclass
 from datetime import date
-from decimal import Decimal, ROUND_HALF_UP, localcontext
+from decimal import ROUND_HALF_UP, Decimal, localcontext
 
 from app.domain.bonds import BOND_TERMS
 
@@ -42,10 +42,23 @@ class BondAccrual:
     maturity: date
 
 
-def accrue(kind: str, bought: date, quantity: int, annual_rate: Decimal | None,
-           margin: Decimal | None, mode: str, as_of: date,
-           inflation: dict[tuple[int, int], Decimal]) -> BondAccrual:
-    if kind not in BOND_TERMS or bought > as_of or not isinstance(quantity, int) or isinstance(quantity, bool) or quantity <= 0:
+def accrue(
+    kind: str,
+    bought: date,
+    quantity: int,
+    annual_rate: Decimal | None,
+    margin: Decimal | None,
+    mode: str,
+    as_of: date,
+    inflation: dict[tuple[int, int], Decimal],
+) -> BondAccrual:
+    if (
+        kind not in BOND_TERMS
+        or bought > as_of
+        or not isinstance(quantity, int)
+        or isinstance(quantity, bool)
+        or quantity <= 0
+    ):
         raise ValueError("Invalid bond position")
     expected = "PAYOUT" if kind == "COI" else "CAPITALIZE"
     if mode != expected:
@@ -54,7 +67,9 @@ def accrue(kind: str, bought: date, quantity: int, annual_rate: Decimal | None,
         raise MissingBondData("missing_bond_rate")
     if not annual_rate.is_finite() or not Decimal("0") <= annual_rate <= Decimal("100"):
         raise ValueError("Invalid rate")
-    if margin is not None and (not margin.is_finite() or not Decimal("0") <= margin <= Decimal("100")):
+    if margin is not None and (
+        not margin.is_finite() or not Decimal("0") <= margin <= Decimal("100")
+    ):
         raise ValueError("Invalid margin")
     years = BOND_TERMS[kind]
     maturity = anniversary(bought, years)
@@ -76,21 +91,43 @@ def accrue(kind: str, bought: date, quantity: int, annual_rate: Decimal | None,
                         raise MissingBondData("missing_bond_margin")
                     if key not in inflation:
                         raise MissingBondData("missing_bond_inflation")
-                    if not inflation[key].is_finite() or not Decimal("-100") < inflation[key] < Decimal("900"):
+                    if not inflation[key].is_finite() or not Decimal("-100") < inflation[
+                        key
+                    ] < Decimal("900"):
                         raise ValueError("Invalid inflation")
                     current_rate = max(Decimal("0"), inflation[key]) + margin
             rate = current_rate / Decimal("100")
             if effective < stop:
-                base = cents(principal) if kind == "TOS" else principal if mode == "CAPITALIZE" else nominal
-                unit_value = cents(base * (1 + rate * Decimal((effective - start).days) / Decimal((stop - start).days)))
+                base = (
+                    cents(principal)
+                    if kind == "TOS"
+                    else principal
+                    if mode == "CAPITALIZE"
+                    else nominal
+                )
+                unit_value = cents(
+                    base
+                    * (1 + rate * Decimal((effective - start).days) / Decimal((stop - start).days))
+                )
                 accrued = unit_value - cents(principal)
-                return BondAccrual(unit_value * quantity, due * quantity,
-                                   accrued * quantity, current_rate,
-                                   (cents(principal) - nominal) * quantity, maturity)
+                return BondAccrual(
+                    unit_value * quantity,
+                    due * quantity,
+                    accrued * quantity,
+                    current_rate,
+                    (cents(principal) - nominal) * quantity,
+                    maturity,
+                )
             if mode == "PAYOUT":
                 due += cents(nominal * rate)
             else:
                 principal *= Decimal("1") + rate
         value = cents(principal) if mode == "CAPITALIZE" else nominal
-        return BondAccrual(value * quantity, due * quantity, Decimal("0"), current_rate,
-                           (value - nominal) * quantity, maturity)
+        return BondAccrual(
+            value * quantity,
+            due * quantity,
+            Decimal("0"),
+            current_rate,
+            (value - nominal) * quantity,
+            maturity,
+        )

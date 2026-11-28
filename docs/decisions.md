@@ -70,3 +70,7 @@ Przypisanie notowania do rachunku jest osobną relacją account_listings, bez tw
 ## ADR-030 - Wspólne operacje zamiast osobnego ETF EUR
 
 Usuwamy zduplikowany interfejs ograniczony do EUR i domyślną wycenę IUSQ w API. Instrument jest zawsze wskazany jawnie. Logika finansowa, historia i integracje pozostają wspólne. Nie usuwamy seedów, notowań ani danych IUSQ, ponieważ jest pełnoprawnym instrumentem w katalogu. Testy dotychczasowego widoku przechodzą przez wspólną pozycję instrumentu.
+
+## ADR-031 - Naliczanie obligacji i jawne braki danych
+
+Czysty modul domenowy liczy TOS/COI/EDO od nominalu, zgodnie z listami emisyjnymi. Tryb wyplaty wynika z produktu i jest walidowany. Publiczne warunki konkretnej emisji i historyczne CPI sa oddzielnym cache, bez zmiany niezmiennych snapshotow uzytkownika. Pobieranie odbywa sie poza transakcjami; brak danych pozostawia niepelna wycene. Reczne wyceny dla aktualnej rewizji maja pierwszenstwo. Nalezne kupony sa oznaczone jako nalezne, bez potwierdzenia przelewu. Nowe pole trybu nie zmienia hashy idempotencji istniejacych zakupow.

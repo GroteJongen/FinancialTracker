@@ -56,3 +56,7 @@ Te same wzory kosztu, średniej, wartości i wyniku stosujemy osobno dla każdeg
 ## FT-011 — Suma portfela
 
 Łączny wynik PLN = suma bieżących wartości PLN + skumulowane wypłacone odsetki brutto PLN − suma historycznych kosztów PLN. Walutowy koszt liczony jest dla każdej transakcji po historycznym kursie NBP; bieżąca wartość po aktualnym dostępnym kursie. To szacunek, bez rzeczywistego FX brokera i podatków. Przykład: koszt 175000, wartość 185000, wypłaty 0 daje wynik 10000 i 5,71%. Wartość 175000 i odsetki już wypłacone 10000 daje ten sam wynik, ale inny stan aktywów. Udziały bazują wyłącznie na wartości aktywów lub na koszcie, bez dopisywania wypłaconych kwot. Reguły braków i precyzji: portfolio.md.
+
+## Odsetki obligacji FT-021
+
+Koszt nabycia: liczba sztuk razy rzeczywista cena. Nominal: 100 PLN na sztuke. Wycena brutto i nalezne kupony sa liczone osobno; zysk = wycena + kupony - koszt. COI wyplaca roczne kupony, TOS i EDO kapitalizuja rocznie. Szczegoly ACT/ACT, zaokraglen i dat CPI oraz listy emisyjne: [obligacje](bonds.md#automatyczne-naliczanie-ft-021). Nie doliczamy ponownie skapitalizowanych odsetek do dochodu. Nie zgadujemy brakujacej marzy ani CPI.

@@ -158,7 +158,9 @@ def create_bond_purchase(session: Session, owner_id: UUID, account_id: UUID, dat
         bond_account(session, account_id, owner_id, lock=True)
         values = {
             key: canonical(value)
-            for key, value in data.model_dump(exclude={"request_id", "trade_date", "interest_mode"}).items()
+            for key, value in data.model_dump(
+                exclude={"request_id", "trade_date", "interest_mode"}
+            ).items()
         }
         request_hash = digest(values | {"trade_date": data.trade_date.isoformat()})
         existing = session.scalar(
