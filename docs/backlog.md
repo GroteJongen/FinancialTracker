@@ -124,3 +124,7 @@ Status: Ukonczone - 230 testow backendu i 39 przegladarkowych zaliczone w CI. Je
 ## FT-021 - Rzeczywiste odsetki obligacji i pełny koszt zakupu
 
 Status: Ukonczone - 230 testow backendu i 39 przegladarkowych zaliczone w CI. TOS/COI/EDO z naliczaniem brutto, roczną kapitalizacją lub należnymi kuponami, marżą konkretnej serii i historyczną inflacją GUS. Cache publicznych danych w migracji 0010; ręczne wyceny zachowane. Koszt historii akcji/ETF/REIT obejmuje jednostki × cenę + prowizję i jest liczony przez backend Decimal. NBP służy tylko przeliczeniu walut.
+
+## FT-022 - Wszystkie zarobione odsetki
+
+Status: Ukonczone - 236 testow backendu i 39 przegladarkowych zaliczone w CI. Kafelek Odsetki zarobione pokazuje narosłe i skapitalizowane odsetki oraz należne kupony, także przed pierwszą wypłatą TOS/COI/EDO. Osobne pole earned_interest w API jest informacją, bez ponownego dodawania do wyniku i wykresu. Kwota podlega filtrom portfela i IKE/IKZE. Rabat zakupowy nie jest odsetkami. Braki pozostają jawne; dane i wypłaty są zachowane, bez migracji.

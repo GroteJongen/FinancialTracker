@@ -74,3 +74,7 @@ Usuwamy zduplikowany interfejs ograniczony do EUR i domyślną wycenę IUSQ w AP
 ## ADR-031 - Naliczanie obligacji i jawne braki danych
 
 Czysty modul domenowy liczy TOS/COI/EDO od nominalu, zgodnie z listami emisyjnymi. Tryb wyplaty wynika z produktu i jest walidowany. Publiczne warunki konkretnej emisji i historyczne CPI sa oddzielnym cache, bez zmiany niezmiennych snapshotow uzytkownika. Pobieranie odbywa sie poza transakcjami; brak danych pozostawia niepelna wycene. Reczne wyceny dla aktualnej rewizji maja pierwszenstwo. Nalezne kupony sa oznaczone jako nalezne, bez potwierdzenia przelewu. Nowe pole trybu nie zmienia hashy idempotencji istniejacych zakupow.
+
+## ADR-032 - Zarobione odsetki niezależne od wypłat
+
+earned_interest to osobna informacja w pozycji, sumie portfela i podziale na klasy. Obejmuje kapitał odsetkowy pozostający w obligacjach i kupony, z wyłączeniem nominału i rabatu zakupowego. Zysk nadal wynika z wartości i paid_income; prezentacja earned_interest nie zmienia sum aktywów, wyniku ani wykresu. Brakujące kwoty pozostają null, a API podaje known_earned_interest jako jawnie częściową sumę. Ręczna wycena poniżej nominału nie pozwala ustalić zarobionych odsetek bez dodatkowych danych. Bez zmiany schematu i historii finansowej.

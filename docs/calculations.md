@@ -60,3 +60,9 @@ Te same wzory kosztu, średniej, wartości i wyniku stosujemy osobno dla każdeg
 ## Odsetki obligacji FT-021
 
 Koszt nabycia: liczba sztuk razy rzeczywista cena. Nominal: 100 PLN na sztuke. Wycena brutto i nalezne kupony sa liczone osobno; zysk = wycena + kupony - koszt. COI wyplaca roczne kupony, TOS i EDO kapitalizuja rocznie. Szczegoly ACT/ACT, zaokraglen i dat CPI oraz listy emisyjne: [obligacje](bonds.md#automatyczne-naliczanie-ft-021). Nie doliczamy ponownie skapitalizowanych odsetek do dochodu. Nie zgadujemy brakujacej marzy ani CPI.
+
+## Zarobione odsetki FT-022
+
+Odsetki zarobione = wartość obligacji + kupony za zakończone okresy - nominał (100 PLN razy liczba sztuk). Obejmują narosłe i skapitalizowane kwoty, niezależnie od wypłat. TOS/EDO mają dodatnią kwotę już w pierwszym okresie, jeśli odsetki zaokrąglone na sztukę przekroczą zero. Rabat przy nabyciu jest częścią wyniku inwestycji, ale nie odsetkami. Przykład: 10 sztuk po 99,90, wartość 1002,20 i brak kuponów oznacza 2,20 odsetek oraz 3,20 zysku.
+
+earned_interest nie jest drugim dochodem dodawanym do wyniku ani osobnym aktywem na wykresie. paid_income zachowuje dotychczasową rolę w obliczaniu zysku. Suma zarobionych odsetek korzysta z tych samych filtrów portfela i rachunków. Niekompletna wycena daje null oraz osobną sumę znanych odsetek, bez udawania zera. Ręczna wycena ma pierwszeństwo; jeśli jej wartość wraz z kuponami jest niższa od nominału, nie da się z niej wyodrębnić odsetek i pole pozostaje nieznane. Pozostałe sumy portfela nadal korzystają z podanej wyceny.
